@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kestrel Integrator Docs</title>
+    <meta
+      name="description"
+      content="Static documentation for Kestrel Integrator covering projects, workflows, services, consoles, connectors, and utilities."
+    />
+    <link rel="stylesheet" href="./assets/css/tailwind.css" />
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+  </head>
+  <body>
+    <div class="docs-app" id="app">
+      <header class="docs-topbar">
+        <button id="menuToggle" class="docs-menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="true">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+          </svg>
+        </button>
+        <div class="docs-brand">
+          <img class="docs-brand-logo" src="./assets/images/kestrel-logo.png" alt="Kestrel Integrator logo" />
+          <div class="docs-brand-copy">
+            <strong>Kestrel Integrator</strong>
+            <span>Knowledge base</span>
+          </div>
+        </div>
+
+        <div class="docs-searchbar">
+          <div class="docs-search-field">
+            <span class="docs-search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"></circle>
+                <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+              </svg>
+            </span>
+            <input id="searchInput" type="search" placeholder="Search utilities, tabs, params, or concepts" />
+          </div>
+          <button id="searchButton" class="docs-button docs-button-primary" type="button">Search</button>
+        </div>
+      </header>
+
+      <main class="docs-shell">
+        <aside class="docs-rail">
+          <div class="docs-nav-group">
+            <h2>Getting Started</h2>
+            <button class="docs-rail-button active" data-tab="overview" type="button">
+              <span class="docs-icon" data-icon="home"></span>
+              <span class="docs-rail-label">Introduction</span>
+            </button>
+            <div class="docs-dropdown">
+              <div class="docs-dropdown-row">
+                <button class="docs-rail-button" data-tab="projects" type="button">
+                  <span class="docs-icon" data-icon="projects"></span>
+                  <span class="docs-rail-label">Projects</span>
+                </button>
+                <details class="docs-rail-disclosure-shell" open>
+                  <summary class="docs-rail-disclosure" aria-label="Toggle projects sections">
+                    <span data-icon="chevron"></span>
+                  </summary>
+                  <div class="docs-context-menu" id="contextMenu" aria-label="Current page sections"></div>
+                </details>
+              </div>
+            </div>
+          </div>
+          <div class="docs-nav-group">
+            <h2>Deployment</h2>
+            <button class="docs-rail-button" data-tab="connectors" type="button">
+              <span class="docs-icon" data-icon="connectors"></span>
+              <span class="docs-rail-label">Connections</span>
+            </button>
+            <button class="docs-rail-button" data-tab="workflow" type="button">
+              <span class="docs-icon" data-icon="workflow"></span>
+              <span class="docs-rail-label">Workflow</span>
+            </button>
+            <button class="docs-rail-button" data-tab="services" type="button">
+              <span class="docs-icon" data-icon="services"></span>
+              <span class="docs-rail-label">Services</span>
+            </button>
+          </div>
+          <div class="docs-nav-group">
+            <h2>Headlesshost</h2>
+            <button class="docs-rail-button" data-tab="console" type="button">
+              <span class="docs-icon" data-icon="console"></span>
+              <span class="docs-rail-label">Console</span>
+            </button>
+            <button class="docs-rail-button" data-tab="utilities" type="button">
+              <span class="docs-icon" data-icon="utilities"></span>
+              <span class="docs-rail-label">Utilities</span>
+            </button>
+            <button class="docs-rail-button" data-tab="reference" type="button">
+              <span class="docs-icon" data-icon="reference"></span>
+              <span class="docs-rail-label">Reference</span>
+            </button>
+          </div>
+        </aside>
+
+        <section class="docs-content">
+          <article class="docs-page" id="pageView"></article>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./assets/js/app.js"></script>
+  </body>
+</html>
