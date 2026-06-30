@@ -559,8 +559,7 @@ export const DOCS_SECTIONS = {
     title: 'Projects',
     intro: 'A project is the Kestrel Integrator container for workflows, reusable services, APIs, connections, data structures, XSLT aliases, and schedulers. In the app, the selected project becomes the context for the assets shown in the workspace.',
     menuItems: [
-      { title: 'What is a project?', anchor: 'project-definition' },
-      { title: 'What lives inside a project?', anchor: 'project-assets' }
+      { title: 'What is a project?', anchor: 'project-summary' }
     ],
     steps: [
       { title: 'What is a project?', body: 'A project is the package that groups the integration assets you build for one business solution in this app.' },

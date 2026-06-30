@@ -8,6 +8,8 @@
       name="description"
       content="Static documentation for Kestrel Integrator covering projects, workflows, services, consoles, connectors, and utilities."
     />
+    <link rel="icon" type="image/png" href="./assets/images/kestrel-logo.png" />
+    <link rel="apple-touch-icon" href="./assets/images/kestrel-logo.png" />
     <link rel="stylesheet" href="./assets/css/tailwind.css" />
     <link rel="stylesheet" href="./assets/css/styles.css" />
   </head>
@@ -43,26 +45,22 @@
 
       <main class="docs-shell">
         <aside class="docs-rail">
-          <div class="docs-nav-group">
+        <div class="docs-nav-group">
             <h2>Getting Started</h2>
             <button class="docs-rail-button active" data-tab="overview" type="button">
               <span class="docs-icon" data-icon="home"></span>
               <span class="docs-rail-label">Introduction</span>
             </button>
-            <div class="docs-dropdown">
-              <div class="docs-dropdown-row">
-                <button class="docs-rail-button" data-tab="projects" type="button">
-                  <span class="docs-icon" data-icon="projects"></span>
-                  <span class="docs-rail-label">Projects</span>
-                </button>
-                <details class="docs-rail-disclosure-shell" open>
-                  <summary class="docs-rail-disclosure" aria-label="Toggle projects sections">
-                    <span data-icon="chevron"></span>
-                  </summary>
-                  <div class="docs-context-menu" id="contextMenu" aria-label="Current page sections"></div>
-                </details>
-              </div>
+            <div class="docs-projects-toggle-row">
+              <button class="docs-rail-button docs-projects-summary" data-tab="projects" type="button">
+                <span class="docs-icon" data-icon="projects"></span>
+                <span class="docs-rail-label">Projects</span>
+              </button>
+              <button class="docs-projects-toggle" id="projectsToggle" type="button" aria-label="Toggle projects menu" aria-expanded="true">
+                <span class="docs-projects-caret" data-icon="chevron"></span>
+              </button>
             </div>
+            <div class="docs-context-menu" id="contextMenu" aria-label="Current page sections"></div>
           </div>
           <div class="docs-nav-group">
             <h2>Deployment</h2>

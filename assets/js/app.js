@@ -6,8 +6,8 @@ const pageView = document.querySelector('#pageView');
 const searchInput = document.querySelector('#searchInput');
 const searchButton = document.querySelector('#searchButton');
 const menuToggle = document.querySelector('#menuToggle');
+const projectsToggle = document.querySelector('#projectsToggle');
 const contextMenu = document.querySelector('#contextMenu');
-const projectsDropdownToggle = document.querySelector('#projectsDropdownToggle');
 
 const PAGE_FILES = {
   overview: './assets/pages/overview.html',
@@ -15,17 +15,70 @@ const PAGE_FILES = {
   connectors: './assets/pages/connectors.html',
   workflow: './assets/pages/workflow.html',
   services: './assets/pages/services.html',
+  api: './assets/pages/api.html',
+  workflowTrigger: './assets/pages/workflow-trigger.html',
+  dataStructure: './assets/pages/data-structure.html',
+  xsltAlias: './assets/pages/xslt-alias.html',
+  scheduler: './assets/pages/scheduler.html',
   console: './assets/pages/console.html',
   utilities: './assets/pages/utilities.html',
   reference: './assets/pages/reference.html'
 };
 
+const PROJECT_TABS = new Set([
+  'projects',
+  'api',
+  'workflowTrigger',
+  'dataStructure',
+  'xsltAlias',
+  'scheduler'
+]);
+
+const PROJECT_MENU_TREE = [
+  {
+    title: 'Workflow',
+    children: [
+      {
+        title: 'Connectors',
+        children: [
+          { title: 'Connector catalog', tab: 'connectors', anchor: 'connection-catalog' },
+          { title: 'Enabled state', tab: 'connectors', anchor: 'connection-state' },
+          { title: 'Reuse everywhere', tab: 'connectors', anchor: 'connection-reuse' }
+        ]
+      },
+      { title: 'Workflow Trigger', tab: 'workflowTrigger', anchor: 'workflow-trigger-overview' },
+      { title: 'Utils', tab: 'utilities' }
+    ]
+  },
+  {
+    title: 'Reusable services',
+    children: [
+      { title: 'API', tab: 'api' }
+    ]
+  },
+  {
+    title: 'Connection',
+    children: [
+      { title: 'Connector catalog', tab: 'connectors', anchor: 'connection-catalog' },
+      { title: 'Enabled state', tab: 'connectors', anchor: 'connection-state' },
+      { title: 'Reuse everywhere', tab: 'connectors', anchor: 'connection-reuse' }
+    ]
+  },
+  {
+    title: 'Data Structure',
+    children: [
+      { title: 'XSLT Alias', tab: 'xsltAlias', anchor: 'xslt-alias-overview' },
+      { title: 'Scheduler', tab: 'scheduler', anchor: 'scheduler-overview' }
+    ]
+  }
+];
+
 const state = {
   activeTab: 'overview',
   query: '',
+  projectsMenuOpen: true,
   menuCollapsed: window.matchMedia('(max-width: 900px)').matches,
-  menuAutoCollapsed: window.matchMedia('(max-width: 900px)').matches,
-  projectsExpanded: false
+  menuAutoCollapsed: window.matchMedia('(max-width: 900px)').matches
 };
 
 let renderToken = 0;
@@ -61,9 +114,16 @@ function setIconTargets() {
 function syncMenuState() {
   app.classList.toggle('is-menu-collapsed', state.menuCollapsed);
   menuToggle.setAttribute('aria-expanded', String(!state.menuCollapsed));
-  if (projectsDropdownToggle) {
-    projectsDropdownToggle.setAttribute('aria-expanded', String(state.projectsExpanded));
+  if (projectsToggle) {
+    projectsToggle.setAttribute('aria-expanded', String(state.projectsMenuOpen));
   }
+}
+
+function updateRailActiveState(tabId) {
+  const effectiveTab = PROJECT_TABS.has(tabId) ? 'projects' : tabId;
+  document.querySelectorAll('.docs-rail-button').forEach((item) => {
+    item.classList.toggle('active', item.getAttribute('data-tab') === effectiveTab);
+  });
 }
 
 function flattenUtilities() {
@@ -104,41 +164,69 @@ function scrollToAnchor(anchor) {
   }
 }
 
+function renderMenuNodes(nodes, depth = 0) {
+  return nodes.map((node) => {
+    const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+    const label = escapeHtml(node.title);
+    if (hasChildren) {
+      return `
+        <details class="docs-tree-node" ${node.open ? 'open' : ''}>
+          <summary class="docs-tree-summary" data-tree-depth="${depth}">
+            <span class="docs-tree-title">${label}</span>
+            <span class="docs-tree-caret" data-icon="chevron"></span>
+          </summary>
+          <div class="docs-tree-children">
+            ${renderMenuNodes(node.children, depth + 1)}
+          </div>
+        </details>
+      `;
+    }
+
+    const anchorAttr = node.anchor ? `data-anchor="${escapeHtml(node.anchor)}"` : '';
+    const tabAttr = node.tab ? `data-tab="${escapeHtml(node.tab)}"` : '';
+    return `
+      <button class="docs-tree-leaf" type="button" ${tabAttr} ${anchorAttr}>
+        <span class="docs-tree-leaf-title">${label}</span>
+      </button>
+    `;
+  }).join('');
+}
+
 function renderContextMenu() {
   if (!contextMenu) {
     return;
   }
 
-  const section = DOCS_SECTIONS[state.activeTab];
-  const items = section?.menuItems || [];
-
-  if (state.activeTab !== 'projects' || !state.projectsExpanded || !items.length || state.query.trim()) {
+  if (!state.projectsMenuOpen || state.query.trim()) {
     contextMenu.innerHTML = '';
     return;
   }
 
   contextMenu.innerHTML = `
-    <div class="docs-context-group">
-      <h2>${escapeHtml(section.title)}</h2>
-      <div class="docs-context-list">
-        ${items.map((item) => `
-          <button class="docs-context-button" type="button" data-anchor="${escapeHtml(item.anchor)}">
-            <span>${escapeHtml(item.title)}</span>
-          </button>
-        `).join('')}
+    <div class="docs-tree-root">
+      <div class="docs-tree-heading">PROJECTS</div>
+      <div class="docs-tree-children">
+        ${renderMenuNodes(PROJECT_MENU_TREE)}
       </div>
     </div>
   `;
 
-  contextMenu.querySelectorAll('.docs-context-button').forEach((button) => {
+  contextMenu.querySelectorAll('[data-tab]').forEach((button) => {
     button.addEventListener('click', () => {
-      scrollToAnchor(button.getAttribute('data-anchor'));
+      const tab = button.getAttribute('data-tab');
+      const anchor = button.getAttribute('data-anchor');
+      renderTab(tab);
+      if (anchor) {
+        requestAnimationFrame(() => scrollToAnchor(anchor));
+      }
       if (window.matchMedia('(max-width: 900px)').matches) {
         state.menuCollapsed = true;
         syncMenuState();
       }
     });
   });
+
+  setIconTargets();
 }
 
 function renderUtilityGroup(group) {
@@ -304,13 +392,11 @@ function renderSearchResults() {
 
 async function renderTab(tabId) {
   state.activeTab = tabId;
+  updateRailActiveState(tabId);
   if (state.query.trim()) {
     renderSearchResults();
     renderContextMenu();
     return;
-  }
-  if (tabId === 'projects') {
-    state.projectsExpanded = true;
   }
   await loadPage(tabId);
 }
@@ -329,7 +415,6 @@ searchInput.addEventListener('keydown', (event) => {
 
 document.querySelectorAll('.docs-rail-button').forEach((button) => {
   button.addEventListener('click', () => {
-    document.querySelectorAll('.docs-rail-button').forEach((item) => item.classList.toggle('active', item === button));
     renderTab(button.getAttribute('data-tab'));
     if (window.matchMedia('(max-width: 900px)').matches) {
       state.menuCollapsed = true;
@@ -338,8 +423,8 @@ document.querySelectorAll('.docs-rail-button').forEach((button) => {
   });
 });
 
-projectsDropdownToggle?.addEventListener('click', () => {
-  state.projectsExpanded = !state.projectsExpanded;
+projectsToggle?.addEventListener('click', () => {
+  state.projectsMenuOpen = !state.projectsMenuOpen;
   syncMenuState();
   renderContextMenu();
 });
