@@ -11,8 +11,8 @@
   --kb-primary-2: #2f80ed;
   --kb-shadow: 0 18px 48px rgba(16, 24, 40, 0.08);
   --kb-topbar-h: 76px;
-  --kb-rail-w: 260px;
-  --kb-rail-collapsed: 84px;
+  --kb-rail-w: 250px;
+  --kb-rail-collapsed: 76px;
   --kb-sidepanel-w: 300px;
   --kb-radius-lg: 24px;
   --kb-radius-md: 18px;
@@ -226,26 +226,35 @@ a {
 
 .docs-rail {
   min-height: 0;
-  padding: 12px 10px 16px;
+  padding: 12px 10px 14px;
   display: grid;
   align-content: start;
   gap: 10px;
   border-right: 1px solid rgba(191, 208, 234, 0.55);
-  background: rgba(255, 255, 255, 0.94);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(247, 250, 255, 0.95) 100%);
   overflow: auto;
   transition: width 0.22s ease, transform 0.22s ease, padding 0.22s ease, opacity 0.22s ease;
 }
 
 .docs-nav-group {
   display: grid;
-  gap: 6px;
+  gap: 8px;
+  padding: 10px 6px 12px;
+  border-top: 1px solid rgba(191, 208, 234, 0.5);
+}
+
+.docs-nav-group:first-child {
+  padding-top: 4px;
+  border-top: 0;
 }
 
 .docs-projects-toggle-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .docs-projects-summary {
@@ -254,23 +263,24 @@ a {
 }
 
 .docs-projects-toggle {
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba(191, 208, 234, 0.88);
-  border-radius: 12px;
-  background: #fff;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(191, 208, 234, 0.72);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.96);
   display: inline-grid;
   place-items: center;
   cursor: pointer;
-  color: #5c6677;
-  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  color: #67758a;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .docs-projects-toggle:hover {
   transform: translateY(-1px);
   color: var(--kb-link);
   border-color: rgba(15, 98, 254, 0.2);
-  background: rgba(15, 98, 254, 0.05);
+  background: rgba(15, 98, 254, 0.06);
+  box-shadow: 0 8px 16px rgba(15, 98, 254, 0.08);
 }
 
 .docs-projects-caret {
@@ -286,9 +296,9 @@ a {
 }
 
 .docs-context-menu {
-  margin: 0 0 0 10px;
+  margin: 6px 0 0 6px;
   padding: 8px 0 0 12px;
-  border-left: 2px solid rgba(191, 208, 234, 0.8);
+  border-left: 1px solid rgba(191, 208, 234, 0.75);
 }
 
 .docs-context-menu:empty {
@@ -297,21 +307,21 @@ a {
 
 .docs-tree-root {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .docs-tree-heading {
   margin: 0;
-  color: var(--kb-text);
-  font-size: 0.76rem;
+  color: #6f7e93;
+  font-size: 0.73rem;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 .docs-tree-node {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .docs-tree-node > summary {
@@ -331,19 +341,20 @@ a {
   border-radius: 12px;
   border: 1px solid transparent;
   cursor: pointer;
-  color: #354052;
-  background: rgba(15, 98, 254, 0.025);
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  color: #425066;
+  background: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .docs-tree-summary:hover {
   border-color: rgba(15, 98, 254, 0.12);
-  background: rgba(15, 98, 254, 0.06);
+  background: rgba(15, 98, 254, 0.05);
   color: var(--kb-link);
+  transform: translateX(1px);
 }
 
 .docs-tree-summary .docs-tree-title {
-  font-size: 0.88rem;
+  font-size: 0.87rem;
   font-weight: 800;
 }
 
@@ -361,10 +372,10 @@ a {
 
 .docs-tree-children {
   display: grid;
-  gap: 6px;
-  margin-left: 10px;
-  padding-left: 10px;
-  border-left: 1px solid rgba(191, 208, 234, 0.72);
+  gap: 4px;
+  margin-left: 12px;
+  padding: 2px 0 2px 12px;
+  border-left: 1px solid rgba(191, 208, 234, 0.7);
 }
 
 .docs-tree-leaf {
@@ -375,13 +386,13 @@ a {
   color: #5c6677;
   text-align: left;
   cursor: pointer;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   line-height: 1.35;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
 .docs-tree-leaf:hover {
-  background: rgba(15, 98, 254, 0.07);
+  background: rgba(15, 98, 254, 0.06);
   color: var(--kb-link);
   border-color: rgba(15, 98, 254, 0.12);
   transform: translateX(1px);
@@ -428,17 +439,17 @@ a {
 }
 
 .docs-nav-group h2 {
-  margin: 10px 8px 4px;
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: #1f2937;
-  letter-spacing: 0.08em;
+  margin: 0 6px 2px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #718096;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 .docs-rail-button {
   width: 100%;
-  min-height: 40px;
+  min-height: 38px;
   border: 0;
   border-radius: 12px;
   padding: 8px 10px;
@@ -448,36 +459,37 @@ a {
   text-align: left;
   background: transparent;
   cursor: pointer;
-  color: #5c6677;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  color: #566274;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .docs-rail-button:hover,
 .docs-rail-button.active {
-  background: rgba(30, 167, 225, 0.08);
+  background: rgba(15, 98, 254, 0.085);
   color: var(--kb-link);
 }
 
 .docs-rail-button.active {
   position: relative;
   font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(15, 98, 254, 0.11);
 }
 
 .docs-rail-button.active::before {
   content: "";
   position: absolute;
-  left: -14px;
+  left: -12px;
   top: 50%;
   width: 4px;
-  height: 18px;
+  height: 14px;
   border-radius: 999px;
   transform: translateY(-50%);
   background: #1ea7e1;
 }
 
 .docs-rail-label {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
 }
 
 .docs-icon {
@@ -872,6 +884,10 @@ a {
 .docs-app.is-menu-collapsed .docs-rail {
   padding-left: 8px;
   padding-right: 8px;
+}
+
+.docs-app.is-menu-collapsed .docs-nav-group {
+  padding: 8px 6px 10px;
 }
 
 .docs-app.is-menu-collapsed .docs-nav-group h2,
