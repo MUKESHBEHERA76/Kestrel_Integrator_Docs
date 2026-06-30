@@ -606,6 +606,54 @@ a {
   gap: 16px;
 }
 
+.docs-prose-page {
+  display: grid;
+  gap: 18px;
+  max-width: 980px;
+}
+
+.docs-prose-page h1 {
+  margin: 0;
+  font-size: clamp(2.1rem, 3vw, 3.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+
+.docs-prose-page h2 {
+  margin: 14px 0 0;
+  font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+.docs-prose-page p {
+  margin: 0;
+  color: var(--kb-muted);
+  font-size: 1.05rem;
+  line-height: 1.82;
+  max-width: 88ch;
+}
+
+.docs-bullet-list {
+  margin: 0;
+  padding-left: 1.35rem;
+  display: grid;
+  gap: 12px;
+  color: var(--kb-muted);
+  line-height: 1.8;
+}
+
+.docs-bullet-list li {
+  padding-left: 0.2rem;
+}
+
+.docs-bullet-list strong {
+  color: var(--kb-text);
+  font-weight: 800;
+}
+
 .docs-author {
   display: flex;
   align-items: center;

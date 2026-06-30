@@ -557,19 +557,20 @@ export const DOCS_SECTIONS = {
   },
   projects: {
     title: 'Projects',
-    intro: 'A project is the Kestrel Integrator container for workflows, reusable services, APIs, connections, data structures, XSLT aliases, and schedulers. In the app, the selected project becomes the context for the assets shown in the workspace.',
+    intro: 'In Kestrel Integrator, a project is the package of artifacts for one integration solution. It groups workflows, reusable services, APIs, connections, data structures, XSLT aliases, schedulers, and console activity under one project ID.',
     menuItems: [
       { title: 'What is a project?', anchor: 'project-summary' }
     ],
     steps: [
-      { title: 'What is a project?', body: 'A project is the package that groups the integration assets you build for one business solution in this app.' },
-      { title: 'Workflow', body: 'The orchestration flow inside the project that connects steps, mappings, and runtime logic.' },
-      { title: 'ReUsable services', body: 'Shared logic inside the project that can be called from multiple workflows.' },
-      { title: 'API', body: 'The project-scoped interface used to expose or consume business data through endpoints.' },
-      { title: 'Connections', body: 'Reusable database or security connectors available to the project workspace.' },
-      { title: 'Data Structure', body: 'The project-specific data shape used for input, output, and mapping.' },
-      { title: 'Exslt Alias', body: 'Alias entries used for XSLT-related transformation work in the project.' },
-      { title: 'Schedluer', body: 'The scheduler that triggers project workflows automatically at the configured time.' }
+      { title: 'What is a project?', body: 'A project is the workspace package that holds one integration solution in Kestrel Integrator.' },
+      { title: 'Why is it needed?', body: 'It keeps the project scope, runtime context, and saved data aligned so workflows, services, and connections do not mix across solutions.' },
+      { title: 'Workflow', body: 'The project-scoped orchestration flow that connects triggers, steps, mappings, and runtime logic.' },
+      { title: 'ReUsable services', body: 'Shared service flows inside the same project that can be called from multiple workflows.' },
+      { title: 'API', body: 'The project-level endpoint layer used to expose or consume business data.' },
+      { title: 'Connections', body: 'Reusable database and security connectors that belong to the selected project.' },
+      { title: 'Data Structure', body: 'The project-specific input, output, and document shapes used in mappings and design.' },
+      { title: 'XSLT Alias', body: 'Alias entries used for transformation logic inside the project workspace.' },
+      { title: 'Schedluer', body: 'The scheduler that runs project workflows automatically at the configured time using the project context.' }
     ]
   },
   connectors: {

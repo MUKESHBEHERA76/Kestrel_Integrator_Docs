@@ -1,20 +1,45 @@
-<section class="docs-grid">
+<section class="docs-prose-page">
   <span class="docs-kicker">Project model</span>
   <h1 data-page-title>Projects</h1>
   <p>
-    A project is the workspace boundary in Kestrel Integrator. Everything you create, reuse, run, and monitor is grouped inside that project context, so workflows, services, connections, APIs, data structures, XSLT aliases, and schedulers stay together.
+    In Kestrel Integrator, a project is the package of artifacts for one integration solution. It is the top-level workspace that keeps workflows, reusable services, connections, APIs, data structures, XSLT aliases, schedulers, and console activity under one project ID.
   </p>
 
-  <article class="docs-card" id="project-summary" data-doc-anchor="project-summary">
-    <div class="docs-card-head">
-      <h3>What is a project?</h3>
-      <small>01</small>
-    </div>
-    <p>
-      In this app, the selected project controls what the workspace shows. Pick a project once, then use the nested menu on the left to jump into the detailed topics that belong to that project.
-    </p>
-    <div class="docs-note">
-      A project is not just a folder name. It is the context that binds together the integration assets, runtime configuration, and reusable building blocks for one solution.
-    </div>
-  </article>
+  <h2 id="project-summary" data-doc-anchor="project-summary">What is a project?</h2>
+  <p>
+    A project is the context that drives the tool. When you select a project, the UI loads the correct workspace, the designer uses the correct project scope, and the console or monitor pages stay aligned with that same project.
+  </p>
+
+  <h2 id="project-artifacts" data-doc-anchor="project-artifacts">What lives inside a project?</h2>
+  <ul class="docs-bullet-list">
+    <li>
+      <strong>Workflow</strong> - the orchestration flow that connects steps, mappings, runtime variables, and execution logic for the project.
+    </li>
+    <li>
+      <strong>Reusable services</strong> - shared service flows that can be called from multiple workflows inside the same project.
+    </li>
+    <li>
+      <strong>API</strong> - project-scoped endpoints used to expose or consume business data.
+    </li>
+    <li>
+      <strong>Connections</strong> - reusable database or security connectors that the project uses in workflows, services, and console execution.
+    </li>
+    <li>
+      <strong>Data Structure</strong> - the input, output, and document shape definitions used while designing mappings and steps.
+    </li>
+    <li>
+      <strong>XSLT Alias</strong> - the alias names used to support transformation logic inside the project.
+    </li>
+    <li>
+      <strong>Schedluer</strong> - the scheduler setup that triggers project workflows automatically at the configured time.
+    </li>
+  </ul>
+
+  <h2 id="project-need" data-doc-anchor="project-need">Why is a project needed?</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Scoped assets</strong> - each integration asset stays attached to the selected project only.</li>
+    <li><strong>Correct runtime context</strong> - the designer, console, and monitor all use the same project scope.</li>
+    <li><strong>Clear ownership</strong> - teams can see exactly which solution a workflow, service, or connection belongs to.</li>
+    <li><strong>Project identity</strong> - every project has its own backend ID, so routes and saved data always resolve to the right project.</li>
+  </ul>
 </section>
