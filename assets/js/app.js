@@ -34,12 +34,19 @@ const PROJECT_TABS = new Set([
   'scheduler'
 ]);
 
+const ROUTE_DEFAULT = 'overview';
+const ROUTE_TABS = new Set(Object.keys(PAGE_FILES));
+
 const PROJECT_MENU_TREE = [
   {
+    key: 'workflow',
     title: 'Workflow',
+    tab: 'workflow',
     children: [
       {
+        key: 'workflow-connectors',
         title: 'Connectors',
+        tab: 'connectors',
         children: [
           { title: 'Connector catalog', tab: 'connectors', anchor: 'connection-catalog' },
           { title: 'Enabled state', tab: 'connectors', anchor: 'connection-state' },
@@ -51,13 +58,17 @@ const PROJECT_MENU_TREE = [
     ]
   },
   {
+    key: 'reusable-services',
     title: 'Reusable services',
+    tab: 'services',
     children: [
       { title: 'API', tab: 'api' }
     ]
   },
   {
+    key: 'connections',
     title: 'Connection',
+    tab: 'connectors',
     children: [
       { title: 'Connector catalog', tab: 'connectors', anchor: 'connection-catalog' },
       { title: 'Enabled state', tab: 'connectors', anchor: 'connection-state' },
@@ -65,7 +76,9 @@ const PROJECT_MENU_TREE = [
     ]
   },
   {
+    key: 'data-structure',
     title: 'Data Structure',
+    tab: 'dataStructure',
     children: [
       { title: 'XSLT Alias', tab: 'xsltAlias', anchor: 'xslt-alias-overview' },
       { title: 'Scheduler', tab: 'scheduler', anchor: 'scheduler-overview' }
@@ -76,7 +89,8 @@ const PROJECT_MENU_TREE = [
 const state = {
   activeTab: 'overview',
   query: '',
-  projectsMenuOpen: true,
+  projectsMenuOpen: false,
+  projectTreeOpen: {},
   menuCollapsed: window.matchMedia('(max-width: 900px)').matches,
   menuAutoCollapsed: window.matchMedia('(max-width: 900px)').matches
 };
@@ -117,6 +131,29 @@ function syncMenuState() {
   if (projectsToggle) {
     projectsToggle.setAttribute('aria-expanded', String(state.projectsMenuOpen));
   }
+}
+
+function parseRouteFromHash() {
+  const raw = window.location.hash.replace(/^#\/?/, '');
+  if (!raw) {
+    return { tab: ROUTE_DEFAULT, anchor: '' };
+  }
+
+  const [tabPart = ROUTE_DEFAULT, anchor = ''] = raw.split('/');
+  return {
+    tab: ROUTE_TABS.has(tabPart) ? tabPart : ROUTE_DEFAULT,
+    anchor
+  };
+}
+
+function setRoute(tabId, anchor = '') {
+  const route = anchor ? `${tabId}/${anchor}` : tabId;
+  const nextHash = `#${route}`;
+  if (window.location.hash !== nextHash) {
+    window.location.hash = nextHash;
+    return;
+  }
+  renderFromLocation();
 }
 
 function updateRailActiveState(tabId) {
@@ -164,19 +201,27 @@ function scrollToAnchor(anchor) {
   }
 }
 
-function renderMenuNodes(nodes, depth = 0) {
+function renderMenuNodes(nodes, depth = 0, parentKey = 'projects') {
   return nodes.map((node) => {
     const hasChildren = Array.isArray(node.children) && node.children.length > 0;
     const label = escapeHtml(node.title);
+    const nodeKey = node.key || `${parentKey}-${slugify(node.title)}`;
     if (hasChildren) {
+      const isOpen = typeof node.open === 'boolean'
+        ? node.open
+        : Boolean(state.projectTreeOpen[nodeKey]);
       return `
-        <details class="docs-tree-node" ${node.open ? 'open' : ''}>
+        <details class="docs-tree-node" data-tree-key="${escapeHtml(nodeKey)}" ${isOpen ? 'open' : ''}>
           <summary class="docs-tree-summary" data-tree-depth="${depth}">
-            <span class="docs-tree-title">${label}</span>
-            <span class="docs-tree-caret" data-icon="chevron"></span>
+            <button class="docs-tree-summary-button" type="button" data-tab="${escapeHtml(node.tab || '')}" aria-label="Open ${label} page">
+              <span class="docs-tree-title">${label}</span>
+            </button>
+            <button class="docs-tree-toggle" type="button" aria-label="Toggle ${label} submenu">
+              <span class="docs-tree-caret" data-icon="chevron"></span>
+            </button>
           </summary>
           <div class="docs-tree-children">
-            ${renderMenuNodes(node.children, depth + 1)}
+            ${renderMenuNodes(node.children, depth + 1, nodeKey)}
           </div>
         </details>
       `;
@@ -204,24 +249,46 @@ function renderContextMenu() {
 
   contextMenu.innerHTML = `
     <div class="docs-tree-root">
-      <div class="docs-tree-heading">PROJECTS</div>
       <div class="docs-tree-children">
         ${renderMenuNodes(PROJECT_MENU_TREE)}
       </div>
     </div>
   `;
 
+  contextMenu.querySelectorAll('.docs-tree-node').forEach((details) => {
+    details.addEventListener('toggle', () => {
+      const key = details.getAttribute('data-tree-key');
+      if (key) {
+        state.projectTreeOpen[key] = details.open;
+      }
+    });
+  });
+
   contextMenu.querySelectorAll('[data-tab]').forEach((button) => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       const tab = button.getAttribute('data-tab');
       const anchor = button.getAttribute('data-anchor');
-      renderTab(tab);
-      if (anchor) {
-        requestAnimationFrame(() => scrollToAnchor(anchor));
+      if (!tab) {
+        return;
       }
-      if (window.matchMedia('(max-width: 900px)').matches) {
-        state.menuCollapsed = true;
-        syncMenuState();
+      setRoute(tab, anchor || '');
+    });
+  });
+
+  contextMenu.querySelectorAll('.docs-tree-toggle').forEach((toggle) => {
+    toggle.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const details = toggle.closest('.docs-tree-node');
+      if (!details) {
+        return;
+      }
+      details.open = !details.open;
+      const key = details.getAttribute('data-tree-key');
+      if (key) {
+        state.projectTreeOpen[key] = details.open;
       }
     });
   });
@@ -401,6 +468,23 @@ async function renderTab(tabId) {
   await loadPage(tabId);
 }
 
+async function renderFromLocation() {
+  const { tab, anchor } = parseRouteFromHash();
+  state.activeTab = tab;
+  updateRailActiveState(tab);
+
+  if (state.query.trim()) {
+    renderSearchResults();
+    renderContextMenu();
+    return;
+  }
+
+  await loadPage(tab);
+  if (anchor) {
+    requestAnimationFrame(() => scrollToAnchor(anchor));
+  }
+}
+
 function applySearch() {
   state.query = searchInput.value.trim();
   renderTab(state.activeTab);
@@ -415,7 +499,7 @@ searchInput.addEventListener('keydown', (event) => {
 
 document.querySelectorAll('.docs-rail-button').forEach((button) => {
   button.addEventListener('click', () => {
-    renderTab(button.getAttribute('data-tab'));
+    setRoute(button.getAttribute('data-tab'));
     if (window.matchMedia('(max-width: 900px)').matches) {
       state.menuCollapsed = true;
       syncMenuState();
@@ -437,7 +521,16 @@ menuToggle?.addEventListener('click', () => {
 
 setIconTargets();
 syncMenuState();
-renderTab('overview');
+
+window.addEventListener('hashchange', () => {
+  renderFromLocation();
+});
+
+if (!window.location.hash || window.location.hash === '#') {
+  window.location.hash = `#${ROUTE_DEFAULT}`;
+} else {
+  renderFromLocation();
+}
 
 window.addEventListener('resize', () => {
   const shouldCollapse = window.matchMedia('(max-width: 900px)').matches;

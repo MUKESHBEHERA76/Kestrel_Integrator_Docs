@@ -30,6 +30,7 @@ body {
   width: 100%;
   height: 100%;
   min-height: 100%;
+  font-family: Garamond, "EB Garamond", "Cormorant Garamond", Georgia, serif;
 }
 
 body {
@@ -39,7 +40,7 @@ body {
     radial-gradient(circle at top left, rgba(15, 98, 254, 0.08), transparent 28%),
     linear-gradient(180deg, #f9fbff 0%, #eef3f8 100%);
   color: var(--kb-text);
-  font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: inherit;
 }
 
 button,
@@ -296,8 +297,8 @@ a {
 }
 
 .docs-context-menu {
-  margin: 6px 0 0 6px;
-  padding: 8px 0 0 12px;
+  margin: 4px 0 0 4px;
+  padding: 4px 0 0 10px;
   border-left: 1px solid rgba(191, 208, 234, 0.75);
 }
 
@@ -307,16 +308,7 @@ a {
 
 .docs-tree-root {
   display: grid;
-  gap: 12px;
-}
-
-.docs-tree-heading {
-  margin: 0;
-  color: #6f7e93;
-  font-size: 0.73rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  gap: 8px;
 }
 
 .docs-tree-node {
@@ -337,13 +329,38 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 10px 8px 12px;
-  border-radius: 12px;
+  padding: 7px 10px 7px 12px;
+  border-radius: 11px;
   border: 1px solid transparent;
   cursor: pointer;
   color: #425066;
   background: transparent;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.docs-tree-summary-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.docs-tree-toggle {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  display: inline-grid;
+  place-items: center;
+  color: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .docs-tree-summary:hover {
@@ -372,16 +389,16 @@ a {
 
 .docs-tree-children {
   display: grid;
-  gap: 4px;
-  margin-left: 12px;
-  padding: 2px 0 2px 12px;
+  gap: 3px;
+  margin-left: 10px;
+  padding: 2px 0 2px 10px;
   border-left: 1px solid rgba(191, 208, 234, 0.7);
 }
 
 .docs-tree-leaf {
   border: 1px solid transparent;
   border-radius: 11px;
-  padding: 8px 10px 8px 12px;
+  padding: 7px 10px 7px 12px;
   background: transparent;
   color: #5c6677;
   text-align: left;
