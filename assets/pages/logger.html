@@ -1,0 +1,42 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Logger</h1>
+  <p>
+    Logger is the workflow step that writes a runtime message without changing the main payload.
+    It is the simplest way to trace what a pipeline is doing while it runs.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    The logger step reads pipeline values and writes them to the runtime log stream. In Kestrel it is stored
+    as a workflow utility, not as an external service call.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Track branch decisions and execution progress.</li>
+    <li>Print important values for support and debugging.</li>
+    <li>Leave a readable audit trail during test runs or production incidents.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    Open the step configuration and map the three fields the runtime expects:
+  </p>
+  <ul class="docs-bullet-list">
+    <li><code>logMessage</code> - string value to write to the log.</li>
+    <li><code>function</code> - string label for the logical function or step name.</li>
+    <li><code>level</code> - string severity such as info, warn, or error.</li>
+  </ul>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Input</strong> - pipeline values, usually strings or resolved expressions.</li>
+    <li><strong>Output</strong> - no payload output; the effect is the runtime log entry.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    Logger is best used when you need a quick checkpoint in the flow. It does not call an external system
+    and it should not be used to store business data.
+  </p>
+</section>

@@ -1,30 +1,39 @@
-<section class="docs-grid">
-  <h1 data-page-title>Connections</h1>
+<section class="docs-prose-page">
+  <h1 data-page-title>Connections and connectors</h1>
   <p>
-    Connections define reusable endpoints and credentials. The docs here explain how to create, enable, and reuse them across the app.
+    In Kestrel Integrator, a connection is a reusable profile that stores credentials and endpoint details.
+    A connector is the runtime step or reusable profile that uses that configuration inside a workflow, service,
+    or console action.
   </p>
 
-  <article class="docs-card" id="connection-catalog" data-doc-anchor="connection-catalog">
-    <div class="docs-card-head">
-      <h3>Connector catalog</h3>
-      <small>01</small>
-    </div>
-    <p>Select the connector type first, then enter the required host, port, database, username, password, or security options.</p>
-  </article>
+  <h2>Reusable connection profiles</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Snowflake</strong> - project-scoped database access for Snowflake accounts.</li>
+    <li><strong>Postgres</strong> - reusable PostgreSQL profile for workflows and the SQL Console.</li>
+    <li><strong>MSSQL</strong> - SQL Server profile that can be reused across runtime steps.</li>
+    <li><strong>MySql</strong> - MySQL connection profile with project-level reuse.</li>
+    <li><strong>MariaDB</strong> - MariaDB connection profile with project-level reuse.</li>
+    <li><strong>OracleDB</strong> - Oracle profile using host, port, and service details.</li>
+    <li><strong>IBMDB2</strong> - Db2 profile for enterprise workflows and console runs.</li>
+    <li><strong>PGP</strong> - reusable security profile that stores key material and passphrase details.</li>
+  </ul>
 
-  <article class="docs-card" id="connection-state" data-doc-anchor="connection-state">
-    <div class="docs-card-head">
-      <h3>Enabled state</h3>
-      <small>02</small>
-    </div>
-    <p>Only enabled connections should appear in runtime features like the SQL Console or workflow runtime selection.</p>
-  </article>
+  <h2>Workflow connectors</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Logger</strong> - write runtime messages from pipeline values.</li>
+    <li><strong>Data Transformer</strong> - reshape payloads before the next step.</li>
+    <li><strong>Send HttpResponse</strong> - return the response for request-driven workflows.</li>
+    <li><strong>Workflow End</strong> - mark the terminal point of the flow.</li>
+    <li><strong>CSV Parser</strong> - parse or build CSV data.</li>
+    <li><strong>Pipeline Logger</strong> - inspect the current pipeline snapshot.</li>
+    <li><strong>XSLT Transformer</strong> - transform XML using a project alias.</li>
+    <li><strong>Sleep</strong> - pause execution for a configured time.</li>
+    <li><strong>Raise Exception</strong> - stop execution with a controlled error.</li>
+    <li><strong>Multi Transformation</strong> - group several utilities or service calls into one step.</li>
+  </ul>
 
-  <article class="docs-card" id="connection-reuse" data-doc-anchor="connection-reuse">
-    <div class="docs-card-head">
-      <h3>Reuse everywhere</h3>
-      <small>03</small>
-    </div>
-    <p>One saved connection can be used in multiple workflows, services, and console actions without re-entering credentials.</p>
-  </article>
+  <p>
+    Use the left menu to open one page at a time. Each page documents what the connector does, which fields
+    you must provide, and how the runtime inputs and outputs behave inside the current project.
+  </p>
 </section>

@@ -1,0 +1,42 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Multi Transformation</h1>
+  <p>
+    Multi Transformation groups several utilities or service calls into one workflow step. It is the connector
+    you use when a small chain of transformations should live inside a single visible block.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    The runtime executes a list of inner items. Each item can be a utility or a project service call, and each
+    item can have its own inputs, mappings, and outputs.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Keep related logic together instead of scattering it across many steps.</li>
+    <li>Mix utilities and service calls in one place.</li>
+    <li>Make the workflow easier to scan when a transformation chain is short.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    Add the inner items you want the runtime to execute. The runtime expects the <code>multiTransformation.items</code>
+    array to contain the full inner plan.
+  </p>
+  <ul class="docs-bullet-list">
+    <li><strong>Utility item</strong> - provide <code>utilityName</code>, <code>inputs</code>, and <code>outputMappings</code>.</li>
+    <li><strong>Service call item</strong> - provide <code>serviceName</code>, <code>inputMappings</code>, <code>inputValues</code>, and <code>outputMappings</code>.</li>
+  </ul>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Input</strong> - the values required by each inner item.</li>
+    <li><strong>Output</strong> - a summary object with <code>executedItems</code> and an <code>items</code> array of runtime results.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    The runtime fails if the list is empty, so always add at least one utility or service call. This connector
+    is powerful, but it works best when each inner mapping is documented clearly.
+  </p>
+</section>

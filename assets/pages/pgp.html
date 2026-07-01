@@ -1,0 +1,48 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>PGP</h1>
+  <p>
+    PGP is the security connector used to encrypt, decrypt, sign, and verify payloads in a workflow. It uses a
+    reusable PGP connection profile for the key material and exposes the security operation in the step editor.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    The connection profile stores the reusable key details, and the workflow step selects the operation that
+    should run. This keeps secret material out of the flow logic and makes security handling repeatable.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Protect data before it leaves the project boundary.</li>
+    <li>Validate signed messages from partners or downstream systems.</li>
+    <li>Keep secure file exchange logic inside the workflow runtime.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    First select the reusable PGP connection, then choose the operation and map the matching payload field.
+  </p>
+  <ul class="docs-bullet-list">
+    <li><strong>Connection profile</strong> - public key, private key, and optional passphrase values.</li>
+    <li><strong>Operation</strong> - encrypt, decrypt, sign, or verify.</li>
+    <li><strong>Algorithm</strong> - <code>select_Algorithm</code>, usually <code>RSA</code>.</li>
+    <li><strong>Encrypt input</strong> - <code>messageToEncrypt</code> as a string.</li>
+    <li><strong>Decrypt input</strong> - <code>messageToDecrypt</code> as a string.</li>
+    <li><strong>Sign input</strong> - <code>message</code> as a string.</li>
+    <li><strong>Verify input</strong> - <code>signedMessage</code> as a string.</li>
+  </ul>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Encrypt output</strong> - <code>encryptedData</code> as a string.</li>
+    <li><strong>Decrypt output</strong> - <code>decryptedData</code> as a string.</li>
+    <li><strong>Sign output</strong> - <code>signedMessage</code> as a string.</li>
+    <li><strong>Verify output</strong> - <code>verificationStatus</code> as a string status value.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    Keep the message payload and key configuration aligned with the selected operation. Encrypt and sign depend
+    on the private or public key setup provided by the connection profile.
+  </p>
+</section>

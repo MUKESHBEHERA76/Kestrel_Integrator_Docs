@@ -1,0 +1,38 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Data Transformer</h1>
+  <p>
+    Data Transformer is the workflow mapping step used to reshape payload data before the next connector
+    consumes it. It is the visual place where source paths are mapped to target paths.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    This step works on pipeline data directly. It does not call an external system. Instead, it lets you
+    copy, move, rename, combine, or normalize fields inside the current message.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Prepare request payloads for APIs, services, or database steps.</li>
+    <li>Normalize field names and data types before downstream use.</li>
+    <li>Keep mapping logic visible instead of hiding it inside code.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    Open the mapping editor and define the source and target paths you want to use. The runtime stores the
+    mapping operations in an <code>operations</code> array.
+  </p>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Input</strong> - pipeline objects, documents, strings, numbers, or lists depending on the mapping.</li>
+    <li><strong>Output</strong> - a transformed object or document written back into the selected target path.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    Keep each path explicit so the mapping stays readable. This step is often used before Send HttpResponse,
+    reusable services, or database connectors.
+  </p>
+</section>

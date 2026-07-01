@@ -1,0 +1,44 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Postgres</h1>
+  <p>
+    Postgres is the reusable PostgreSQL connection profile used by workflow SQL steps and the SQL Console.
+    It keeps the database credentials in one project-scoped place.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    The runtime uses this saved profile when a query step needs PostgreSQL access. It is not a one-off
+    connection; it is meant to be reused by multiple workflows and console actions.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Share one database definition across many assets.</li>
+    <li>Keep console usage aligned with the workflow runtime.</li>
+    <li>Reduce credential duplication in the project.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>Provide the standard PostgreSQL connection fields:</p>
+  <ul class="docs-bullet-list">
+    <li><code>host</code> - string server host.</li>
+    <li><code>port</code> - number, usually <code>5432</code>.</li>
+    <li><code>databaseName</code> - string database name.</li>
+    <li><code>username</code> - string login name.</li>
+    <li><code>password</code> - string password.</li>
+    <li><code>schema</code> - string schema, usually <code>public</code>.</li>
+  </ul>
+
+  <h2>Workflow and SQL Console usage</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Query input</strong> - <code>queryString</code> as a single SQL statement string.</li>
+    <li><strong>Returned rows</strong> - <code>dbResponse</code> as a serialized JSON string containing the result rows or update summary.</li>
+    <li><strong>Row count</strong> - <code>resultCount</code> as a string value containing the row count.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    The runtime accepts only one SQL statement at a time. If you need to run multiple changes, split them into
+    separate steps or use a workflow pattern that keeps the execution explicit.
+  </p>
+</section>

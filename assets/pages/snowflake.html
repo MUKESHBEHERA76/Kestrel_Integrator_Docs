@@ -1,0 +1,49 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Snowflake</h1>
+  <p>
+    Snowflake is the reusable connection profile for Snowflake-backed workflows and SQL Console runs. The
+    project stores the account and authentication details once, then reuses them anywhere they are needed.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    This connection keeps the Snowflake account details outside the workflow logic. The runtime only needs the
+    enabled profile when a step or console action runs a query.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Reuse the same Snowflake profile across many workflows.</li>
+    <li>Keep account details and credentials centralized in the project.</li>
+    <li>Use the same profile in the workflow SQL step and the SQL Console.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    Provide the Snowflake account and authentication details the runtime needs:
+  </p>
+  <ul class="docs-bullet-list">
+    <li><code>accountIdentifier</code> - string Snowflake account identifier.</li>
+    <li><code>authenticationType</code> - string, such as basic or key-pair.</li>
+    <li><code>username</code> - string user name.</li>
+    <li><code>password</code> - string password when basic auth is used.</li>
+    <li><code>privateKey</code> and <code>passphrase</code> - key-pair auth values when that mode is selected.</li>
+    <li><code>warehouse</code> - string warehouse name.</li>
+    <li><code>databaseName</code> - string database name.</li>
+    <li><code>role</code> - string role name.</li>
+    <li><code>schema</code> - string schema name.</li>
+  </ul>
+
+  <h2>Workflow and SQL Console usage</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Query input</strong> - <code>queryString</code> as a single SQL statement string.</li>
+    <li><strong>Returned rows</strong> - <code>dbResponse</code> as a serialized JSON string that contains the row list.</li>
+    <li><strong>Row count</strong> - <code>resultCount</code> as a string value containing the row count.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    Only enabled Snowflake connections should appear in runtime selection lists. The SQL runtime enforces a
+    single statement at a time, so the query input should not contain multiple statements separated by semicolons.
+  </p>
+</section>

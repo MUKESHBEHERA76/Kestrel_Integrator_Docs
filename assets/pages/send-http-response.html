@@ -1,0 +1,43 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Send HttpResponse</h1>
+  <p>
+    Send HttpResponse is the workflow step that returns data to the HTTP caller. It is used in request-driven
+    flows where the workflow itself is responsible for building the final response.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    This connector reads response settings from the pipeline and writes the final HTTP response back to the caller.
+    It is usually the last visible step in an API-style workflow.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Return success or failure payloads with a controlled status code.</li>
+    <li>Set response headers without writing custom backend code.</li>
+    <li>Close the request cleanly after the business logic finishes.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    Configure the response fields the runtime expects:
+  </p>
+  <ul class="docs-bullet-list">
+    <li><code>httpStatusCode</code> - number or string value for the HTTP status.</li>
+    <li><code>httpStatusMessage</code> - string text for the status message.</li>
+    <li><code>headerList</code> / <code>headers</code> - a document list of header name and header value pairs.</li>
+    <li><code>responseBody</code> - string or object payload returned to the caller.</li>
+  </ul>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Input</strong> - pipeline values that resolve to status, headers, and body content.</li>
+    <li><strong>Output</strong> - the HTTP response side effect; the payload is returned to the caller.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    Keep the body and headers explicit so the caller receives the exact response you expect. This step is
+    commonly paired with Data Transformer and Workflow End.
+  </p>
+</section>

@@ -1,0 +1,37 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Pipeline Logger</h1>
+  <p>
+    Pipeline Logger captures the full pipeline snapshot at runtime. It is the fastest way to see what data
+    existed in the workflow when a step ran.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    The connector reads the current pipeline state and returns it as a pretty-printed JSON string. It does not
+    depend on an external connection.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Inspect input and output shapes after a run.</li>
+    <li>Debug mapping issues without adding custom code.</li>
+    <li>Help support teams understand what happened during execution.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    There is no external configuration. The connector is already set to log the current pipeline snapshot.
+  </p>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Input</strong> - the implicit pipeline snapshot.</li>
+    <li><strong>Output</strong> - a formatted JSON string of the pipeline state.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    Use this step when you need to see the full message structure, but avoid logging sensitive data unless
+    the environment is safe for it.
+  </p>
+</section>

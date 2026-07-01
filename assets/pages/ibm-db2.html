@@ -1,0 +1,44 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>IBMDB2</h1>
+  <p>
+    IBMDB2 is the reusable Db2 connection profile used by workflow SQL steps and the SQL Console. It keeps the
+    enterprise database settings in one project-scoped profile.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    The runtime uses this enabled profile when a query step or console action needs Db2 access. The connector
+    is designed to be shared across many assets.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Centralize Db2 credentials and schema information.</li>
+    <li>Reuse the same connector in workflows and the SQL Console.</li>
+    <li>Keep enterprise database access easier to audit and control.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>Provide the Db2 fields the runtime expects:</p>
+  <ul class="docs-bullet-list">
+    <li><code>host</code> - string server host.</li>
+    <li><code>port</code> - number, usually <code>50000</code>.</li>
+    <li><code>databaseName</code> - string database name.</li>
+    <li><code>username</code> - string login name.</li>
+    <li><code>password</code> - string password.</li>
+    <li><code>schema</code> - string schema.</li>
+  </ul>
+
+  <h2>Workflow and SQL Console usage</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Query input</strong> - <code>queryString</code> as a single SQL statement string.</li>
+    <li><strong>Returned rows</strong> - <code>dbResponse</code> as a serialized JSON string containing the result rows or update summary.</li>
+    <li><strong>Row count</strong> - <code>resultCount</code> as a string value containing the row count.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    The Db2 runtime handles enterprise data carefully, including large values and binary content. The SQL
+    execution still allows only one statement at a time.
+  </p>
+</section>

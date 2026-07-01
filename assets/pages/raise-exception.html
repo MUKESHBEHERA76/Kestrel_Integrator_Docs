@@ -1,0 +1,37 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Raise Exception</h1>
+  <p>
+    Raise Exception stops the workflow on purpose and throws a controlled runtime error. It is the connector
+    you use when the current payload should not continue.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    The connector reads an error message from the pipeline and raises an exception with that text. It does not
+    transform the payload or call an external system.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Block invalid data before it reaches downstream systems.</li>
+    <li>Make business validation rules visible in the flow.</li>
+    <li>Force a failure branch when the workflow needs to stop immediately.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    Set the <code>errorMessage</code> field to a clear string that explains why the workflow stopped.
+  </p>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Input</strong> - <code>errorMessage</code> as a string.</li>
+    <li><strong>Output</strong> - none; the step raises an exception and fails the run.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    This step should be used intentionally. The monitor view will show the message you provide, so keep it
+    descriptive and actionable.
+  </p>
+</section>

@@ -1,0 +1,44 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>MariaDB</h1>
+  <p>
+    MariaDB is the reusable MariaDB connection profile used by workflow SQL steps and the SQL Console. It keeps
+    the project connection details in one place so the runtime can reuse them safely.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    The saved profile represents a project-scoped MariaDB data source. The runtime only needs the enabled
+    profile to execute a query.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Reuse one MariaDB profile across many workflows.</li>
+    <li>Keep SQL Console usage aligned with the same connection details.</li>
+    <li>Limit credential changes to one connector instead of many steps.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>Provide the MariaDB fields the runtime expects:</p>
+  <ul class="docs-bullet-list">
+    <li><code>host</code> - string server host.</li>
+    <li><code>port</code> - number, usually <code>3306</code>.</li>
+    <li><code>databaseName</code> - string database name.</li>
+    <li><code>username</code> - string login name.</li>
+    <li><code>password</code> - string password.</li>
+    <li><code>schema</code> - string schema, usually <code>public</code>.</li>
+  </ul>
+
+  <h2>Workflow and SQL Console usage</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Query input</strong> - <code>queryString</code> as a single SQL statement string.</li>
+    <li><strong>Returned rows</strong> - <code>dbResponse</code> as a serialized JSON string containing the result rows or update details.</li>
+    <li><strong>Row count</strong> - <code>resultCount</code> as a string value containing the row count.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    The runtime only allows one statement at a time. Keep the connector enabled if you want it to appear in
+    runtime selection lists and in the SQL Console.
+  </p>
+</section>

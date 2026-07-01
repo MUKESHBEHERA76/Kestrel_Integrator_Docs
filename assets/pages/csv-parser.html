@@ -1,0 +1,46 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>CSV Parser</h1>
+  <p>
+    CSV Parser turns delimited text into structured rows, or builds CSV text from structured data, inside the
+    workflow runtime.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    This connector does not require a database or external service. It reads a text payload or a document list
+    and converts it into the format the next step needs.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Ingest file content into row-level data.</li>
+    <li>Prepare data for validation or transformation.</li>
+    <li>Build CSV output for file export or downstream systems.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    Choose the mode and provide the matching fields:
+  </p>
+  <ul class="docs-bullet-list">
+    <li><code>mode</code> - parse or build.</li>
+    <li><code>csvContent</code> - string input used in parse mode.</li>
+    <li><code>docList</code> - document list input used in build mode.</li>
+    <li><code>columnDelimiter</code>, <code>rowDelimiter</code>, <code>quoteChar</code>, <code>quoteAll</code> - formatting options.</li>
+    <li><code>fields</code> - array of field definitions used by the parser or builder.</li>
+  </ul>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Parse mode input</strong> - <code>csvContent</code> as a string.</li>
+    <li><strong>Parse mode output</strong> - <code>CsvList</code> as an array of row documents.</li>
+    <li><strong>Build mode input</strong> - <code>docList</code> as a document list or array.</li>
+    <li><strong>Build mode output</strong> - <code>csvString</code> as a string, with <code>outCSV</code> as a fallback path.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    Match the delimiters and quote settings to the source file. If the data has headers, keep the field list
+    aligned with the source column names so the resulting rows stay predictable.
+  </p>
+</section>

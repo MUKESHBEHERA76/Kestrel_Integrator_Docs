@@ -20,6 +20,24 @@ const PAGE_FILES = {
   dataStructure: './assets/pages/data-structure.html',
   xsltAlias: './assets/pages/xslt-alias.html',
   scheduler: './assets/pages/scheduler.html',
+  logger: './assets/pages/logger.html',
+  dataTransformer: './assets/pages/data-transformer.html',
+  sendHttpResponse: './assets/pages/send-http-response.html',
+  workflowEnd: './assets/pages/workflow-end.html',
+  csvParser: './assets/pages/csv-parser.html',
+  pipelineLogger: './assets/pages/pipeline-logger.html',
+  xsltTransformer: './assets/pages/xslt-transformer.html',
+  sleep: './assets/pages/sleep.html',
+  raiseException: './assets/pages/raise-exception.html',
+  multiTransformation: './assets/pages/multi-transformation.html',
+  pgp: './assets/pages/pgp.html',
+  snowflake: './assets/pages/snowflake.html',
+  postgres: './assets/pages/postgres.html',
+  mssql: './assets/pages/mssql.html',
+  mysql: './assets/pages/mysql.html',
+  mariadb: './assets/pages/mariadb.html',
+  oracleDb: './assets/pages/oracle-db.html',
+  ibmDb2: './assets/pages/ibm-db2.html',
   console: './assets/pages/console.html',
   utilities: './assets/pages/utilities.html',
   reference: './assets/pages/reference.html'
@@ -34,6 +52,27 @@ const PROJECT_TABS = new Set([
   'scheduler'
 ]);
 
+const WORKFLOW_CONNECTOR_TABS = new Set([
+  'logger',
+  'dataTransformer',
+  'sendHttpResponse',
+  'workflowEnd',
+  'csvParser',
+  'pipelineLogger',
+  'xsltTransformer',
+  'sleep',
+  'raiseException',
+  'multiTransformation',
+  'pgp',
+  'snowflake',
+  'postgres',
+  'mssql',
+  'mysql',
+  'mariadb',
+  'oracleDb',
+  'ibmDb2'
+]);
+
 const ROUTE_DEFAULT = 'overview';
 const ROUTE_TABS = new Set(Object.keys(PAGE_FILES));
 
@@ -46,11 +85,26 @@ const PROJECT_MENU_TREE = [
       {
         key: 'workflow-connectors',
         title: 'Connectors',
-        tab: 'connectors',
+        tab: 'workflow',
         children: [
-          { title: 'Connector catalog', tab: 'connectors', anchor: 'connection-catalog' },
-          { title: 'Enabled state', tab: 'connectors', anchor: 'connection-state' },
-          { title: 'Reuse everywhere', tab: 'connectors', anchor: 'connection-reuse' }
+          { title: 'Logger', tab: 'logger' },
+          { title: 'Data Transformer', tab: 'dataTransformer' },
+          { title: 'Send HttpResponse', tab: 'sendHttpResponse' },
+          { title: 'Workflow End', tab: 'workflowEnd' },
+          { title: 'CSV Parser', tab: 'csvParser' },
+          { title: 'Pipeline Logger', tab: 'pipelineLogger' },
+          { title: 'XSLT Transformer', tab: 'xsltTransformer' },
+          { title: 'Sleep', tab: 'sleep' },
+          { title: 'Raise Exception', tab: 'raiseException' },
+          { title: 'Multi Transformation', tab: 'multiTransformation' },
+          { title: 'PGP', tab: 'pgp' },
+          { title: 'Snowflake', tab: 'snowflake' },
+          { title: 'Postgres', tab: 'postgres' },
+          { title: 'MSSQL', tab: 'mssql' },
+          { title: 'MySql', tab: 'mysql' },
+          { title: 'MariaDB', tab: 'mariadb' },
+          { title: 'OracleDB', tab: 'oracleDb' },
+          { title: 'IBMDB2', tab: 'ibmDb2' }
         ]
       },
       { title: 'Workflow Trigger', tab: 'workflowTrigger', anchor: 'workflow-trigger-overview' },
@@ -133,6 +187,16 @@ function syncMenuState() {
   }
 }
 
+function getRailTab(tabId) {
+  if (PROJECT_TABS.has(tabId)) {
+    return 'projects';
+  }
+  if (WORKFLOW_CONNECTOR_TABS.has(tabId) || tabId === 'workflow') {
+    return 'workflow';
+  }
+  return tabId;
+}
+
 function parseRouteFromHash() {
   const raw = window.location.hash.replace(/^#\/?/, '');
   if (!raw) {
@@ -157,7 +221,7 @@ function setRoute(tabId, anchor = '') {
 }
 
 function updateRailActiveState(tabId) {
-  const effectiveTab = PROJECT_TABS.has(tabId) ? 'projects' : tabId;
+  const effectiveTab = getRailTab(tabId);
   document.querySelectorAll('.docs-rail-button').forEach((item) => {
     item.classList.toggle('active', item.getAttribute('data-tab') === effectiveTab);
   });

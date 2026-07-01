@@ -1,0 +1,36 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Sleep</h1>
+  <p>
+    Sleep pauses workflow execution for a configured duration. It is a simple timing connector that blocks the
+    flow for a short, controlled period.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    The connector waits for the number of seconds you provide, then lets the workflow continue. It does not
+    call any external system and it does not produce a payload.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Wait before a retry or polling cycle.</li>
+    <li>Space out request bursts in a flow.</li>
+    <li>Test delayed execution behavior in a controlled way.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    Set the <code>sleepTime</code> field as a non-negative number of seconds.
+  </p>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Input</strong> - <code>sleepTime</code> as a number.</li>
+    <li><strong>Output</strong> - none; the step only delays the flow.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    Keep the delay short and intentional so the workflow remains responsive and easy to reason about.
+  </p>
+</section>

@@ -300,6 +300,9 @@ a {
   margin: 4px 0 0 4px;
   padding: 4px 0 0 10px;
   border-left: 1px solid rgba(191, 208, 234, 0.75);
+  max-height: calc(100vh - var(--kb-topbar-h) - 210px);
+  overflow: auto;
+  scrollbar-gutter: stable;
 }
 
 .docs-context-menu:empty {

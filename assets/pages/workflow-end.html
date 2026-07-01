@@ -1,0 +1,38 @@
+<section class="docs-prose-page">
+  <h1 data-page-title>Workflow End</h1>
+  <p>
+    Workflow End marks the terminal point of a flow. It does not transform data; it simply makes the execution
+    path explicit and tells readers where the workflow stops.
+  </p>
+
+  <h2>What it is</h2>
+  <p>
+    This connector is a terminal step. In the Kestrel runtime it is used when the flow has finished all required
+    processing and no further mapping is needed.
+  </p>
+
+  <h2>Why it is useful</h2>
+  <ul class="docs-bullet-list">
+    <li>Show where a workflow intentionally ends.</li>
+    <li>Keep the flow diagram easy to read for developers and reviewers.</li>
+    <li>Separate the main business logic from the final stop point.</li>
+  </ul>
+
+  <h2>When you double-click it</h2>
+  <p>
+    There are no runtime fields to configure. The step is a marker, so the user only needs to place it where
+    the workflow should stop.
+  </p>
+
+  <h2>Workflow input and output</h2>
+  <ul class="docs-bullet-list">
+    <li><strong>Input</strong> - the current pipeline state at the end of the flow.</li>
+    <li><strong>Output</strong> - no new payload; the workflow completes here.</li>
+  </ul>
+
+  <h2>Runtime notes</h2>
+  <p>
+    If you need to preserve or return data, do that before this step. Workflow End should remain the last stop
+    in the diagram.
+  </p>
+</section>
