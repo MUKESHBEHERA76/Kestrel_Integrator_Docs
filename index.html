@@ -3,70 +3,263 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kestrel Integrator Docs</title>
+    <meta name="theme-color" content="#ffffff" />
+    <title>Introduction | Kestrel Integrator Docs</title>
     <meta
       name="description"
-      content="Static documentation for Kestrel Integrator covering projects, workflows, services, consoles, connectors, and utilities."
+      content="Static documentation for Kestrel Integrator and its durable execution architecture."
     />
     <link rel="icon" type="image/png" href="./assets/images/kestrel-logo.png" />
     <link rel="apple-touch-icon" href="./assets/images/kestrel-logo.png" />
-    <link rel="stylesheet" href="./assets/css/tailwind.css" />
     <link rel="stylesheet" href="./assets/css/styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#pageView">Skip to documentation</a>
+
     <div class="docs-app" id="app">
-      <header class="docs-topbar">
-        <button id="menuToggle" class="docs-menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="true">
+      <header class="mobile-header">
+        <a class="brand brand-mobile" href="#/introduction" aria-label="Kestrel Integrator documentation home">
+          <img src="./assets/images/kestrel-logo.png" alt="" />
+          <span>Kestrel Docs</span>
+        </a>
+        <button
+          class="menu-toggle"
+          id="menuToggle"
+          type="button"
+          aria-label="Open documentation menu"
+          aria-controls="docsSidebar"
+          aria-expanded="false"
+        >
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
         </button>
-        <div class="docs-brand">
-          <img class="docs-brand-logo" src="./assets/images/kestrel-logo.png" alt="Kestrel Integrator logo" />
-          <div class="docs-brand-copy">
-            <strong>Kestrel Integrator</strong>
-            <span>Knowledge base</span>
-          </div>
-        </div>
-
-        <div class="docs-searchbar">
-          <div class="docs-search-field">
-            <span class="docs-search-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"></circle>
-                <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
-              </svg>
-            </span>
-            <input id="searchInput" type="search" placeholder="Search utilities, tabs, params, or concepts" />
-          </div>
-          <button id="searchButton" class="docs-button docs-button-primary" type="button">Search</button>
-        </div>
       </header>
 
-      <main class="docs-shell">
-        <aside class="docs-rail">
-        <div class="docs-nav-group">
-            <h2>Getting Started</h2>
-            <button class="docs-rail-button active" data-tab="overview" type="button">
-              <span class="docs-icon" data-icon="home"></span>
-              <span class="docs-rail-label">Introduction</span>
-            </button>
-            <div class="docs-projects-toggle-row">
-              <button class="docs-rail-button docs-projects-summary" data-tab="projects" type="button">
-                <span class="docs-icon" data-icon="projects"></span>
-                <span class="docs-rail-label">Projects</span>
-              </button>
-              <button class="docs-projects-toggle" id="projectsToggle" type="button" aria-label="Toggle projects menu" aria-expanded="false">
-                <span class="docs-projects-caret" data-icon="chevron"></span>
+      <button class="sidebar-overlay" id="sidebarOverlay" type="button" aria-label="Close documentation menu"></button>
+
+      <aside class="docs-sidebar" id="docsSidebar" aria-label="Documentation navigation">
+        <div class="sidebar-head">
+          <a class="brand" href="#/introduction" aria-label="Kestrel Integrator documentation home">
+            <img src="./assets/images/kestrel-logo.png" alt="" />
+            <span>
+              <strong>Kestrel Integrator</strong>
+              <small>Documentation</small>
+            </span>
+          </a>
+          <button class="sidebar-close" id="sidebarClose" type="button" aria-label="Close documentation menu">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <label class="docs-nav-search" for="documentationMenuSearch">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8" />
+            <path d="m15.5 15.5 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <input id="documentationMenuSearch" type="search" placeholder="Filter documentation" autocomplete="off" />
+        </label>
+
+        <nav class="docs-nav" aria-label="Main documentation">
+          <p class="nav-label">Documentation</p>
+          <a class="nav-link" href="#/introduction" data-route="introduction">
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4.5 5.5A2.5 2.5 0 0 1 7 3h12.5v16H7A2.5 2.5 0 0 0 4.5 21.5v-16Z" stroke="currentColor" stroke-width="1.7" />
+                <path d="M8 7h7M8 11h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span>
+              <strong>Introduction</strong>
+              <small>Platform overview</small>
+            </span>
+          </a>
+          <div class="nav-branch collapsed" id="projectNavBranch">
+            <div class="nav-branch-row">
+              <a class="nav-link" href="#/project" data-route="project">
+                <span class="nav-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M3.5 7.5h6l1.6 2H20.5v9A2.5 2.5 0 0 1 18 21H6a2.5 2.5 0 0 1-2.5-2.5v-11Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                    <path d="M3.5 9.5v-4A2.5 2.5 0 0 1 6 3h4l1.5 2h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <span>
+                  <strong>Project</strong>
+                  <small>Project resources</small>
+                </span>
+              </a>
+              <button
+                class="nav-branch-toggle"
+                id="projectMenuToggle"
+                type="button"
+                aria-label="Expand Project menu"
+                aria-controls="projectSubmenu"
+                aria-expanded="false"
+              >
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="m6.5 8 3.5 3.5L13.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
               </button>
             </div>
-            <div class="docs-context-menu" id="contextMenu" aria-label="Current page sections"></div>
+            <div class="nav-children" id="projectSubmenu">
+              <a class="nav-child-link" href="#/workflow" data-route="workflow">
+                <span class="nav-child-marker" aria-hidden="true"></span>
+                <span><strong>Workflow</strong><small>Design and execution</small></span>
+              </a>
+              <div class="nav-branch nested collapsed" id="reusableServiceNavBranch">
+                <div class="nav-branch-row">
+                  <a class="nav-child-link" href="#/reusable-service" data-route="reusable-service">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>Reusable Service</strong><small>Shared project logic</small></span>
+                  </a>
+                  <button
+                    class="nav-branch-toggle"
+                    id="reusableServiceMenuToggle"
+                    type="button"
+                    aria-label="Expand Reusable Service menu"
+                    aria-controls="reusableServiceSubmenu"
+                    aria-expanded="false"
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="m6.5 8 3.5 3.5L13.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="nav-children" id="reusableServiceSubmenu">
+                  <a class="nav-child-link" href="#/map-pipeline" data-route="map-pipeline">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>Map Pipeline</strong><small>Map and reshape values</small></span>
+                  </a>
+                  <a class="nav-child-link" href="#/if-else" data-route="if-else">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>IF-ELSE</strong><small>Conditional branches</small></span>
+                  </a>
+                  <a class="nav-child-link" href="#/switch-case" data-route="switch-case">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>Switch Case</strong><small>Value-based routing</small></span>
+                  </a>
+                  <a class="nav-child-link" href="#/loop" data-route="loop">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>Loop</strong><small>Iterate list values</small></span>
+                  </a>
+                  <a class="nav-child-link" href="#/exit" data-route="exit">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>Exit</strong><small>Stop flow or loop</small></span>
+                  </a>
+                  <a class="nav-child-link" href="#/error-handling" data-route="error-handling">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>Error Handling</strong><small>TRY, CATCH, and FINALLY</small></span>
+                  </a>
+                </div>
+              </div>
+              <div class="nav-branch nested collapsed" id="utilsNavBranch">
+                <div class="nav-branch-row">
+                  <a class="nav-child-link" href="#/utils" data-route="utils">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>Utils</strong><small>Built-in operations</small></span>
+                  </a>
+                  <button
+                    class="nav-branch-toggle"
+                    id="utilsMenuToggle"
+                    type="button"
+                    aria-label="Expand Utils menu"
+                    aria-controls="utilsSubmenu"
+                    aria-expanded="false"
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="m6.5 8 3.5 3.5L13.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="nav-children utility-nav-children" id="utilsSubmenu"></div>
+              </div>
+              <a class="nav-child-link" href="#/kvs" data-route="kvs">
+                <span class="nav-child-marker" aria-hidden="true"></span>
+                <span><strong>KVS</strong><small>Keys, values, and secrets</small></span>
+              </a>
+            </div>
           </div>
-        </aside>
+          <a class="nav-link" href="#/pipeline-sub" data-route="pipeline-sub">
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8 7.5h8M8 16.5h8M10 4l-2 16M16 4l-2 16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span>
+              <strong>Pipeline Sub</strong>
+              <small>Substitution syntax</small>
+            </span>
+          </a>
+          <a class="nav-link" href="#/execution" data-route="execution">
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8 4.5 18.5 12 8 19.5v-15Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.4" opacity=".45" />
+              </svg>
+            </span>
+            <span>
+              <strong>Execution</strong>
+              <small>Runtime architecture</small>
+            </span>
+          </a>
+          <div class="nav-branch collapsed" id="connectorNavBranch">
+            <div class="nav-branch-row">
+              <a class="nav-link" href="#/connector" data-route="connector">
+                <span class="nav-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M8.5 8.5 5 12l3.5 3.5M15.5 8.5 19 12l-3.5 3.5M13.5 5l-3 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <span>
+                  <strong>Connector</strong>
+                  <small>Workflow integrations</small>
+                </span>
+              </a>
+              <button
+                class="nav-branch-toggle"
+                id="connectorMenuToggle"
+                type="button"
+                aria-label="Expand Connector menu"
+                aria-controls="connectorSubmenu"
+                aria-expanded="false"
+              >
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="m6.5 8 3.5 3.5L13.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            </div>
+            <div class="nav-children" id="connectorSubmenu">
+              <a class="nav-child-link" href="#/http-request" data-route="http-request">
+                <span class="nav-child-marker" aria-hidden="true"></span>
+                <span><strong>HTTP Request</strong><small>REST, GraphQL, and SOAP</small></span>
+              </a>
+            </div>
+          </div>
+        </nav>
 
-        <section class="docs-content">
-          <article class="docs-page" id="pageView"></article>
-        </section>
+        <div class="sidebar-footer">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>
+            <strong>Static documentation</strong>
+            <small>No application login required</small>
+          </span>
+        </div>
+      </aside>
+
+      <main class="docs-main">
+        <header class="content-header">
+          <div>
+            <p class="eyebrow">Kestrel Integrator Docs</p>
+            <p class="breadcrumb"><span>Documentation</span><span aria-hidden="true">/</span><strong id="currentPageLabel">Introduction</strong></p>
+          </div>
+          <a class="header-home-link" href="#/introduction">Home</a>
+        </header>
+
+        <article class="docs-page" id="pageView" tabindex="-1" aria-live="polite" aria-busy="true">
+          <div class="page-loading" role="status">Loading documentation…</div>
+        </article>
       </main>
     </div>
 

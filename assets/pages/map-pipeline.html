@@ -1,0 +1,209 @@
+<section class="doc-hero" id="map-pipeline">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Reusable Service / Map Pipeline</p>
+    <h1>Shape the service pipeline without writing code.</h1>
+    <p class="lead">
+      MAP Pipeline copies values to new paths, builds output documents, assigns constants, maps complete lists or selected items,
+      creates runtime variables, and removes data that later steps should not receive.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Map Pipeline page sections">
+  <div><p class="eyebrow">On this page</p><strong>Using MAP Pipeline in a reusable service</strong></div>
+  <div class="toc-links">
+    <a href="#/map-pipeline/purpose">Purpose</a>
+    <a href="#/map-pipeline/add-step">Add the step</a>
+    <a href="#/map-pipeline/operations">Operations</a>
+    <a href="#/map-pipeline/example">Real example</a>
+    <a href="#/map-pipeline/lists">Lists</a>
+    <a href="#/map-pipeline/hardcode">Hardcode</a>
+    <a href="#/map-pipeline/runtime-variable">Runtime variables</a>
+    <a href="#/map-pipeline/practices">Good practices</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="purpose">
+  <header class="section-heading">
+    <p class="eyebrow">What MAP Pipeline does</p>
+    <h2>Control the data shape between service steps</h2>
+    <p>MAP Pipeline is a flow step for data movement. It does not call an external system and does not start a service.</p>
+  </header>
+  <p>Use it when the current pipeline does not have the exact names or structure required by the next utility, project service, or final service output.</p>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Use MAP Pipeline for</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Rename a value by mapping it to another path</td><td><code>${pipeline.input.id}</code> → <code>${pipeline.output.customerId}</code></td></tr>
+        <tr><td>Build a new document from several source fields</td><td>Map name, email, and phone into an output customer document.</td></tr>
+        <tr><td>Pass a complete list or one selected item</td><td>Map all order lines, or only <code>lines[0]</code>.</td></tr>
+        <tr><td>Assign a fixed or substituted value</td><td>Set source to <code>WEB_PORTAL</code> or use <code>${pipeline.input.requestId}</code>.</td></tr>
+        <tr><td>Create a value needed by later steps</td><td>Add a runtime output variable named <code>normalizedOrder</code>.</td></tr>
+        <tr><td>Remove unwanted pipeline data</td><td>Drop a large raw request after creating the smaller output document.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Mapping and transformation are different</strong><p>MAP Pipeline moves and structures values. For calculations, formatting, parsing, concatenation, JSON/XML conversion, or date logic, add the appropriate utility before or after the MAP step and map its inputs and outputs.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="add-step">
+  <header class="section-heading">
+    <p class="eyebrow">Add a MAP step</p>
+    <h2>Open it from the reusable service Flow tab</h2>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open the reusable service</strong><p>Define Service I/O first so the required input and output fields are available in the mapper.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select Flow</strong><p>Find <strong>Map pipeline</strong> in the left step library.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add the step</strong><p>Click it or drag it into the required position in the flow tree.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Select Map pipeline</strong><p>The Pipeline panel displays the variables available before the step and the fields that can receive values.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Create mappings</strong><p>Drag a source field from Pipeline In and drop it onto a compatible field in Pipeline Out.</p></div></li>
+  </ol>
+  <p>Every saved mapping is shown as a line. Select a mapping line to delete it. Indexed mappings can be double-clicked to edit their list-index settings.</p>
+</section>
+
+<section class="doc-section" id="operations">
+  <header class="section-heading">
+    <p class="eyebrow">Mapper operations</p>
+    <h2>What developers can do in the panel</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Action</th><th>How to use it</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Copy mapping</strong></td><td>Drag a Pipeline In field onto a Pipeline Out field.</td><td>The runtime copies the source value into the target path.</td></tr>
+        <tr><td><strong>Hardcode</strong></td><td>Double-click a target field and enter its fixed value.</td><td>The target receives the saved String, Boolean, list, document, or JSON-compatible value.</td></tr>
+        <tr><td><strong>Runtime variable</strong></td><td>Click Runtime variable and define its name, type, and optional nested structure.</td><td>A new <code>${pipeline.output...}</code> target becomes available.</td></tr>
+        <tr><td><strong>List mapping</strong></td><td>Drag a list field or a field under a list onto a compatible target.</td><td>The Index Mapping window asks whether to map the whole list or specific source/target indexes.</td></tr>
+        <tr><td><strong>Drop</strong></td><td>Select a pipeline variable and click Drop.</td><td>The selected path is unavailable to downstream service steps.</td></tr>
+        <tr><td><strong>Undrop</strong></td><td>Select a dropped variable and click Undrop.</td><td>The path is restored for downstream use.</td></tr>
+        <tr><td><strong>Copy syntax</strong></td><td>Select a variable and click Copy.</td><td>The normalized <code>${pipeline...}</code> expression is copied to the clipboard.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc-section" id="example">
+  <header class="section-heading">
+    <p class="eyebrow">Real use case</p>
+    <h2>Normalize a webhook order for shared processing</h2>
+    <p>A workflow receives a provider-specific order and calls a reusable service named <code>normalizeOrder</code>. The service must return one stable document used by billing and fulfillment.</p>
+  </header>
+  <h3>Service input</h3>
+  <pre class="code-contract" aria-label="Order normalization service input"><code>{
+  "requestId": "REQ-9001",
+  "rawOrder": {
+    "id": "ORD-1042",
+    "customer": {
+      "email": "developer@example.com"
+    },
+    "items": [
+      { "sku": "KB-10", "quantity": 2 },
+      { "sku": "MS-20", "quantity": 1 }
+    ]
+  }
+}</code></pre>
+
+  <h3>MAP Pipeline mappings</h3>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Pipeline In</th><th>Pipeline Out</th><th>Operation</th></tr></thead>
+      <tbody>
+        <tr><td><code>${pipeline.input.rawOrder.id}</code></td><td><code>${pipeline.output.normalizedOrder.orderId}</code></td><td>Copy the provider order ID into the stable field name.</td></tr>
+        <tr><td><code>${pipeline.input.rawOrder.customer.email}</code></td><td><code>${pipeline.output.normalizedOrder.customerEmail}</code></td><td>Flatten the nested customer email.</td></tr>
+        <tr><td><code>${pipeline.input.rawOrder.items}</code></td><td><code>${pipeline.output.normalizedOrder.lines}</code></td><td>Choose <strong>Map whole list</strong> in Index Mapping.</td></tr>
+        <tr><td><code>${pipeline.input.requestId}</code></td><td><code>${pipeline.output.normalizedOrder.correlationId}</code></td><td>Retain the caller's correlation value.</td></tr>
+        <tr><td>Hardcoded value <code>WEB_PORTAL</code></td><td><code>${pipeline.output.normalizedOrder.source}</code></td><td>Identify the source system.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Service output</h3>
+  <pre class="code-contract" aria-label="Normalized order service output"><code>{
+  "normalizedOrder": {
+    "orderId": "ORD-1042",
+    "customerEmail": "developer@example.com",
+    "lines": [
+      { "sku": "KB-10", "quantity": 2 },
+      { "sku": "MS-20", "quantity": 1 }
+    ],
+    "correlationId": "REQ-9001",
+    "source": "WEB_PORTAL"
+  }
+}</code></pre>
+  <p>After creating the normalized document, the service can Drop <code>${pipeline.input.rawOrder}</code> if later steps no longer need the provider payload.</p>
+</section>
+
+<section class="doc-section" id="lists">
+  <header class="section-heading">
+    <p class="eyebrow">String List and Document List</p>
+    <h2>Choose between the complete list and one item</h2>
+    <p>Dragging a list-related value opens the Index Mapping window.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Requirement</th><th>Configuration</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Copy every item</td><td>Enable whole-list mapping when both source and target are compatible lists.</td><td><code>items</code> → <code>lines</code></td></tr>
+        <tr><td>Read one item</td><td>Set Source index to a non-negative number.</td><td>Source index <code>0</code> reads the first item.</td></tr>
+        <tr><td>Write one target item</td><td>Set Target index to a non-negative number.</td><td>Target index <code>1</code> writes the second item.</td></tr>
+        <tr><td>Choose an index at runtime</td><td>Supply a numeric pipeline expression.</td><td><code>${pipeline.input.selectedIndex}</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Indexes are zero-based and must resolve to non-negative integers</strong><p>An index outside the source-list size causes a mapping error. Validate externally supplied indexes before using them.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="hardcode">
+  <header class="section-heading">
+    <p class="eyebrow">Hardcoded target values</p>
+    <h2>Assign constants or pipeline substitutions</h2>
+    <p>Double-click a Pipeline Out target to open its type-aware hardcode editor.</p>
+  </header>
+  <ul class="docs-bullet-list">
+    <li><strong>String</strong> — enter plain text or a substitution such as <code>${pipeline.input.requestId}</code>.</li>
+    <li><strong>String List</strong> — add one row per list item.</li>
+    <li><strong>Document</strong> — enter values for its defined child fields.</li>
+    <li><strong>Document List</strong> — add one or more document entries and populate their fields.</li>
+    <li><strong>Boolean</strong> — select true or false.</li>
+    <li><strong>Other complex lists</strong> — enter a valid JSON value.</li>
+  </ul>
+  <p>Use <a href="#/pipeline-sub"><strong>Pipeline Sub</strong></a> for complete substitution syntax and the Copy workflow.</p>
+</section>
+
+<section class="doc-section" id="runtime-variable">
+  <header class="section-heading">
+    <p class="eyebrow">Runtime variables</p>
+    <h2>Create a target that is not already in Service I/O</h2>
+    <p>Runtime variables are useful for intermediate results needed only inside the service.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Click Runtime variable</strong><p>Open the variable editor from the MAP Pipeline toolbar.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Enter a unique name and type</strong><p>Choose String, String List, Document, Document List, or another supported type.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Define structure when required</strong><p>Add child fields for Documents or select a project Data Structure reference.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Add the variable</strong><p>It appears under <code>${pipeline.output.variableName}</code> and can receive mappings or hardcoded values.</p></div></li>
+  </ol>
+  <p>Add final caller-facing values to Service I/O Output. Use runtime variables for internal intermediate data.</p>
+</section>
+
+<section class="doc-section" id="practices">
+  <header class="section-heading">
+    <p class="eyebrow">Good practices</p>
+    <h2>Keep mappings readable and maintainable</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>Define Service I/O before building mappings so final target paths remain stable.</li>
+    <li>Use one MAP step for one clear reshaping responsibility.</li>
+    <li>Prefer explicit mappings over carrying an entire raw request through every step.</li>
+    <li>Use utilities for calculations and format conversion instead of treating MAP as executable code.</li>
+    <li>Map whole lists only when source and target element structures are compatible.</li>
+    <li>Name runtime variables by business meaning, such as <code>normalizedOrder</code>, not <code>temp1</code>.</li>
+    <li>Drop large or sensitive values when downstream steps no longer require them.</li>
+    <li>Run the reusable service with empty, normal, and multi-item list inputs before publishing changes to callers.</li>
+  </ul>
+</section>

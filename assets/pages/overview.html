@@ -1,35 +1,82 @@
-<section class="docs-grid" id="page-top">
-  <div class="docs-grid">
-    <span class="docs-kicker">Static docs app</span>
-    <h1 data-page-title>Introduction</h1>
-    <div class="docs-author">
-      <div class="docs-author-avatar">
-        <img src="./assets/images/kestrel-logo.png" alt="Kestrel Integrator logo" />
-      </div>
-      <div class="docs-author-copy">
-        <strong>Kestrel Integrator Team</strong>
-        <span>Created: June 30, 2026</span>
-      </div>
-    </div>
-    <p>
-      Kestrel Integrator is built around projects, reusable connections, workflows, services, consoles, and a catalog of small runtime utilities.
-      This guide walks you through the product one step at a time.
+<section class="doc-hero" id="introduction">
+  <div class="hero-copy">
+    <p class="eyebrow">Introduction</p>
+    <h1>Build integrations that remain clear as they grow.</h1>
+    <p class="lead">
+      Kestrel Integrator brings workflow design, reusable services, durable execution, and operational visibility into one integration platform.
+      This documentation explains the platform from its core concepts through the execution runtime.
     </p>
-    <div class="docs-hero-card">
-      <strong>What this docs site covers</strong>
-      <ul>
-        <li>Projects, connections, workflows, services, and consoles</li>
-        <li>All built-in utility groups with parameters and usage notes</li>
-        <li>Search-friendly reference pages for quick lookup</li>
-      </ul>
+    <div class="doc-actions">
+      <a class="primary-action" href="#/execution">Explore execution</a>
+      <a class="secondary-action" href="#/introduction/platform-foundations">Platform foundations</a>
     </div>
   </div>
-
-  <article class="docs-quickstart" id="overview-quickstart" data-doc-anchor="overview-quickstart">
-    <h2>Quickstart</h2>
+  <aside class="hero-aside" aria-label="Documentation summary">
+    <span class="aside-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M5 4.5h11.5A2.5 2.5 0 0 1 19 7v12.5H7A2 2 0 0 1 5 17.5v-13Z" stroke="currentColor" stroke-width="1.7" />
+        <path d="M8.5 8.5h7M8.5 12h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </svg>
+    </span>
     <p>
-      Open a project, configure a connection, build a workflow or service, and then use the console or monitor pages to run and inspect your work.
+      Start here for the product model, explore project resources, then continue to the complete runtime path.
+      <strong>Focused, shareable documentation areas</strong>
     </p>
-    <button class="docs-button" type="button">Get started</button>
-  </article>
+  </aside>
+</section>
+
+<section class="doc-section" id="platform-foundations">
+  <header class="section-heading">
+    <p class="eyebrow">Platform foundations</p>
+    <h2>The major parts of Kestrel</h2>
+    <p>Each part has a clear responsibility, keeping workflow design separate from execution and operations.</p>
+  </header>
+  <div class="card-grid">
+    <article class="info-card">
+      <span class="card-number">01</span>
+      <h3>Projects</h3>
+      <p>Organize workflows, reusable services, connections, schedules, and related assets within a controlled boundary.</p>
+      <a href="#/project">Explore Project <span aria-hidden="true">→</span></a>
+    </article>
+    <article class="info-card">
+      <span class="card-number">02</span>
+      <h3>Workflows</h3>
+      <p>Define ordered integration logic through triggers, mappings, connectors, utilities, and explicit outcomes.</p>
+    </article>
+    <article class="info-card">
+      <span class="card-number">03</span>
+      <h3>Reusable services</h3>
+      <p>Package shared behavior once and invoke it from workflows without duplicating implementation logic.</p>
+    </article>
+    <article class="info-card">
+      <span class="card-number">04</span>
+      <h3>Connections</h3>
+      <p>Keep external-system configuration reusable, bounded, and separate from the workflow definition.</p>
+    </article>
+    <article class="info-card">
+      <span class="card-number">05</span>
+      <h3>Execution runtime</h3>
+      <p>Admit work durably, execute immutable workflow versions on workers, and retain authoritative final state.</p>
+    </article>
+    <article class="info-card">
+      <span class="card-number">06</span>
+      <h3>Observability</h3>
+      <p>Track runs in PostgreSQL and search masked, detailed execution events through OpenSearch.</p>
+    </article>
+  </div>
+</section>
+
+<section class="doc-section" id="how-to-read">
+  <header class="section-heading">
+    <p class="eyebrow">How to use this guide</p>
+    <h2>Move from product concepts to runtime behavior</h2>
+    <p>The menu and URL always represent the page currently visible, so browser history and shared links work naturally.</p>
+  </header>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div>
+      <strong>Continue with Project or Execution</strong>
+      <p>Learn how project resources support workflows, then see how any authorized trigger source enters the same durable execution pipeline.</p>
+    </div>
+  </div>
 </section>

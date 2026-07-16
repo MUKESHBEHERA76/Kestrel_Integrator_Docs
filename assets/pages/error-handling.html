@@ -1,0 +1,230 @@
+<section class="doc-hero" id="error-handling">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Reusable Service / Error Handling</p>
+    <h1>Recover from service errors with TRY, CATCH, and FINALLY.</h1>
+    <p class="lead">
+      Protect failure-prone steps in TRY, use the paired CATCH to inspect and handle the runtime error,
+      and reserve the FINALLY branch for cleanup that must run regardless of the outcome.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Error Handling page sections">
+  <div><p class="eyebrow">On this page</p><strong>Error handling in reusable services</strong></div>
+  <div class="toc-links">
+    <a href="#/error-handling/concept">Concept</a>
+    <a href="#/error-handling/create">Create the pair</a>
+    <a href="#/error-handling/try">TRY</a>
+    <a href="#/error-handling/catch">CATCH</a>
+    <a href="#/error-handling/error-document">errorDoc</a>
+    <a href="#/error-handling/finally">FINALLY</a>
+    <a href="#/error-handling/order">Execution order</a>
+    <a href="#/error-handling/example">Example</a>
+    <a href="#/error-handling/nesting">Nesting and EXIT</a>
+    <a href="#/error-handling/practices">Good practices</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="concept">
+  <header class="section-heading">
+    <p class="eyebrow">Error-handling model</p>
+    <h2>Keep the normal path separate from recovery and cleanup</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Part</th><th>When it runs</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td><strong>TRY</strong></td><td>During normal execution</td><td>Connector calls, utility steps, mappings, service calls, validation, and other work that can fail.</td></tr>
+        <tr><td><strong>CATCH</strong></td><td>Only when the paired TRY raises an integration runtime error</td><td>Logging, creating a safe error response, compensating work, or converting a technical failure into a business result.</td></tr>
+        <tr><td><strong>FINALLY</strong></td><td>After TRY and any CATCH handling</td><td>Cleanup that must happen after success, handled failure, or an error that continues outward.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>CATCH handles runtime failures, not ordinary business branches</strong><p>Use <a href="#/if-else">IF-ELSE</a> or <a href="#/switch-case">Switch Case</a> for expected decisions. Use TRY/CATCH for failures raised by execution.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="create">
+  <header class="section-heading">
+    <p class="eyebrow">Create a handler</p>
+    <h2>The editor creates TRY and CATCH as one pair</h2>
+    <p>Selecting either TRY or CATCH from the Flow library creates both steps with the same generated Pair name.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open the Flow tab</strong><p>In the reusable service editor, find TRY or CATCH in the Flow step library.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Add the pair</strong><p>Click or drag either item. The editor creates a TRY and its paired CATCH automatically.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Keep both at the same level</strong><p>The runtime pairs them by Pair name and parent container. Their Pair name is generated and read-only.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Add child steps</strong><p>Place normal work inside TRY and recovery work inside CATCH. Use Comments to explain the protected operation and recovery intent.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Test success and failure</strong><p>Confirm the normal route skips CATCH and a forced failure produces the expected recovery result.</p></div></li>
+  </ol>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Do not separate or delete one half of a pair</strong><p>A CATCH is selected only when its Pair name and parent level match the TRY. Keeping the generated pair intact avoids unhandled or legacy fallback behavior.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="try">
+  <header class="section-heading">
+    <p class="eyebrow">TRY branch</p>
+    <h2>Put only the protected work inside TRY</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>TRY executes its child steps in their displayed order.</li>
+    <li>When all children succeed, the paired CATCH is skipped.</li>
+    <li>When a child raises an integration runtime error, remaining TRY children are skipped and the paired CATCH begins.</li>
+    <li>Connector, utility, mapping, nested service, and exceptional EXIT failures can be handled by CATCH when they are reported as runtime errors.</li>
+    <li>Keep work that must run after both success and failure out of the normal TRY branch; place it in the FINALLY branch.</li>
+  </ul>
+  <pre class="code-contract" aria-label="TRY structure"><code>TRY  (pair: try-catch-1)
+├── Map pipeline: build request
+├── Invoke service or utility
+└── Map pipeline: build success output
+
+CATCH  (pair: try-catch-1)
+└── Map pipeline: build safe error output</code></pre>
+</section>
+
+<section class="doc-section" id="catch">
+  <header class="section-heading">
+    <p class="eyebrow">CATCH branch</p>
+    <h2>Recover, compensate, or prepare an error response</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>CATCH runs only for a failure raised from its paired TRY.</li>
+    <li>The runtime exposes a temporary <code>${pipeline.output.errorDoc}</code> while CATCH children execute.</li>
+    <li>If CATCH finishes normally, the original failure is considered handled and execution continues after the TRY/CATCH structure.</li>
+    <li>If a CATCH child fails, the new runtime error propagates to an enclosing TRY/CATCH or to the service caller.</li>
+    <li>Map any error information needed later into Service Output or another durable pipeline variable before CATCH finishes.</li>
+  </ul>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Do not return internal stack traces to API consumers</strong><p>Use the stack trace for controlled diagnostics. Build a safe public message and correlation identifier for external responses.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="error-document">
+  <header class="section-heading">
+    <p class="eyebrow">CATCH input</p>
+    <h2>Read the temporary errorDoc document</h2>
+    <p>The CATCH pipeline exposes these String fields.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Pipeline path</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>${pipeline.output.errorDoc.errorMessage}</code></td><td>The runtime failure message.</td></tr>
+        <tr><td><code>${pipeline.output.errorDoc.stepName}</code></td><td>The step associated with the failure.</td></tr>
+        <tr><td><code>${pipeline.output.errorDoc.errorStackTrace}</code></td><td>The server-side stack trace for diagnostics.</td></tr>
+        <tr><td><code>${pipeline.output.errorDoc.timestamp}</code></td><td>The UTC instant at which the error details were recorded.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="CATCH mapping example"><code>Map inside CATCH
+
+${pipeline.output.errorDoc.errorMessage}
+    -> ${pipeline.output.result.message}
+
+${pipeline.output.errorDoc.stepName}
+    -> ${pipeline.output.result.failedStep}
+
+Hardcode "FAILED"
+    -> ${pipeline.output.result.status}</code></pre>
+  <p>The runtime removes <code>errorDoc</code> when CATCH completes. See <a href="#/map-pipeline">Map Pipeline</a> and <a href="#/pipeline-sub">Pipeline Sub</a> for mapping and path syntax.</p>
+</section>
+
+<section class="doc-section" id="finally">
+  <header class="section-heading">
+    <p class="eyebrow">FINALLY branch</p>
+    <h2>Run cleanup after every TRY outcome</h2>
+  </header>
+  <p>The execution engine runs direct children of TRY whose Branch property is <code>finally</code>. Use this for cleanup, final audit logging, or resetting temporary pipeline state.</p>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Add the cleanup step under TRY</strong><p>Place the mapper, utility, logger, or other cleanup operation as a child of the TRY container.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select the cleanup child</strong><p>In the Properties panel, set its Branch value to <code>finally</code>.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Keep cleanup safe</strong><p>FINALLY runs after success, after handled failure, and while an error or normal EXIT is propagating outward.</p></div></li>
+  </ol>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>FINALLY is structural, not positional</strong><p>A standalone FINALLY row is not associated with a TRY merely because it appears nearby. The current runtime executes cleanup only when the operation is a direct child of TRY with Branch set to <code>finally</code>.</p></div>
+  </div>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>A FINALLY failure can replace the earlier outcome</strong><p>A failing cleanup operation propagates its own error. Make cleanup idempotent, null-safe, and independently testable.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="order">
+  <header class="section-heading">
+    <p class="eyebrow">Runtime order</p>
+    <h2>Understand which path runs</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>TRY result</th><th>CATCH</th><th>FINALLY</th><th>Next outcome</th></tr></thead>
+      <tbody>
+        <tr><td>Success</td><td>Skipped</td><td>Runs</td><td>Continue after the structure.</td></tr>
+        <tr><td>Failure, CATCH succeeds</td><td>Runs</td><td>Runs</td><td>Original error is handled; continue.</td></tr>
+        <tr><td>Failure, CATCH fails</td><td>Runs and raises a new error</td><td>Runs</td><td>New error propagates outward.</td></tr>
+        <tr><td>Normal Flow or Loop EXIT</td><td>Skipped</td><td>Runs</td><td>The exit continues to its target.</td></tr>
+        <tr><td>EXIT with Exception enabled</td><td>Runs</td><td>Runs</td><td>Continue if handled; otherwise propagate.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc-section" id="example">
+  <header class="section-heading">
+    <p class="eyebrow">Real use case</p>
+    <h2>Call a customer system and return a controlled result</h2>
+  </header>
+  <pre class="code-contract" aria-label="Customer lookup error handling example"><code>TRY  (pair: try-catch-2)
+├── Map pipeline: build customer request
+├── Invoke customer service
+└── Map pipeline: result.status = "SUCCESS"
+
+CATCH  (pair: try-catch-2)
+├── Logger: "Customer lookup failed"
+└── Map pipeline
+    errorDoc.errorMessage -> result.message
+    errorDoc.stepName     -> result.failedStep
+    "FAILED"             -> result.status
+
+TRY child with Branch = finally
+└── Logger: "Customer lookup attempt completed"
+
+Map Service Output: result -> response</code></pre>
+  <p>On success, CATCH is skipped. On failure, CATCH creates a stable result and the service continues. The final audit log runs on both paths.</p>
+</section>
+
+<section class="doc-section" id="nesting">
+  <header class="section-heading">
+    <p class="eyebrow">Advanced behavior</p>
+    <h2>Use nested handlers and EXIT deliberately</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>An inner TRY/CATCH can handle a local error and allow the outer flow to continue.</li>
+    <li>If an inner CATCH fails, an enclosing TRY/CATCH may handle that new error.</li>
+    <li>A normal EXIT with Exception false is control flow, so CATCH does not run; the associated FINALLY branch still runs.</li>
+    <li>EXIT with Exception true raises <code>FLOW_EXIT_EXCEPTION</code> and can be handled by CATCH.</li>
+    <li>Keep each TRY focused. Narrow scopes make the failing step and recovery intent easier to understand.</li>
+  </ul>
+  <p>See <a href="#/exit">Exit</a> for Flow exit, Loop exit, exception mode, and their exact interaction with error handling.</p>
+</section>
+
+<section class="doc-section" id="practices">
+  <header class="section-heading">
+    <p class="eyebrow">Good practices</p>
+    <h2>Make recovery predictable and observable</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>Keep the generated TRY and CATCH pair together at the same parent level.</li>
+    <li>Add Comments that explain what is protected, what is recovered, and what cleanup occurs.</li>
+    <li>Map a stable error contract in CATCH instead of exposing raw runtime details.</li>
+    <li>Copy required <code>errorDoc</code> values before CATCH finishes because the document is temporary.</li>
+    <li>Use FINALLY only for work that is safe to run after both success and failure.</li>
+    <li>Avoid logging passwords, tokens, private payloads, or full confidential request bodies.</li>
+    <li>Test TRY success, TRY failure, CATCH failure, FINALLY failure, normal EXIT, and exceptional EXIT separately.</li>
+  </ul>
+</section>

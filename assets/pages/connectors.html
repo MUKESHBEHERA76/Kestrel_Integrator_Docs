@@ -1,39 +1,43 @@
-<section class="docs-prose-page">
-  <h1 data-page-title>Connections and connectors</h1>
-  <p>
-    In Kestrel Integrator, a connection is a reusable profile that stores credentials and endpoint details.
-    A connector is the runtime step or reusable profile that uses that configuration inside a workflow, service,
-    or console action.
-  </p>
+<section class="doc-hero" id="connector">
+  <div class="hero-copy">
+    <p class="eyebrow">Connector catalog</p>
+    <h1 data-page-title>Connect workflows to external systems.</h1>
+    <p class="lead">
+      A connector is an executable workflow step with a defined pipeline contract. Map values into its inputs,
+      let the runtime perform the integration, and map its outputs into downstream steps.
+    </p>
+    <div class="doc-actions">
+      <a class="primary-action" href="#/http-request">Open HTTP Request guide</a>
+    </div>
+  </div>
+  <aside class="hero-aside" aria-label="Connector summary">
+    <span class="aside-icon" aria-hidden="true">&lt;/&gt;</span>
+    <p><strong>Design-time contract, runtime execution</strong> Connector configuration chooses the behavior; pipeline mapping supplies the live data.</p>
+  </aside>
+</section>
 
-  <h2>Reusable connection profiles</h2>
-  <ul class="docs-bullet-list">
-    <li><strong>Snowflake</strong> - project-scoped database access for Snowflake accounts.</li>
-    <li><strong>Postgres</strong> - reusable PostgreSQL profile for workflows and the SQL Console.</li>
-    <li><strong>MSSQL</strong> - SQL Server profile that can be reused across runtime steps.</li>
-    <li><strong>MySql</strong> - MySQL connection profile with project-level reuse.</li>
-    <li><strong>MariaDB</strong> - MariaDB connection profile with project-level reuse.</li>
-    <li><strong>OracleDB</strong> - Oracle profile using host, port, and service details.</li>
-    <li><strong>IBMDB2</strong> - Db2 profile for enterprise workflows and console runs.</li>
-    <li><strong>PGP</strong> - reusable security profile that stores key material and passphrase details.</li>
-  </ul>
+<section class="doc-section">
+  <header class="section-heading">
+    <p class="eyebrow">How connectors work</p>
+    <h2>Configure the step, then map its pipeline</h2>
+    <p>Connector configuration contains stable design choices. The settings icon opens the pipeline where runtime inputs and outputs are mapped.</p>
+  </header>
+  <div class="benefit-grid">
+    <article><span aria-hidden="true">01</span><strong>Add a connector</strong><p>Drag the required connector from the workflow palette onto the editor.</p></article>
+    <article><span aria-hidden="true">02</span><strong>Configure it</strong><p>Double-click the step and select the connector-specific behavior.</p></article>
+    <article><span aria-hidden="true">03</span><strong>Map inputs</strong><p>Use pipeline values, runtime variables, copied values, or deliberate hardcoded constants.</p></article>
+    <article><span aria-hidden="true">04</span><strong>Map outputs</strong><p>Expose only the response values that downstream workflow steps require.</p></article>
+  </div>
+</section>
 
-  <h2>Workflow connectors</h2>
-  <ul class="docs-bullet-list">
-    <li><strong>Logger</strong> - write runtime messages from pipeline values.</li>
-    <li><strong>Data Transformer</strong> - reshape payloads before the next step.</li>
-    <li><strong>Send HttpResponse</strong> - return the response for request-driven workflows.</li>
-    <li><strong>Workflow End</strong> - mark the terminal point of the flow.</li>
-    <li><strong>CSV Parser</strong> - parse or build CSV data.</li>
-    <li><strong>Pipeline Logger</strong> - inspect the current pipeline snapshot.</li>
-    <li><strong>XSLT Transformer</strong> - transform XML using a project alias.</li>
-    <li><strong>Sleep</strong> - pause execution for a configured time.</li>
-    <li><strong>Raise Exception</strong> - stop execution with a controlled error.</li>
-    <li><strong>Multi Transformation</strong> - group several utilities or service calls into one step.</li>
-  </ul>
-
-  <p>
-    Use the left menu to open one page at a time. Each page documents what the connector does, which fields
-    you must provide, and how the runtime inputs and outputs behave inside the current project.
-  </p>
+<section class="doc-section">
+  <header class="section-heading">
+    <p class="eyebrow">Available guide</p>
+    <h2>HTTP Request</h2>
+    <p>Call REST, GraphQL, and SOAP endpoints, including authenticated and multipart requests, from a workflow.</p>
+  </header>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">→</span>
+    <div><strong><a href="#/http-request">Read the complete HTTP Request documentation</a></strong><p>The guide covers every pipeline field, authentication, payload construction, outputs, errors, and working examples.</p></div>
+  </div>
 </section>

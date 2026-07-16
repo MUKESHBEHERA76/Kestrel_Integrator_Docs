@@ -1,0 +1,402 @@
+<section class="doc-hero" id="execution">
+  <div class="hero-copy">
+    <p class="eyebrow">Execution architecture</p>
+    <h1>How a Kestrel project becomes a running integration.</h1>
+    <p class="lead">
+      Designs are stored and versioned in PostgreSQL, compiled into immutable plans, admitted durably through RabbitMQ,
+      and executed by independent workers. This guide follows the complete path from saving an artifact to searching its logs.
+    </p>
+    <div class="doc-actions">
+      <a class="primary-action" href="#/execution/runtime-architecture">View the architecture</a>
+      <a class="secondary-action" href="#/execution/run-lifecycle">Follow a workflow run</a>
+    </div>
+  </div>
+  <aside class="hero-aside" aria-label="Execution architecture summary">
+    <span class="aside-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="m9 6 8 6-8 6V6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.4" opacity=".55" />
+      </svg>
+    </span>
+    <p>
+      API nodes admit work. Worker nodes execute it. PostgreSQL preserves the truth before, during, and after every run.
+      <strong>Durable, versioned, horizontally scalable</strong>
+    </p>
+  </aside>
+</section>
+
+<nav class="page-toc" aria-label="Execution page sections">
+  <div>
+    <p class="eyebrow">On this page</p>
+    <strong>Understand the runtime from end to end</strong>
+  </div>
+  <div class="toc-links">
+    <a href="#/execution/runtime-architecture">Architecture</a>
+    <a href="#/execution/storage-model">Storage</a>
+    <a href="#/execution/artifact-lifecycle">Artifact lifecycle</a>
+    <a href="#/execution/run-lifecycle">Runtime flow</a>
+    <a href="#/execution/reliability">Reliability</a>
+    <a href="#/execution/observability">Logs</a>
+    <a href="#/execution/scaling">Scaling</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="runtime-architecture">
+  <header class="section-heading">
+    <p class="eyebrow">Runtime architecture</p>
+    <h2>The complete production path</h2>
+    <p>
+      Clients enter through control-plane API nodes. Durable commands cross RabbitMQ to execution workers, while detailed masked logs
+      take a separate asynchronous path through observability workers to OpenSearch.
+    </p>
+  </header>
+  <figure class="architecture-figure">
+    <img
+      src="./assets/images/kestrel-runtime-architecture-v2.png"
+      alt="Kestrel runtime architecture. Extensible trigger sources including UI and manual actions, HTTP APIs and webhooks, schedules, events and PubSub queues, and file adapters enter the Control Plane API. PostgreSQL stores artifacts, versions, runs, outbox commands, and final state. RabbitMQ delivers durable commands to horizontally scalable execution workers. Workers call external connectors and optionally use Redis for leases, heartbeats, and cancellation. Logs travel through RabbitMQ logging and observability workers into OpenSearch."
+      width="1774"
+      height="887"
+      loading="eager"
+      decoding="async"
+    />
+    <figcaption>
+      PostgreSQL is the source of truth. RabbitMQ transports work and logs. Redis coordinates short-lived cluster state.
+      OpenSearch provides detailed log search. Only execution workers run production workflows.
+    </figcaption>
+  </figure>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div>
+      <strong>No silent production fallback</strong>
+      <p>If RabbitMQ cannot provide durable admission, a production API returns <code>503 Service Unavailable</code>. It does not execute the workflow locally.</p>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section" id="storage-model">
+  <header class="section-heading">
+    <p class="eyebrow">Storage model</p>
+    <h2>What is stored where—and why</h2>
+    <p>Each platform service has a deliberately limited responsibility. This prevents caches and coordination services from becoming accidental sources of truth.</p>
+  </header>
+  <div class="storage-grid">
+    <article class="storage-card authoritative">
+      <div class="storage-card-head">
+        <span class="system-badge postgres">PG</span>
+        <span><strong>PostgreSQL</strong><small>Durable source of truth</small></span>
+      </div>
+      <ul>
+        <li>Projects, workflows, reusable services, and connector definitions</li>
+        <li>Explicit artifact versions and enabled state</li>
+        <li>Execution identity, lifecycle, ownership, and final result</li>
+        <li>Execution and integration-change outbox records</li>
+        <li>Failure summaries, audit data, retention, and archives</li>
+      </ul>
+    </article>
+    <article class="storage-card">
+      <div class="storage-card-head">
+        <span class="system-badge memory">JVM</span>
+        <span><strong>Compiled-plan registry</strong><small>Disposable node-local cache</small></span>
+      </div>
+      <ul>
+        <li>Immutable compiled workflow and reusable-service plans</li>
+        <li>Indexed by artifact, project/name, type, and explicit version</li>
+        <li>Recent versions retained while active runs reference them</li>
+        <li>Rebuilt from PostgreSQL after restart or reconciliation</li>
+      </ul>
+    </article>
+    <article class="storage-card">
+      <div class="storage-card-head">
+        <span class="system-badge rabbit">MQ</span>
+        <span><strong>RabbitMQ</strong><small>Durable transport</small></span>
+      </div>
+      <ul>
+        <li>Versioned persistent execution commands</li>
+        <li>Integration-change fanout events</li>
+        <li>Masked asynchronous log envelopes</li>
+        <li>Bounded infrastructure retries and dead letters</li>
+      </ul>
+    </article>
+    <article class="storage-card">
+      <div class="storage-card-head">
+        <span class="system-badge redis">R</span>
+        <span><strong>Redis</strong><small>Optional clustered coordination</small></span>
+      </div>
+      <ul>
+        <li>Worker presence, leases, heartbeats, and progress</li>
+        <li>Cancellation requests and enabled-version coordination</li>
+        <li>Short-lived result notifications</li>
+        <li>Never full plans, secrets, or final execution results</li>
+      </ul>
+    </article>
+    <article class="storage-card">
+      <div class="storage-card-head">
+        <span class="system-badge search">OS</span>
+        <span><strong>OpenSearch</strong><small>Detailed searchable logs</small></span>
+      </div>
+      <ul>
+        <li>Execution, application, project, and Spring Boot events</li>
+        <li>Masked logger and pipeline-logger data</li>
+        <li>Failure/debug snapshots under stricter retention</li>
+        <li>Data streams governed by lifecycle policies</li>
+      </ul>
+    </article>
+    <article class="storage-card">
+      <div class="storage-card-head">
+        <span class="system-badge payload">FS</span>
+        <span><strong>Shared payload storage</strong><small>Large and binary inputs</small></span>
+      </div>
+      <ul>
+        <li>Docker shared persistent volume or Kubernetes RWX volume</li>
+        <li>Opaque names, content hashes, sizes, and media types</li>
+        <li>RabbitMQ carries only the reference and checksum</li>
+        <li>Retention and orphan cleanup are mandatory</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section class="doc-section" id="artifact-lifecycle">
+  <header class="section-heading">
+    <p class="eyebrow">Design-time lifecycle</p>
+    <h2>How a saved project artifact reaches every runtime node</h2>
+    <p>A workflow is never executed directly from an editable UI document. Saving creates a durable version, then every API and worker compiles the committed definition.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li>
+      <span class="timeline-number">1</span>
+      <div><strong>Save and version</strong><p>The same PostgreSQL transaction stores the artifact change, creates its next monotonically increasing version, and writes an integration-change outbox event.</p></div>
+    </li>
+    <li>
+      <span class="timeline-number">2</span>
+      <div><strong>Publish the committed change</strong><p>The outbox publisher sends a confirmed event to the <code>ki.integration.events</code> fanout exchange. An uncommitted edit can never be published.</p></div>
+    </li>
+    <li>
+      <span class="timeline-number">3</span>
+      <div><strong>Compile on each node</strong><p>Every API and worker validates the graph, mappings, connector definitions, reusable-service references, and subworkflows before atomically replacing its local plan.</p></div>
+    </li>
+    <li>
+      <span class="timeline-number">4</span>
+      <div><strong>Admit only valid current plans</strong><p>Invalid artifacts are marked unavailable without taking down the node. Disabled workflows are removed from new admission; reusable services remain invokable when valid.</p></div>
+    </li>
+    <li>
+      <span class="timeline-number">5</span>
+      <div><strong>Repair missed events</strong><p>A 60-second reconciliation compares local versions with PostgreSQL and reloads anything missed while a node or broker connection was unavailable.</p></div>
+    </li>
+  </ol>
+  <div class="version-story">
+    <div><span>Editing</span><strong>Workflow v12 saved</strong></div>
+    <span class="version-arrow" aria-hidden="true">→</span>
+    <div><span>Database</span><strong>v12 + outbox committed</strong></div>
+    <span class="version-arrow" aria-hidden="true">→</span>
+    <div><span>Runtime nodes</span><strong>Immutable v12 compiled</strong></div>
+    <span class="version-arrow" aria-hidden="true">→</span>
+    <div><span>Active run</span><strong>v12 pinned until finish</strong></div>
+  </div>
+</section>
+
+<section class="doc-section" id="run-lifecycle">
+  <header class="section-heading">
+    <p class="eyebrow">Runtime lifecycle</p>
+    <h2>What happens when a workflow runs</h2>
+    <p>Every authorized trigger source converges on the same durable admission and worker pipeline. Trigger adapters are extensible; the listed sources are examples, not a closed set.</p>
+  </header>
+  <div class="execution-flow" role="img" aria-label="Execution travels from trigger admission through PostgreSQL, RabbitMQ, an execution worker, and durable finalization">
+    <div class="flow-step"><span>Trigger</span><strong>Any authorized source</strong></div>
+    <div class="flow-step"><span>Admission</span><strong>Authorize + resolve plan</strong></div>
+    <div class="flow-step"><span>Transaction</span><strong>Create run + outbox</strong></div>
+    <div class="flow-step"><span>Transport</span><strong>Confirmed RabbitMQ publish</strong></div>
+    <div class="flow-step"><span>Execution</span><strong>Claim, lease, run, finalize</strong></div>
+  </div>
+  <ol class="runtime-timeline numbered-detail">
+    <li><span class="timeline-number">1</span><div><strong>Authenticate and authorize</strong><p>The control-plane API checks the caller, project permission, workflow enabled state, input size, and platform overload limits.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Resolve an immutable plan</strong><p>The API resolves the exact artifact version from JVM memory. <code>updatedAt</code> is not a version authority.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Write run and command atomically</strong><p>One short PostgreSQL transaction creates the execution in <code>ACCEPTED</code> state and its versioned outbox command with unique <code>runId</code> and <code>commandId</code>.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Publish durably</strong><p>A publisher claims the outbox row, sends a persistent message, waits for RabbitMQ confirmation, and only then marks the command published and the run <code>QUEUED</code>.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Claim on one worker</strong><p>A worker receives with manual acknowledgement, atomically claims the PostgreSQL run, obtains its distributed lease, and restores the exact plan version if it is not already cached.</p></div></li>
+    <li><span class="timeline-number">6</span><div><strong>Execute within bounds</strong><p>The bounded dispatcher runs steps, nested reusable services, and initial subworkflows in the same worker event and execution context. Connector bulkheads isolate HTTP, JDBC, file, and transformation capacity.</p></div></li>
+    <li><span class="timeline-number">7</span><div><strong>Heartbeat and observe</strong><p>The worker renews ownership every 10 seconds by default, checks cancellation between steps, updates progress, and emits masked log events asynchronously.</p></div></li>
+    <li><span class="timeline-number">8</span><div><strong>Commit, then acknowledge</strong><p>The terminal outcome is committed to PostgreSQL before the RabbitMQ delivery is acknowledged. A crash before acknowledgement is recovered without changing execution identity.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="entry-points">
+  <header class="section-heading">
+    <p class="eyebrow">Trigger behavior</p>
+    <h2>Different caller experience, identical durable runtime</h2>
+    <p>The source controls how quickly a response is returned. It does not create a separate execution engine.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Source</th><th>Caller response</th><th>Durable behavior</th><th>Duplicate protection</th></tr></thead>
+      <tbody>
+        <tr><td>Manual run</td><td><code>202 Accepted</code> with run ID</td><td>The UI polls until the run reaches a terminal state, then displays the result.</td><td>Unique run and command identities</td></tr>
+        <tr><td>Webhook</td><td>Waits up to 60 seconds by default; returns the workflow response or <code>202</code></td><td>The worker continues even when the synchronous HTTP wait expires.</td><td>Immutable command identity</td></tr>
+        <tr><td>Scheduler</td><td>No waiting caller</td><td>ShedLock gives one API node ownership of a firing; execution remains asynchronous.</td><td>Artifact + schedule + fire-time key</td></tr>
+        <tr><td>Events, PubSub, queues, or files</td><td>Defined by the source adapter</td><td>An authorized adapter converts the source event into the common admission contract; workers still receive the same versioned command.</td><td>Stable source/context identity</td></tr>
+        <tr><td>Subworkflow</td><td>Part of its parent run</td><td>Initially executes in the same worker event and pipeline with its exact artifact version traced.</td><td>Parent execution identity</td></tr>
+        <tr><td>Reusable service</td><td>No standalone Run action</td><td>Invoked inside the workflow’s worker event, context, and pipeline.</td><td>Parent execution identity</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc-section" id="execution-contract">
+  <header class="section-heading">
+    <p class="eyebrow">Execution contract</p>
+    <h2>The command carries identity, not mutable runtime state</h2>
+    <p>Commands are explicitly versioned and point to the exact artifact revision. Secrets are never embedded in the transport envelope.</p>
+  </header>
+  <div class="contract-layout">
+    <pre class="code-contract" aria-label="Example execution command"><code>{
+  "schemaVersion": 1,
+  "commandId": "uuid",
+  "runId": "uuid",
+  "artifactId": "uuid",
+  "artifactVersion": 12,
+  "projectId": "uuid",
+  "source": "MANUAL",
+  "contextId": "string",
+  "acceptedAt": "timestamp",
+  "input": {},
+  "payloadReference": null,
+  "traceContext": {}
+}</code></pre>
+    <div class="contract-notes">
+      <article><strong><code>runId</code></strong><p>The durable, user-visible identity retained through recovery.</p></article>
+      <article><strong><code>commandId</code></strong><p>The immutable transport idempotency identity with a unique database constraint.</p></article>
+      <article><strong><code>artifactVersion</code></strong><p>Pins the exact definition that must execute, even after a newer version is saved.</p></article>
+      <article><strong><code>payloadReference</code></strong><p>Points to shared storage when input is too large or binary; RabbitMQ carries its hash and metadata.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section" id="execution-states">
+  <header class="section-heading">
+    <p class="eyebrow">Execution states</p>
+    <h2>The database records the precise lifecycle</h2>
+    <p>The UI may group states as Queued, Running, Failed, or Terminated, but PostgreSQL retains the exact state and reason.</p>
+  </header>
+  <div class="state-diagram">
+    <div class="state-main-path">
+      <span class="state-pill">ACCEPTED</span><span class="state-arrow">→</span>
+      <span class="state-pill">QUEUED</span><span class="state-arrow">→</span>
+      <span class="state-pill">CLAIMED</span><span class="state-arrow">→</span>
+      <span class="state-pill">RUNNING</span>
+    </div>
+    <div class="state-outcomes">
+      <span class="state-pill terminal">SUCCESS</span>
+      <span class="state-pill failure">FAILURE</span>
+      <span class="state-pill warning">CANCEL_REQUESTED → CANCELLED</span>
+      <span class="state-pill failure">TIMED_OUT</span>
+    </div>
+    <div class="state-exceptions">
+      <span><code>QUEUED</code> → <code>SKIPPED_DISABLED</code></span>
+      <span>Unprocessable command → <code>DEAD_LETTERED</code></span>
+      <span>Expired lease → controlled recovery with the same identities</span>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section" id="reliability">
+  <header class="section-heading">
+    <p class="eyebrow">Reliability and recovery</p>
+    <h2>At-least-once delivery without duplicate worker execution</h2>
+    <p>Exactly-once behavior cannot be guaranteed across databases, queues, HTTP APIs, and arbitrary external systems. Kestrel makes redelivery safe and exposes the remaining side-effect boundary.</p>
+  </header>
+  <div class="card-grid reliability-grid">
+    <article class="info-card"><span class="card-number">01</span><h3>Atomic claim</h3><p>A second worker cannot execute a run while its owner has a valid live lease.</p></article>
+    <article class="info-card"><span class="card-number">02</span><h3>Terminal check</h3><p>A redelivered command for an already-terminal run is acknowledged without re-execution.</p></article>
+    <article class="info-card"><span class="card-number">03</span><h3>Lease recovery</h3><p>An expired owner lease enters controlled recovery using the same run and command identities.</p></article>
+    <article class="info-card"><span class="card-number">04</span><h3>Business failure</h3><p>Validation, mapping, connector, authentication, and workflow exceptions finish as <code>FAILURE</code>; they are not infrastructure dead letters.</p></article>
+    <article class="info-card"><span class="card-number">05</span><h3>Poison messages</h3><p>Invalid schemas, corrupt payloads, missing versions, and exhausted crash recovery go to the execution dead-letter queue.</p></article>
+    <article class="info-card"><span class="card-number">06</span><h3>External writes</h3><p>Connectors should pass business idempotency keys when supported because Kestrel cannot roll back a side effect committed before a worker crash.</p></article>
+  </div>
+</section>
+
+<section class="doc-section" id="observability">
+  <header class="section-heading">
+    <p class="eyebrow">Observability path</p>
+    <h2>Execution metadata and detailed logs are stored separately</h2>
+    <p>Keeping detailed step events out of the execution transaction protects throughput while preserving searchable diagnostics.</p>
+  </header>
+  <div class="observability-lanes">
+    <article class="lane-card metadata-lane">
+      <span class="lane-label">Authoritative metadata</span>
+      <h3>Worker → PostgreSQL</h3>
+      <p>Run identity, artifact/version, source, owner, current and final state, start/end/duration, failure code, and failure summary.</p>
+    </article>
+    <article class="lane-card logs-lane">
+      <span class="lane-label">Detailed searchable events</span>
+      <h3>Worker → RabbitMQ → Observability worker → OpenSearch</h3>
+      <p>Logger output, pipeline-logger values, meaningful step failures, application events, and masked diagnostic snapshots.</p>
+    </article>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">✓</span>
+    <div>
+      <strong>Mask before transport</strong>
+      <p>Passwords, secrets, tokens, cookies, authorization values, API keys, private keys, and connector credentials are masked before an event enters RabbitMQ or OpenSearch.</p>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section" id="scaling">
+  <header class="section-heading">
+    <p class="eyebrow">Scaling and safety</p>
+    <h2>Horizontal scale is enabled by separation of roles</h2>
+    <p>API, execution-worker, and observability-worker processes scale independently. RabbitMQ absorbs bursts, but bounded capacity protects every dependency.</p>
+  </header>
+  <div class="scaling-layout">
+    <div class="scale-visual" aria-label="API nodes, execution workers, and observability workers scale independently">
+      <div class="scale-tier"><span>Control plane</span><div><b>API 1</b><b>API 2</b><b>API n</b></div></div>
+      <div class="scale-tier"><span>Execution</span><div><b>Worker 1</b><b>Worker 2</b><b>Worker n</b></div></div>
+      <div class="scale-tier"><span>Observability</span><div><b>Logs 1</b><b>Logs 2</b><b>Logs n</b></div></div>
+    </div>
+    <div class="limit-list">
+      <h3>Initial configurable defaults</h3>
+      <dl>
+        <div><dt>Worker concurrency</dt><dd>CPU cores × 2</dd></div>
+        <div><dt>Local handoff queue</dt><dd>1,000</dd></div>
+        <div><dt>Workflow timeout</dt><dd>15 minutes</dd></div>
+        <div><dt>Hard execution ceiling</dt><dd>24 hours</dd></div>
+        <div><dt>RabbitMQ command</dt><dd>512 KB</dd></div>
+        <div><dt>JSON execution input</dt><dd>10 MB</dd></div>
+        <div><dt>Heartbeat / lease</dt><dd>10s / 45s</dd></div>
+        <div><dt>Webhook wait</dt><dd>60 seconds</dd></div>
+      </dl>
+    </div>
+  </div>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div>
+      <strong>Configuration is not a capacity guarantee</strong>
+      <p>Supported throughput and autoscaling thresholds are established through Phase 6 load, spike, soak, restart, drain, and dependency-failure testing. Kestrel does not advertise “unlimited” capacity.</p>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section" id="readiness">
+  <header class="section-heading">
+    <p class="eyebrow">Readiness and operations</p>
+    <h2>A node serves traffic only when it can do so safely</h2>
+  </header>
+  <div class="readiness-grid">
+    <article class="readiness-card">
+      <h3>API ready when</h3>
+      <ul><li>PostgreSQL and Flyway are ready</li><li>Artifact registry initial load is complete</li><li>JWT/security initialization is complete</li><li>RabbitMQ topology and publisher confirms are available</li></ul>
+    </article>
+    <article class="readiness-card">
+      <h3>Worker ready when</h3>
+      <ul><li>PostgreSQL and RabbitMQ are reachable</li><li>The compiled-plan registry is loaded</li><li>Bounded executor and heartbeat are active</li><li>Required connector dependencies are initialized</li></ul>
+    </article>
+    <article class="readiness-card">
+      <h3>Cluster coordination</h3>
+      <ul><li>Redis is required only when clustered correctness is configured</li><li>Redis loss stops new admissions/claims in required mode</li><li>Active work attempts safe PostgreSQL finalization</li><li>Health reports the dependency degradation</li></ul>
+    </article>
+  </div>
+  <div class="status-banner">
+    <div><span class="status-dot" aria-hidden="true"></span><strong>Implementation status</strong></div>
+    <p>Phases 1–5 are code-complete. Phase 6 production validation is in progress; a local smoke run passed, but production capacity claims still require target-environment evidence.</p>
+  </div>
+</section>

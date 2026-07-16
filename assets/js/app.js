@@ -1,611 +1,350 @@
-import { APP_COPY, DOCS_SECTIONS, DOCS_TABS, UTILITY_GROUPS } from './docs-data.js';
-import { ICONS } from './icons.js';
+import {
+  utilityBySlug,
+  renderUtilityCatalog,
+  renderUtilityDetail,
+  renderUtilityNavigation
+} from './utility-docs.js';
 
+const pages = Object.freeze({
+  introduction: {
+    title: 'Introduction',
+    description: 'Kestrel Integrator platform overview',
+    source: './assets/pages/overview.html'
+  },
+  project: {
+    title: 'Project',
+    description: 'Project organization and resource boundaries',
+    source: './assets/pages/project.html'
+  },
+  workflow: {
+    title: 'Workflow',
+    description: 'Workflow concepts, editor, triggers, utilities, and execution',
+    source: './assets/pages/workflow.html'
+  },
+  'reusable-service': {
+    title: 'Reusable Service',
+    description: 'Reusable service contracts, flow steps, mapping, and invocation',
+    source: './assets/pages/services.html'
+  },
+  'map-pipeline': {
+    title: 'Map Pipeline',
+    description: 'Reusable service MAP Pipeline operations and examples',
+    source: './assets/pages/map-pipeline.html'
+  },
+  'if-else': {
+    title: 'IF-ELSE',
+    description: 'Reusable service IF, ELSE IF, and ELSE branching',
+    source: './assets/pages/if-else.html'
+  },
+  'switch-case': {
+    title: 'Switch Case',
+    description: 'Reusable service SWITCH cases, matching, and default behavior',
+    source: './assets/pages/switch-case.html'
+  },
+  loop: {
+    title: 'Loop',
+    description: 'Reusable service list iteration, current item, and loop exit',
+    source: './assets/pages/loop.html'
+  },
+  exit: {
+    title: 'Exit',
+    description: 'Reusable service flow exit, loop exit, and exception behavior',
+    source: './assets/pages/exit.html'
+  },
+  'error-handling': {
+    title: 'Error Handling',
+    description: 'Reusable service TRY, CATCH, FINALLY, and runtime error details',
+    source: './assets/pages/error-handling.html'
+  },
+  utils: {
+    title: 'Utils',
+    description: 'Built-in workflow and reusable-service utility reference',
+    source: './assets/pages/utils.html'
+  },
+  'pipeline-sub': {
+    title: 'Pipeline Sub',
+    description: 'Pipeline substitution syntax and editor copy workflow',
+    source: './assets/pages/pipeline-sub.html'
+  },
+  kvs: {
+    title: 'KVS',
+    description: 'Project key-value storage and password handling',
+    source: './assets/pages/kvs.html'
+  },
+  execution: {
+    title: 'Execution',
+    description: 'Durable workflow execution architecture',
+    source: './assets/pages/execution.html'
+  },
+  connector: {
+    title: 'Connector',
+    description: 'Workflow connector concepts and catalog',
+    source: './assets/pages/connectors.html'
+  },
+  'http-request': {
+    title: 'HTTP Request',
+    description: 'REST, GraphQL, SOAP, authentication, and multipart requests',
+    source: './assets/pages/http-request.html'
+  }
+});
+
+const defaultRoute = 'introduction';
 const app = document.querySelector('#app');
 const pageView = document.querySelector('#pageView');
-const searchInput = document.querySelector('#searchInput');
-const searchButton = document.querySelector('#searchButton');
+const currentPageLabel = document.querySelector('#currentPageLabel');
 const menuToggle = document.querySelector('#menuToggle');
-const projectsToggle = document.querySelector('#projectsToggle');
-const contextMenu = document.querySelector('#contextMenu');
+const sidebarClose = document.querySelector('#sidebarClose');
+const sidebarOverlay = document.querySelector('#sidebarOverlay');
+const projectNavBranch = document.querySelector('#projectNavBranch');
+const projectMenuToggle = document.querySelector('#projectMenuToggle');
+const connectorNavBranch = document.querySelector('#connectorNavBranch');
+const connectorMenuToggle = document.querySelector('#connectorMenuToggle');
+const reusableServiceNavBranch = document.querySelector('#reusableServiceNavBranch');
+const reusableServiceMenuToggle = document.querySelector('#reusableServiceMenuToggle');
+const utilsNavBranch = document.querySelector('#utilsNavBranch');
+const utilsMenuToggle = document.querySelector('#utilsMenuToggle');
+const utilsSubmenu = document.querySelector('#utilsSubmenu');
+const documentationMenuSearch = document.querySelector('#documentationMenuSearch');
+const documentationNav = document.querySelector('.docs-nav');
+const mobileQuery = window.matchMedia('(max-width: 900px)');
 
-const PAGE_FILES = {
-  overview: './assets/pages/overview.html',
-  projects: './assets/pages/projects.html',
-  connectors: './assets/pages/connectors.html',
-  workflow: './assets/pages/workflow.html',
-  services: './assets/pages/services.html',
-  api: './assets/pages/api.html',
-  workflowTrigger: './assets/pages/workflow-trigger.html',
-  dataStructure: './assets/pages/data-structure.html',
-  xsltAlias: './assets/pages/xslt-alias.html',
-  scheduler: './assets/pages/scheduler.html',
-  logger: './assets/pages/logger.html',
-  dataTransformer: './assets/pages/data-transformer.html',
-  sendHttpResponse: './assets/pages/send-http-response.html',
-  workflowEnd: './assets/pages/workflow-end.html',
-  csvParser: './assets/pages/csv-parser.html',
-  pipelineLogger: './assets/pages/pipeline-logger.html',
-  xsltTransformer: './assets/pages/xslt-transformer.html',
-  sleep: './assets/pages/sleep.html',
-  raiseException: './assets/pages/raise-exception.html',
-  multiTransformation: './assets/pages/multi-transformation.html',
-  pgp: './assets/pages/pgp.html',
-  snowflake: './assets/pages/snowflake.html',
-  postgres: './assets/pages/postgres.html',
-  mssql: './assets/pages/mssql.html',
-  mysql: './assets/pages/mysql.html',
-  mariadb: './assets/pages/mariadb.html',
-  oracleDb: './assets/pages/oracle-db.html',
-  ibmDb2: './assets/pages/ibm-db2.html',
-  console: './assets/pages/console.html',
-  utilities: './assets/pages/utilities.html',
-  reference: './assets/pages/reference.html'
-};
+let activeRequest;
+let initialRender = true;
 
-const PROJECT_TABS = new Set([
-  'projects',
-  'api',
-  'workflowTrigger',
-  'dataStructure',
-  'xsltAlias',
-  'scheduler'
-]);
-
-const WORKFLOW_CONNECTOR_TABS = new Set([
-  'logger',
-  'dataTransformer',
-  'sendHttpResponse',
-  'workflowEnd',
-  'csvParser',
-  'pipelineLogger',
-  'xsltTransformer',
-  'sleep',
-  'raiseException',
-  'multiTransformation',
-  'pgp',
-  'snowflake',
-  'postgres',
-  'mssql',
-  'mysql',
-  'mariadb',
-  'oracleDb',
-  'ibmDb2'
-]);
-
-const ROUTE_DEFAULT = 'overview';
-const ROUTE_TABS = new Set(Object.keys(PAGE_FILES));
-
-const PROJECT_MENU_TREE = [
-  {
-    key: 'workflow',
-    title: 'Workflow',
-    tab: 'workflow',
-    children: [
-      {
-        key: 'workflow-connectors',
-        title: 'Connectors',
-        tab: 'workflow',
-        children: [
-          { title: 'Logger', tab: 'logger' },
-          { title: 'Data Transformer', tab: 'dataTransformer' },
-          { title: 'Send HttpResponse', tab: 'sendHttpResponse' },
-          { title: 'Workflow End', tab: 'workflowEnd' },
-          { title: 'CSV Parser', tab: 'csvParser' },
-          { title: 'Pipeline Logger', tab: 'pipelineLogger' },
-          { title: 'XSLT Transformer', tab: 'xsltTransformer' },
-          { title: 'Sleep', tab: 'sleep' },
-          { title: 'Raise Exception', tab: 'raiseException' },
-          { title: 'Multi Transformation', tab: 'multiTransformation' },
-          { title: 'PGP', tab: 'pgp' },
-          { title: 'Snowflake', tab: 'snowflake' },
-          { title: 'Postgres', tab: 'postgres' },
-          { title: 'MSSQL', tab: 'mssql' },
-          { title: 'MySql', tab: 'mysql' },
-          { title: 'MariaDB', tab: 'mariadb' },
-          { title: 'OracleDB', tab: 'oracleDb' },
-          { title: 'IBMDB2', tab: 'ibmDb2' }
-        ]
-      },
-      { title: 'Workflow Trigger', tab: 'workflowTrigger', anchor: 'workflow-trigger-overview' },
-      { title: 'Utils', tab: 'utilities' }
-    ]
-  },
-  {
-    key: 'reusable-services',
-    title: 'Reusable services',
-    tab: 'services',
-    children: [
-      { title: 'API', tab: 'api' }
-    ]
-  },
-  {
-    key: 'connections',
-    title: 'Connection',
-    tab: 'connectors',
-    children: [
-      { title: 'Connector catalog', tab: 'connectors', anchor: 'connection-catalog' },
-      { title: 'Enabled state', tab: 'connectors', anchor: 'connection-state' },
-      { title: 'Reuse everywhere', tab: 'connectors', anchor: 'connection-reuse' }
-    ]
-  },
-  {
-    key: 'data-structure',
-    title: 'Data Structure',
-    tab: 'dataStructure',
-    children: [
-      { title: 'XSLT Alias', tab: 'xsltAlias', anchor: 'xslt-alias-overview' },
-      { title: 'Scheduler', tab: 'scheduler', anchor: 'scheduler-overview' }
-    ]
-  }
-];
-
-const state = {
-  activeTab: 'overview',
-  query: '',
-  projectsMenuOpen: false,
-  projectTreeOpen: {},
-  menuCollapsed: window.matchMedia('(max-width: 900px)').matches,
-  menuAutoCollapsed: window.matchMedia('(max-width: 900px)').matches
-};
-
-let renderToken = 0;
-
-function slugify(value) {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-function renderIcon(name) {
-  return ICONS[name] || ICONS.reference;
-}
-
-function setIconTargets() {
-  document.querySelectorAll('[data-icon]').forEach((node) => {
-    const name = node.getAttribute('data-icon');
-    node.innerHTML = renderIcon(name);
-  });
-}
-
-function syncMenuState() {
-  app.classList.toggle('is-menu-collapsed', state.menuCollapsed);
-  menuToggle.setAttribute('aria-expanded', String(!state.menuCollapsed));
-  if (projectsToggle) {
-    projectsToggle.setAttribute('aria-expanded', String(state.projectsMenuOpen));
-  }
-}
-
-function getRailTab(tabId) {
-  if (PROJECT_TABS.has(tabId)) {
-    return 'projects';
-  }
-  if (WORKFLOW_CONNECTOR_TABS.has(tabId) || tabId === 'workflow') {
-    return 'workflow';
-  }
-  return tabId;
-}
-
-function parseRouteFromHash() {
-  const raw = window.location.hash.replace(/^#\/?/, '');
-  if (!raw) {
-    return { tab: ROUTE_DEFAULT, anchor: '' };
-  }
-
-  const [tabPart = ROUTE_DEFAULT, anchor = ''] = raw.split('/');
+function locationState() {
+  const [routePart, ...pathParts] = window.location.hash.replace(/^#\/?/, '').split('/');
+  const route = routePart?.trim().toLowerCase();
   return {
-    tab: ROUTE_TABS.has(tabPart) ? tabPart : ROUTE_DEFAULT,
-    anchor
+    route: Object.hasOwn(pages, route) ? route : defaultRoute,
+    anchor: pathParts.join('/')
   };
 }
 
-function setRoute(tabId, anchor = '') {
-  const route = anchor ? `${tabId}/${anchor}` : tabId;
-  const nextHash = `#${route}`;
-  if (window.location.hash !== nextHash) {
-    window.location.hash = nextHash;
-    return;
-  }
-  renderFromLocation();
+function canonicalHash(route, anchor = '') {
+  return anchor ? `#/${route}/${anchor}` : `#/${route}`;
 }
 
-function updateRailActiveState(tabId) {
-  const effectiveTab = getRailTab(tabId);
-  document.querySelectorAll('.docs-rail-button').forEach((item) => {
-    item.classList.toggle('active', item.getAttribute('data-tab') === effectiveTab);
-  });
+function setMenuOpen(open) {
+  const isOpen = Boolean(open && mobileQuery.matches);
+  app.classList.toggle('menu-open', isOpen);
+  menuToggle.setAttribute('aria-expanded', String(isOpen));
+  menuToggle.setAttribute('aria-label', isOpen ? 'Close documentation menu' : 'Open documentation menu');
+  document.body.classList.toggle('no-scroll', isOpen);
 }
 
-function flattenUtilities() {
-  return UTILITY_GROUPS.flatMap((group) => group.utilities.map((utility) => ({
-    ...utility,
-    groupId: group.id,
-    groupLabel: group.label,
-    searchText: `${group.label} ${utility.name} ${(utility.aliases || []).join(' ')} ${utility.summary} ${(utility.params || []).map((param) => `${param.name} ${param.description}`).join(' ')} ${utility.notes || ''}`.toLowerCase()
-  })));
-}
-
-function renderSectionCard(item, index) {
-  const body = item.body || item.summary || '';
-  return `
-    <article class="docs-card" id="${escapeHtml(item.anchor || slugify(item.title || `item-${index + 1}`))}">
-      <div class="docs-card-head">
-        <h3>${escapeHtml(item.title)}</h3>
-        <small>${String(index + 1).padStart(2, '0')}</small>
-      </div>
-      <p>${escapeHtml(body)}</p>
-    </article>
-  `;
-}
-
-function renderUtilityParam(param) {
-  return `
-    <div class="docs-key">
-      <strong>${escapeHtml(param.name)}</strong>
-      <span>${escapeHtml(param.description)}</span>
-    </div>
-  `;
-}
-
-function scrollToAnchor(anchor) {
-  const target = pageView.querySelector(`[data-doc-anchor="${CSS.escape(anchor)}"]`);
-  if (target) {
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-
-function renderMenuNodes(nodes, depth = 0, parentKey = 'projects') {
-  return nodes.map((node) => {
-    const hasChildren = Array.isArray(node.children) && node.children.length > 0;
-    const label = escapeHtml(node.title);
-    const nodeKey = node.key || `${parentKey}-${slugify(node.title)}`;
-    if (hasChildren) {
-      const isOpen = typeof node.open === 'boolean'
-        ? node.open
-        : Boolean(state.projectTreeOpen[nodeKey]);
-      return `
-        <details class="docs-tree-node" data-tree-key="${escapeHtml(nodeKey)}" ${isOpen ? 'open' : ''}>
-          <summary class="docs-tree-summary" data-tree-depth="${depth}">
-            <button class="docs-tree-summary-button" type="button" data-tab="${escapeHtml(node.tab || '')}" aria-label="Open ${label} page">
-              <span class="docs-tree-title">${label}</span>
-            </button>
-            <button class="docs-tree-toggle" type="button" aria-label="Toggle ${label} submenu">
-              <span class="docs-tree-caret" data-icon="chevron"></span>
-            </button>
-          </summary>
-          <div class="docs-tree-children">
-            ${renderMenuNodes(node.children, depth + 1, nodeKey)}
-          </div>
-        </details>
-      `;
+function updateNavigation(route, anchor = '') {
+  const navigationAnchor = anchor.split('/')[0] || '';
+  const utilityDetailActive = route === 'utils' && utilityBySlug.has(navigationAnchor);
+  document.querySelectorAll('[data-route]').forEach((link) => {
+    const linkAnchor = link.dataset.anchor || '';
+    const active = link.dataset.route === route
+      && (linkAnchor ? linkAnchor === navigationAnchor : !utilityDetailActive);
+    link.classList.toggle('active', active);
+    if (active) {
+      link.setAttribute('aria-current', 'page');
+    } else {
+      link.removeAttribute('aria-current');
     }
+  });
 
-    const anchorAttr = node.anchor ? `data-anchor="${escapeHtml(node.anchor)}"` : '';
-    const tabAttr = node.tab ? `data-tab="${escapeHtml(node.tab)}"` : '';
-    return `
-      <button class="docs-tree-leaf" type="button" ${tabAttr} ${anchorAttr}>
-        <span class="docs-tree-leaf-title">${label}</span>
-      </button>
-    `;
-  }).join('');
-}
-
-function renderContextMenu() {
-  if (!contextMenu) {
-    return;
+  if (route === 'project' || route === 'kvs' || route === 'workflow' || route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling' || route === 'utils') {
+    setProjectMenuOpen(true);
   }
-
-  if (!state.projectsMenuOpen || state.query.trim()) {
-    contextMenu.innerHTML = '';
-    return;
+  if (route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling') {
+    setReusableServiceMenuOpen(true);
   }
-
-  contextMenu.innerHTML = `
-    <div class="docs-tree-root">
-      <div class="docs-tree-children">
-        ${renderMenuNodes(PROJECT_MENU_TREE)}
-      </div>
-    </div>
-  `;
-
-  contextMenu.querySelectorAll('.docs-tree-node').forEach((details) => {
-    details.addEventListener('toggle', () => {
-      const key = details.getAttribute('data-tree-key');
-      if (key) {
-        state.projectTreeOpen[key] = details.open;
-      }
-    });
-  });
-
-  contextMenu.querySelectorAll('[data-tab]').forEach((button) => {
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const tab = button.getAttribute('data-tab');
-      const anchor = button.getAttribute('data-anchor');
-      if (!tab) {
-        return;
-      }
-      setRoute(tab, anchor || '');
-    });
-  });
-
-  contextMenu.querySelectorAll('.docs-tree-toggle').forEach((toggle) => {
-    toggle.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const details = toggle.closest('.docs-tree-node');
-      if (!details) {
-        return;
-      }
-      details.open = !details.open;
-      const key = details.getAttribute('data-tree-key');
-      if (key) {
-        state.projectTreeOpen[key] = details.open;
-      }
-    });
-  });
-
-  setIconTargets();
-}
-
-function renderUtilityGroup(group) {
-  const utilities = group.utilities.filter((utility) => !state.query || utility.searchText.includes(state.query.toLowerCase()));
-  return `
-    <section class="docs-group" id="group-${escapeHtml(group.id)}" data-doc-anchor="group-${escapeHtml(group.id)}" data-doc-subtitle="${escapeHtml(group.utilities.length)} utilities">
-      <div class="docs-group-header">
-        <div>
-          <strong>${escapeHtml(group.label)} Utilities</strong>
-          <div class="docs-pill-row">
-            <span class="docs-pill">${utilities.length} items</span>
-            <span class="docs-pill">Searchable</span>
-          </div>
-        </div>
-        <span>Click any utility to inspect its inputs and usage</span>
-      </div>
-      <div class="docs-utility-list">
-        ${utilities.map((utility) => `
-          <details class="docs-utility">
-            <summary>
-              <div class="docs-utility-main">
-                <h4>${escapeHtml(utility.name)}</h4>
-                <div class="docs-pill-row">
-                  ${(utility.aliases || []).map((alias) => `<span class="docs-pill">${escapeHtml(alias)}</span>`).join('')}
-                  ${!utility.aliases?.length ? `<span class="docs-pill">${escapeHtml(group.label)}</span>` : ''}
-                </div>
-                <p>${escapeHtml(utility.summary)}</p>
-              </div>
-              <span class="docs-pill">Open</span>
-            </summary>
-            <div class="docs-utility-body">
-              <div class="docs-results">
-                <strong>How to use</strong>
-                <p>${escapeHtml(utility.example)}</p>
-              </div>
-              <div class="docs-results">
-                <strong>Parameters</strong>
-                <div class="docs-key-grid">
-                  ${utility.params.length ? utility.params.map(renderUtilityParam).join('') : '<div class="docs-empty">This utility does not require any explicit parameters.</div>'}
-                </div>
-              </div>
-              ${utility.output ? `
-                <div class="docs-note"><strong>Output:</strong> ${escapeHtml(utility.output)}</div>
-              ` : ''}
-              ${utility.notes ? `
-                <div class="docs-note">${escapeHtml(utility.notes)}</div>
-              ` : ''}
-            </div>
-          </details>
-        `).join('')}
-        ${utilities.length === 0 ? `<div class="docs-empty">${APP_COPY.utilityEmpty}</div>` : ''}
-      </div>
-    </section>
-  `;
-}
-
-function renderUtilitiesPage() {
-  const groups = UTILITY_GROUPS.map((group) => ({
-    ...group,
-    utilities: group.utilities.filter((utility) => !state.query || utility.searchText.includes(state.query.toLowerCase()))
-  }));
-  const visibleGroups = groups.filter((group) => group.utilities.length > 0);
-  const catalog = pageView.querySelector('#utilitiesCatalog');
-  if (catalog) {
-    catalog.innerHTML = `
-      <div class="docs-utility-groups">
-        ${visibleGroups.map(renderUtilityGroup).join('')}
-        ${visibleGroups.length === 0 ? `<div class="docs-empty">${APP_COPY.utilityEmpty}</div>` : ''}
-      </div>
-    `;
+  if (route === 'connector' || route === 'http-request') {
+    setConnectorMenuOpen(true);
+  }
+  if (route === 'utils') {
+    setUtilsMenuOpen(true);
   }
 }
 
-async function loadPage(tabId) {
-  const file = PAGE_FILES[tabId] || PAGE_FILES.overview;
-  const token = ++renderToken;
+function setProjectMenuOpen(open) {
+  const isOpen = Boolean(open);
+  projectNavBranch?.classList.toggle('collapsed', !isOpen);
+  projectMenuToggle?.setAttribute('aria-expanded', String(isOpen));
+  projectMenuToggle?.setAttribute('aria-label', isOpen ? 'Collapse Project menu' : 'Expand Project menu');
+}
+
+function setConnectorMenuOpen(open) {
+  const isOpen = Boolean(open);
+  connectorNavBranch?.classList.toggle('collapsed', !isOpen);
+  connectorMenuToggle?.setAttribute('aria-expanded', String(isOpen));
+  connectorMenuToggle?.setAttribute('aria-label', isOpen ? 'Collapse Connector menu' : 'Expand Connector menu');
+}
+
+function setReusableServiceMenuOpen(open) {
+  const isOpen = Boolean(open);
+  reusableServiceNavBranch?.classList.toggle('collapsed', !isOpen);
+  reusableServiceMenuToggle?.setAttribute('aria-expanded', String(isOpen));
+  reusableServiceMenuToggle?.setAttribute('aria-label', isOpen ? 'Collapse Reusable Service menu' : 'Expand Reusable Service menu');
+}
+
+function setUtilsMenuOpen(open) {
+  const isOpen = Boolean(open);
+  utilsNavBranch?.classList.toggle('collapsed', !isOpen);
+  utilsMenuToggle?.setAttribute('aria-expanded', String(isOpen));
+  utilsMenuToggle?.setAttribute('aria-label', isOpen ? 'Collapse Utils menu' : 'Expand Utils menu');
+}
+
+function filterDocumentationMenu(value = '') {
+  const query = String(value).trim().toLowerCase();
+
+  documentationNav?.querySelectorAll(':scope > .nav-link').forEach((link) => {
+    link.hidden = Boolean(query && !link.textContent.toLowerCase().includes(query));
+  });
+
+  documentationNav?.querySelectorAll(':scope > .nav-branch').forEach((branch) => {
+    const parentLink = branch.querySelector(':scope > .nav-branch-row .nav-link');
+    const childLinks = [...branch.querySelectorAll('.nav-child-link')];
+    const parentMatches = Boolean(parentLink?.textContent.toLowerCase().includes(query));
+    const matchingChildren = childLinks.filter((link) => link.textContent.toLowerCase().includes(query));
+
+    childLinks.forEach((link) => {
+      link.hidden = Boolean(query && !parentMatches && !matchingChildren.includes(link));
+    });
+    branch.querySelectorAll('.utility-nav-group').forEach((group) => {
+      const groupLinks = [...group.querySelectorAll('.nav-child-link')];
+      group.hidden = Boolean(query && !parentMatches && groupLinks.every((link) => link.hidden));
+    });
+    branch.hidden = Boolean(query && !parentMatches && matchingChildren.length === 0);
+
+    if (query && matchingChildren.length > 0) {
+      const toggle = branch.querySelector(':scope > .nav-branch-row .nav-branch-toggle');
+      const branchName = parentLink?.querySelector('strong')?.textContent.trim() || 'section';
+      branch.classList.remove('collapsed');
+      toggle?.setAttribute('aria-expanded', 'true');
+      toggle?.setAttribute('aria-label', `Collapse ${branchName} menu`);
+      matchingChildren.forEach((link) => {
+        let ancestor = link.closest('.nav-branch');
+        while (ancestor) {
+          ancestor.classList.remove('collapsed');
+          const ancestorLink = ancestor.querySelector(':scope > .nav-branch-row a');
+          if (ancestorLink) ancestorLink.hidden = false;
+          ancestor.querySelector(':scope > .nav-branch-row .nav-branch-toggle')?.setAttribute('aria-expanded', 'true');
+          ancestor = ancestor.parentElement?.closest('.nav-branch');
+        }
+      });
+    }
+  });
+}
+
+function showLoadError(page) {
   pageView.innerHTML = `
-    <section class="docs-grid">
-      <h2>Loading ${escapeHtml(tabId)}...</h2>
-      <p>Please wait while the documentation page is loaded.</p>
+    <section class="load-error" role="alert">
+      <span class="load-error-icon" aria-hidden="true">!</span>
+      <p class="eyebrow">Unable to load page</p>
+      <h1>${page.title}</h1>
+      <p>Run this static site through a local web server or verify that its page file is available.</p>
+      <button class="primary-action" type="button" data-retry>Try again</button>
     </section>
   `;
+  pageView.querySelector('[data-retry]')?.addEventListener('click', renderRoute);
+}
+
+async function renderRoute() {
+  const { route, anchor } = locationState();
+  const expectedHash = canonicalHash(route, anchor);
+
+  if (window.location.hash !== expectedHash) {
+    window.history.replaceState(null, '', expectedHash);
+  }
+
+  const page = pages[route];
+  updateNavigation(route, anchor);
+  const [utilitySlug = '', utilitySection = ''] = anchor.split('/');
+  const utility = route === 'utils' && utilitySlug ? utilityBySlug.get(utilitySlug) : null;
+  const pageTitle = utility ? utility.name : page.title;
+  currentPageLabel.textContent = utility ? `Utils / ${utility.name}` : page.title;
+  document.title = `${pageTitle} | Kestrel Integrator Docs`;
+  setMenuOpen(false);
+
+  activeRequest?.abort();
+  activeRequest = new AbortController();
+  pageView.setAttribute('aria-busy', 'true');
+  pageView.innerHTML = '<div class="page-loading" role="status">Loading documentation…</div>';
 
   try {
-    const response = await fetch(file, { cache: 'no-store' });
+    const response = await fetch(page.source, { signal: activeRequest.signal });
     if (!response.ok) {
-      throw new Error(`Failed to load ${tabId} page`);
+      throw new Error(`Documentation request failed with ${response.status}`);
     }
-    const html = await response.text();
-    if (token !== renderToken) return;
-    pageView.innerHTML = html;
-    if (tabId === 'utilities') {
-      renderUtilitiesPage();
+    pageView.innerHTML = await response.text();
+    if (route === 'utils') {
+      if (utility) {
+        pageView.innerHTML = renderUtilityDetail(utility);
+      } else {
+        const catalog = pageView.querySelector('[data-utility-catalog]');
+        if (catalog) catalog.innerHTML = renderUtilityCatalog();
+      }
     }
-    renderContextMenu();
-    setIconTargets();
+    pageView.setAttribute('aria-busy', 'false');
+
+    if (anchor) {
+      requestAnimationFrame(() => {
+        const scrollTarget = utility ? (utilitySection || utilitySlug) : anchor;
+        document.getElementById(scrollTarget)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    } else if (!initialRender) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    if (!initialRender) {
+      pageView.focus({ preventScroll: true });
+    }
+    initialRender = false;
   } catch (error) {
-    if (token !== renderToken) return;
-    pageView.innerHTML = `
-      <section class="docs-grid">
-        <h2>${escapeHtml(tabId)}</h2>
-        <p>Unable to load this page right now.</p>
-        <div class="docs-empty">${escapeHtml(error.message)}</div>
-      </section>
-    `;
-    renderContextMenu();
-  }
-}
-
-function renderSearchResults() {
-  const query = state.query.trim().toLowerCase();
-  const flattenedUtilities = flattenUtilities();
-  const matchedUtilities = query
-    ? flattenedUtilities.filter((utility) => utility.searchText.includes(query))
-    : [];
-  const matchedSections = query
-    ? Object.entries(DOCS_SECTIONS)
-      .flatMap(([key, section]) => {
-        const text = `${section.title} ${section.intro} ${(section.cards || section.steps || []).map((item) => `${item.title} ${item.body || item.summary || ''}`).join(' ')}`.toLowerCase();
-        return text.includes(query) ? [{ key, title: section.title, detail: section.intro }] : [];
-      })
-    : [];
-
-  if (!query) {
-    return;
-  }
-
-  if (contextMenu) {
-    contextMenu.innerHTML = '';
-  }
-
-  pageView.innerHTML = `
-    <section class="docs-grid">
-      <h2>Search results</h2>
-      <p>Showing matches for <strong>${escapeHtml(state.query)}</strong>.</p>
-      <div class="docs-grid" id="search-sections">
-        <article class="docs-card">
-          <h3>Sections</h3>
-          <div class="docs-search-results">
-            ${matchedSections.length ? matchedSections.map((section) => `
-              <div class="docs-search-hit">
-                <h4>${escapeHtml(section.title)}</h4>
-                <p>${escapeHtml(section.detail)}</p>
-              </div>
-            `).join('') : `<div class="docs-empty">${APP_COPY.searchEmpty}</div>`}
-          </div>
-        </article>
-        <article class="docs-card" id="search-utilities">
-          <h3>Utilities</h3>
-          <div class="docs-search-results">
-            ${matchedUtilities.length ? matchedUtilities.map((utility) => `
-              <div class="docs-search-hit">
-                <h4>${escapeHtml(utility.name)}</h4>
-                <p>${escapeHtml(utility.summary)}<br><span class="docs-pill">${escapeHtml(utility.groupLabel)}</span></p>
-              </div>
-            `).join('') : `<div class="docs-empty">${APP_COPY.searchEmpty}</div>`}
-          </div>
-        </article>
-      </div>
-    </section>
-  `;
-}
-
-async function renderTab(tabId) {
-  state.activeTab = tabId;
-  updateRailActiveState(tabId);
-  if (state.query.trim()) {
-    renderSearchResults();
-    renderContextMenu();
-    return;
-  }
-  await loadPage(tabId);
-}
-
-async function renderFromLocation() {
-  const { tab, anchor } = parseRouteFromHash();
-  state.activeTab = tab;
-  updateRailActiveState(tab);
-
-  if (state.query.trim()) {
-    renderSearchResults();
-    renderContextMenu();
-    return;
-  }
-
-  await loadPage(tab);
-  if (anchor) {
-    requestAnimationFrame(() => scrollToAnchor(anchor));
-  }
-}
-
-function applySearch() {
-  state.query = searchInput.value.trim();
-  renderTab(state.activeTab);
-}
-
-searchButton.addEventListener('click', applySearch);
-searchInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') {
-    applySearch();
-  }
-});
-
-document.querySelectorAll('.docs-rail-button').forEach((button) => {
-  button.addEventListener('click', () => {
-    setRoute(button.getAttribute('data-tab'));
-    if (window.matchMedia('(max-width: 900px)').matches) {
-      state.menuCollapsed = true;
-      syncMenuState();
+    if (error.name !== 'AbortError') {
+      pageView.setAttribute('aria-busy', 'false');
+      showLoadError(page);
+      initialRender = false;
     }
-  });
+  }
+}
+
+menuToggle.addEventListener('click', () => {
+  setMenuOpen(!app.classList.contains('menu-open'));
+});
+sidebarClose.addEventListener('click', () => setMenuOpen(false));
+sidebarOverlay.addEventListener('click', () => setMenuOpen(false));
+projectMenuToggle?.addEventListener('click', () => {
+  setProjectMenuOpen(projectNavBranch?.classList.contains('collapsed'));
+});
+connectorMenuToggle?.addEventListener('click', () => {
+  setConnectorMenuOpen(connectorNavBranch?.classList.contains('collapsed'));
+});
+reusableServiceMenuToggle?.addEventListener('click', () => {
+  setReusableServiceMenuOpen(reusableServiceNavBranch?.classList.contains('collapsed'));
+});
+utilsMenuToggle?.addEventListener('click', () => {
+  setUtilsMenuOpen(utilsNavBranch?.classList.contains('collapsed'));
+});
+documentationMenuSearch?.addEventListener('input', (event) => {
+  filterDocumentationMenu(event.target.value);
+});
+documentationMenuSearch?.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && event.currentTarget.value) {
+    event.stopPropagation();
+    event.currentTarget.value = '';
+    filterDocumentationMenu();
+  }
 });
 
-projectsToggle?.addEventListener('click', () => {
-  state.projectsMenuOpen = !state.projectsMenuOpen;
-  syncMenuState();
-  renderContextMenu();
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    setMenuOpen(false);
+  }
 });
 
-menuToggle?.addEventListener('click', () => {
-  state.menuCollapsed = !state.menuCollapsed;
-  state.menuAutoCollapsed = false;
-  syncMenuState();
-});
+mobileQuery.addEventListener('change', () => setMenuOpen(false));
+window.addEventListener('hashchange', renderRoute);
 
-setIconTargets();
-syncMenuState();
-
-window.addEventListener('hashchange', () => {
-  renderFromLocation();
-});
+if (utilsSubmenu) {
+  utilsSubmenu.innerHTML = renderUtilityNavigation();
+}
 
 if (!window.location.hash || window.location.hash === '#') {
-  window.location.hash = `#${ROUTE_DEFAULT}`;
-} else {
-  renderFromLocation();
+  window.history.replaceState(null, '', canonicalHash(defaultRoute));
 }
-
-window.addEventListener('resize', () => {
-  const shouldCollapse = window.matchMedia('(max-width: 900px)').matches;
-  if (shouldCollapse && !state.menuCollapsed) {
-    state.menuCollapsed = true;
-    state.menuAutoCollapsed = true;
-    syncMenuState();
-  }
-  if (!shouldCollapse && state.menuAutoCollapsed && state.menuCollapsed) {
-    state.menuCollapsed = false;
-    state.menuAutoCollapsed = false;
-    syncMenuState();
-  }
-});
+renderRoute();

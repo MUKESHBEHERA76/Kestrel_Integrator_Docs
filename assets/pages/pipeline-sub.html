@@ -1,0 +1,142 @@
+<section class="doc-hero" id="pipeline-sub">
+  <div class="hero-copy">
+    <p class="eyebrow">Pipeline Sub</p>
+    <h1>Use pipeline values without hardcoding runtime data.</h1>
+    <p class="lead">
+      Pipeline substitution references a value by path using <code>${pipeline.scope.variable}</code> syntax.
+      The same syntax is available in Workflow Pipeline and Reusable Service Pipeline.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Pipeline substitution page sections">
+  <div><p class="eyebrow">On this page</p><strong>Pipeline syntax and copying</strong></div>
+  <div class="toc-links">
+    <a href="#/pipeline-sub/basic-syntax">Basic syntax</a>
+    <a href="#/pipeline-sub/types">Variable types</a>
+    <a href="#/pipeline-sub/copy-workflow">Workflow copy</a>
+    <a href="#/pipeline-sub/copy-service">Service copy</a>
+    <a href="#/pipeline-sub/rules">Important rules</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="basic-syntax">
+  <header class="section-heading">
+    <p class="eyebrow">Basic syntax</p>
+    <h2>Wrap the complete pipeline path in <code>${...}</code></h2>
+    <p>The most common scopes are <code>pipeline.input</code> and <code>pipeline.output</code>.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Scope</th><th>Example</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>pipeline.input</code></td><td><code>${pipeline.input.customerId}</code></td><td>Read a value entering the current step or service.</td></tr>
+        <tr><td><code>pipeline.output</code></td><td><code>${pipeline.output.statusCode}</code></td><td>Read a value produced by a step or stored for downstream use.</td></tr>
+        <tr><td><code>pipeline.temp</code></td><td><code>${pipeline.temp.loopItem}</code></td><td>Read a temporary runtime value such as the current loop item.</td></tr>
+        <tr><td><code>pipeline.system</code></td><td><code>${pipeline.system.variableName}</code></td><td>Read runtime-provided system data when that value exists.</td></tr>
+        <tr><td><code>pipeline.error</code></td><td><code>${pipeline.error.errorMessage}</code></td><td>Read error context made available during exception handling.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="Pipeline substitution examples"><code>Exact value:
+${pipeline.input.customerId}
+
+Value inside text:
+Customer ${pipeline.input.customerId} was created successfully.</code></pre>
+  <p>An exact expression can retain the original runtime type. An expression embedded inside other text always produces a String.</p>
+</section>
+
+<section class="doc-section" id="types">
+  <header class="section-heading">
+    <p class="eyebrow">Syntax by variable type</p>
+    <h2>Use dots for document fields and indexes for list items</h2>
+    <p>The examples use input scope. Replace <code>input</code> with <code>output</code> when the value is stored in pipeline output.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Type</th><th>Example structure</th><th>Pipeline substitution</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>String</strong></td>
+          <td><code>customerId = "C-1001"</code></td>
+          <td><code>${pipeline.input.customerId}</code></td>
+        </tr>
+        <tr>
+          <td><strong>String List</strong></td>
+          <td><code>tags = ["priority", "new"]</code></td>
+          <td>Whole list: <code>${pipeline.input.tags}</code><br />First string: <code>${pipeline.input.tags[0]}</code><br />Second string: <code>${pipeline.input.tags[1]}</code></td>
+        </tr>
+        <tr>
+          <td><strong>Document</strong></td>
+          <td><code>customer = { name, address }</code></td>
+          <td>Whole document: <code>${pipeline.input.customer}</code><br />Field: <code>${pipeline.input.customer.name}</code><br />Nested field: <code>${pipeline.input.customer.address.city}</code></td>
+        </tr>
+        <tr>
+          <td><strong>Document List</strong></td>
+          <td><code>orders = [{ orderId, amount }]</code></td>
+          <td>Whole list: <code>${pipeline.input.orders}</code><br />First document: <code>${pipeline.input.orders[0]}</code><br />Field in first document: <code>${pipeline.input.orders[0].orderId}</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Lists use zero-based indexes</strong><p><code>[0]</code> means the first item, <code>[1]</code> means the second item, and so on. If the selected field is inside more than one list, each list level needs its own index.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="copy-workflow">
+  <header class="section-heading">
+    <p class="eyebrow">Workflow Pipeline</p>
+    <h2>Copy a variable path from the workflow mapper</h2>
+    <p>You do not need to type long document paths manually.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open the step pipeline</strong><p>Select the workflow step and click its settings icon.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select a variable</strong><p>Click the required variable in Pipeline In, Step In, Step Out, or Pipeline Out.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Click Copy</strong><p>The toolbar enables Copy after a variable is selected.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Paste the expression</strong><p>Open the target field's hardcode editor and paste the copied pipeline syntax, then apply it.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="copy-service">
+  <header class="section-heading">
+    <p class="eyebrow">Reusable Service Pipeline</p>
+    <h2>Copy a variable path from the service mapper</h2>
+    <p>The copy workflow is the same inside a reusable service.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open the reusable service</strong><p>Select the MAP or service step whose pipeline is visible.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select a pipeline variable</strong><p>Click the String, String List, Document, Document List, or nested field you need.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Click Copy in the Pipeline toolbar</strong><p>Kestrel copies the normalized <code>${pipeline...}</code> expression to the clipboard.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Paste where substitution is supported</strong><p>Paste into a hardcoded value, connector input, utility input, message, URL, request body, or another supported String field.</p></div></li>
+  </ol>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Copy adds <code>[0]</code> for list paths</strong><p>When you copy a list or a child inside a list, the editor creates a paste-ready path using the first item—for example, <code>${pipeline.input.orders[0].orderId}</code>. Change the index if you need another fixed item. To pass the complete list, use the list root without <code>[0]</code>, such as <code>${pipeline.input.orders}</code>.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="rules">
+  <header class="section-heading">
+    <p class="eyebrow">Important rules</p>
+    <h2>Keep substitutions predictable</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Rule</th><th>Correct example</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Use the complete braces</td><td><code>${pipeline.input.name}</code></td><td>This is the normalized syntax copied by both editors.</td></tr>
+        <tr><td>Use dots for document fields</td><td><code>${pipeline.input.customer.name}</code></td><td>Every dot moves to a child field.</td></tr>
+        <tr><td>Use brackets for list items</td><td><code>${pipeline.input.orders[0]}</code></td><td>The index chooses one list entry.</td></tr>
+        <tr><td>Use an exact expression for structured data</td><td><code>${pipeline.input.orders}</code></td><td>An exact expression can preserve a List or Document instead of converting it into display text.</td></tr>
+        <tr><td>Use embedded expressions only for text</td><td><code>Order ${pipeline.input.orderId} completed</code></td><td>The resolved value becomes part of one String.</td></tr>
+        <tr><td>Check the source scope</td><td><code>input</code> versus <code>output</code></td><td>A valid path in the wrong scope resolves no value.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Do not substitute secrets into logs</strong><p>Pipeline substitution can resolve passwords, tokens, and confidential documents. Map those values only into the connector input that requires them; do not place them in Logger or Pipeline Logger messages.</p></div>
+  </div>
+</section>

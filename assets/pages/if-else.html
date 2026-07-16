@@ -1,0 +1,208 @@
+<section class="doc-hero" id="if-else">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Reusable Service / IF-ELSE</p>
+    <h1>Run different service steps based on pipeline data.</h1>
+    <p class="lead">
+      IF-ELSE evaluates ordered conditions. It runs the children of the first matching IF or ELSE IF branch,
+      otherwise it runs the optional ELSE branch, and then continues with the steps after the condition group.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="IF-ELSE page sections">
+  <div><p class="eyebrow">On this page</p><strong>Using conditional branches</strong></div>
+  <div class="toc-links">
+    <a href="#/if-else/concept">Concept</a>
+    <a href="#/if-else/add">Add IF-ELSE</a>
+    <a href="#/if-else/properties">Properties</a>
+    <a href="#/if-else/conditions">Conditions</a>
+    <a href="#/if-else/branches">Branches</a>
+    <a href="#/if-else/steps">Child steps</a>
+    <a href="#/if-else/example">Real example</a>
+    <a href="#/if-else/practices">Good practices</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="concept">
+  <header class="section-heading">
+    <p class="eyebrow">What IF-ELSE does</p>
+    <h2>Choose one execution branch</h2>
+    <p>Use IF-ELSE when a reusable service must perform different operations for different runtime values.</p>
+  </header>
+  <p>The editor stores the complete structure inside an <strong>IF condition Group</strong>. The group contains one IF, zero or more ELSE IF branches, and at most one ELSE branch.</p>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Branch</th><th>Condition</th><th>When it runs</th></tr></thead>
+      <tbody>
+        <tr><td><strong>IF</strong></td><td>Required for useful branching</td><td>Evaluated first. Its child steps run when the expression is true.</td></tr>
+        <tr><td><strong>ELSE IF</strong></td><td>Required</td><td>Evaluated in displayed order only when every earlier condition was false.</td></tr>
+        <tr><td><strong>ELSE</strong></td><td>None</td><td>Runs only when IF and every ELSE IF are false.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Only one branch runs</strong><p>After the first true condition is found, remaining ELSE IF conditions are not evaluated. ELSE is the fallback and always remains last.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="add">
+  <header class="section-heading">
+    <p class="eyebrow">Add the flow step</p>
+    <h2>Create the IF condition group from the Flow tab</h2>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open a reusable service</strong><p>Make sure the variables required by the condition are already in Service Input or produced by an earlier step.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select Flow</strong><p>Find <strong>IF / ELSE</strong> in the left step library.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add IF / ELSE</strong><p>Click it or drag it into the required position in the service tree.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Select IF</strong><p>Kestrel creates an IF condition Group and its initial IF branch automatically.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Set the condition</strong><p>Use the condition action on the IF row or the Condition field action in Properties.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="properties">
+  <header class="section-heading">
+    <p class="eyebrow">IF and branch properties</p>
+    <h2>Describe the branch and define its condition</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Property</th><th>Editable</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Step name</strong></td><td>No</td><td>Identifies IF, ELSE IF, or ELSE in the tree.</td></tr>
+        <tr><td><strong>Comment</strong></td><td>Yes</td><td>Explains the business reason for the branch. The comment is displayed beside the step name in the flow tree.</td></tr>
+        <tr><td><strong>Branch</strong></td><td>No</td><td>Shows whether the selected item is <code>if</code>, <code>else if</code>, or <code>else</code>.</td></tr>
+        <tr><td><strong>Condition</strong></td><td>IF and ELSE IF</td><td>Opens the expression editor. ELSE shows “No condition” because it is the fallback.</td></tr>
+        <tr><td><strong>ADD ELSEIF</strong></td><td>On IF</td><td>Adds another conditional branch before ELSE.</td></tr>
+        <tr><td><strong>ADD ELSE</strong></td><td>On IF</td><td>Adds the single fallback branch. Selecting it again focuses the existing ELSE.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="Useful IF comments"><code>IF comment: High-value order requires manual approval
+ELSE IF comment: Standard order requires fraud screening
+ELSE comment: Low-risk order can be approved automatically</code></pre>
+</section>
+
+<section class="doc-section" id="conditions">
+  <header class="section-heading">
+    <p class="eyebrow">Condition expressions</p>
+    <h2>Compare pipeline values using boolean expressions</h2>
+    <p>The condition editor accepts pipeline paths, literal values, comparison operators, logical operators, and parentheses.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Feature</th><th>Syntax</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Equality</td><td><code>==</code>, <code>!=</code></td><td><code>${pipeline.input.status} == 'ACTIVE'</code></td></tr>
+        <tr><td>Numeric or ordered comparison</td><td><code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code></td><td><code>${pipeline.input.order.total} &gt;= 1000</code></td></tr>
+        <tr><td>AND</td><td><code>&amp;&amp;</code></td><td><code>${pipeline.input.enabled} == true &amp;&amp; ${pipeline.input.region} == 'IN'</code></td></tr>
+        <tr><td>OR</td><td><code>||</code></td><td><code>${pipeline.input.role} == 'ADMIN' || ${pipeline.input.role} == 'DEVELOPER'</code></td></tr>
+        <tr><td>NOT</td><td><code>!</code></td><td><code>!${pipeline.input.blocked}</code></td></tr>
+        <tr><td>Grouping</td><td><code>( )</code></td><td><code>(${pipeline.input.total} &gt; 100) &amp;&amp; (${pipeline.input.country} == 'IN')</code></td></tr>
+        <tr><td>Null</td><td><code>$null</code> or <code>null</code></td><td><code>${pipeline.input.customer.email} != $null</code></td></tr>
+        <tr><td>String literal</td><td>Single or double quotes</td><td><code>${pipeline.input.type} == "PRIORITY"</code></td></tr>
+        <tr><td>Boolean literal</td><td><code>true</code>, <code>false</code></td><td><code>${pipeline.input.customer.vip} == true</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Truth-only conditions</h3>
+  <p>A pipeline path can be used without a comparison. Boolean true, a non-zero numeric value, a non-empty String, and a non-empty List are true. Null, Boolean false, numeric zero, an empty String, and an empty List are false. Text such as <code>"false"</code> or <code>"0"</code> is still a non-empty String, so compare it explicitly when the input type is String.</p>
+  <pre class="code-contract" aria-label="IF condition examples"><code>${pipeline.input.enabled}
+
+${pipeline.input.order.total} >= 1000
+
+(${pipeline.input.customer.vip} == true) &&
+(${pipeline.input.order.status} != 'CANCELLED')</code></pre>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>An empty condition evaluates to false</strong><p>Always define IF and ELSE IF conditions before testing. Invalid syntax raises a <code>CONDITION_ERROR</code> at runtime.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="branches">
+  <header class="section-heading">
+    <p class="eyebrow">ELSE IF and ELSE</p>
+    <h2>Add and order additional branches</h2>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Select the root IF</strong><p>Branch actions are available from the IF row and its Properties panel.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Add ELSE IF when another condition is needed</strong><p>Define its Comment and Condition exactly like the root IF.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add ELSE IF branches in evaluation order</strong><p>Branches are evaluated in their displayed order. Plan the most specific or highest-priority condition first; remove and add a branch again if its order must change.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Add ELSE when a fallback is required</strong><p>Only one ELSE is created, it has no condition, and it stays after every ELSE IF.</p></div></li>
+  </ol>
+  <p>If no condition matches and no ELSE exists, the group performs no child work and execution continues with the next step after the group.</p>
+</section>
+
+<section class="doc-section" id="steps">
+  <header class="section-heading">
+    <p class="eyebrow">Steps inside branches</p>
+    <h2>Each branch can contain its own ordered implementation</h2>
+    <p>IF, ELSE IF, and ELSE are containers. Their child steps run only when that branch is selected.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Select the branch</strong><p>Choose IF, an ELSE IF, or ELSE in the flow tree.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Add a child</strong><p>Use the branch's Add child action to create a Map pipeline child, or drag a Flow/Utils item onto the branch and drop it inside.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add more steps</strong><p>A branch can contain mappings, utilities, project-service calls, loops, TRY/CATCH, process groups, and other supported flow steps.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Order the children</strong><p>Use drag-and-drop, Move up/down, Nest, and Outdent to create the intended hierarchy.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Map data in child steps</strong><p>The IF control item itself does not expose pipeline mapping. Select each child step to map its inputs and outputs.</p></div></li>
+  </ol>
+  <pre class="code-contract" aria-label="IF ELSE flow tree example"><code>IF condition Group
+├── IF  (total >= 1000)
+│   ├── Map pipeline: approvalStatus = MANUAL_REVIEW
+│   └── Project service: createApprovalTask
+├── ELSE IF  (total >= 100)
+│   └── Project service: runFraudScreening
+└── ELSE
+    └── Map pipeline: approvalStatus = AUTO_APPROVED
+
+Map pipeline: build final service response</code></pre>
+  <p>The final MAP step is outside the condition group, so it runs after whichever branch was selected.</p>
+</section>
+
+<section class="doc-section" id="example">
+  <header class="section-heading">
+    <p class="eyebrow">Real use case</p>
+    <h2>Choose an order-approval path</h2>
+    <p>A reusable service receives an order and customer risk information. It must select one approval path.</p>
+  </header>
+  <h3>Input values</h3>
+  <pre class="code-contract" aria-label="Order approval input"><code>{
+  "order": {
+    "total": 1250,
+    "status": "NEW"
+  },
+  "customer": {
+    "vip": false,
+    "blocked": false
+  }
+}</code></pre>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Branch</th><th>Comment</th><th>Condition</th><th>Child work</th></tr></thead>
+      <tbody>
+        <tr><td>IF</td><td>Blocked customers cannot continue</td><td><code>${pipeline.input.customer.blocked} == true</code></td><td>EXIT with an exception or map a rejected result.</td></tr>
+        <tr><td>ELSE IF</td><td>High-value orders require manual approval</td><td><code>${pipeline.input.order.total} &gt;= 1000</code></td><td>Set status to MANUAL_REVIEW and call an approval-task service.</td></tr>
+        <tr><td>ELSE IF</td><td>VIP orders use expedited approval</td><td><code>${pipeline.input.customer.vip} == true</code></td><td>Set status to EXPEDITED.</td></tr>
+        <tr><td>ELSE</td><td>All remaining valid orders use standard approval</td><td>None</td><td>Set status to STANDARD.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>For the displayed input, the high-value ELSE IF is the first true condition, so its children run and later branches are skipped.</p>
+</section>
+
+<section class="doc-section" id="practices">
+  <header class="section-heading">
+    <p class="eyebrow">Good practices</p>
+    <h2>Keep conditions understandable and safe</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>Use Comments to explain the business decision, not to repeat the expression.</li>
+    <li>Put narrow or high-priority ELSE IF conditions before broad conditions.</li>
+    <li>Use parentheses when combining <code>&amp;&amp;</code> and <code>||</code>.</li>
+    <li>Compare strings with quotes and compare missing values with <code>$null</code>.</li>
+    <li>Create complex values in an earlier MAP or utility step, then keep the IF expression short.</li>
+    <li>Do not put the same side-effecting service call in multiple branches unless that duplication is intentional.</li>
+    <li>Use ELSE only when a default behavior is safe. Otherwise allow no branch to run and handle the result explicitly afterward.</li>
+    <li>Test IF, every ELSE IF, ELSE, null values, boundary numbers, and empty lists before callers depend on the service.</li>
+  </ul>
+</section>

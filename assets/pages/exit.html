@@ -1,0 +1,223 @@
+<section class="doc-hero" id="exit">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Reusable Service / Exit</p>
+    <h1>Stop a service flow or leave a loop deliberately.</h1>
+    <p class="lead">
+      EXIT is a control-flow step. It can finish the complete reusable service, break out of a selected LOOP,
+      or raise a pipeline-aware exception that follows TRY/CATCH and normal runtime error handling.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Exit page sections">
+  <div><p class="eyebrow">On this page</p><strong>Using EXIT in a reusable service</strong></div>
+  <div class="toc-links">
+    <a href="#/exit/concept">Concept</a>
+    <a href="#/exit/add">Add EXIT</a>
+    <a href="#/exit/properties">Properties</a>
+    <a href="#/exit/flow">Exit Flow</a>
+    <a href="#/exit/loop">Exit Loop</a>
+    <a href="#/exit/exception">Exception</a>
+    <a href="#/exit/message">Error message</a>
+    <a href="#/exit/try-catch">TRY/CATCH</a>
+    <a href="#/exit/examples">Examples</a>
+    <a href="#/exit/practices">Good practices</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="concept">
+  <header class="section-heading">
+    <p class="eyebrow">What EXIT does</p>
+    <h2>End execution without adding another operation</h2>
+    <p>Use EXIT when the service should not continue to the remaining sibling steps.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Mode</th><th>Configuration</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Normal flow exit</strong></td><td><code>Exit from = Flow</code>, <code>Exception = false</code></td><td>Stops the reusable service successfully and keeps output values already created.</td></tr>
+        <tr><td><strong>Normal loop exit</strong></td><td><code>Exit from = Loop</code>, matching Loop id, <code>Exception = false</code></td><td>Stops remaining iterations and continues after that LOOP.</td></tr>
+        <tr><td><strong>Exceptional exit</strong></td><td><code>Exception = true</code></td><td>Raises <code>FLOW_EXIT_EXCEPTION</code> with the substituted Error Message.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Normal EXIT is control flow, not a failure</strong><p>With Exception set to false, EXIT records an exit outcome and does not create a business error. Set Exception to true only when the caller or a CATCH block must receive a failure.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="add">
+  <header class="section-heading">
+    <p class="eyebrow">Add the flow step</p>
+    <h2>Create EXIT from the reusable service Flow tab</h2>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Decide what should stop</strong><p>Choose whether this business path should finish the complete service, break one loop, or raise an error.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select Flow</strong><p>Find <strong>EXIT</strong> in the reusable service step library.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Place EXIT in the correct branch</strong><p>Add it inside IF, ELSE IF, ELSE, CASE, DEFAULT, LOOP, TRY, CATCH, or another process container where the decision occurs.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Configure Properties</strong><p>Select Exit from, Loop id when needed, Exception, Comment, and Error Message.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Test both paths</strong><p>Verify the path that reaches EXIT and the path that continues normally.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="properties">
+  <header class="section-heading">
+    <p class="eyebrow">EXIT properties</p>
+    <h2>Configure the target and outcome</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Property</th><th>Available when</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Step name</strong></td><td>Always</td><td>Read-only EXIT label.</td></tr>
+        <tr><td><strong>Comment</strong></td><td>Always</td><td>Explains why execution stops. It is displayed beside EXIT in the flow tree.</td></tr>
+        <tr><td><strong>Exit from</strong></td><td>Always</td><td>Selects Flow or Loop for a normal exit.</td></tr>
+        <tr><td><strong>Loop id</strong></td><td><code>Exit from = Loop</code></td><td>Identifies the enclosing loop that must stop.</td></tr>
+        <tr><td><strong>Exception</strong></td><td>Always</td><td>Selects normal control flow or an IntegrationRuntimeException.</td></tr>
+        <tr><td><strong>Error Message</strong></td><td><code>Exception = true</code></td><td>Failure text. Supports pipeline substitution.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Exception takes precedence over Exit from</strong><p>When Exception is true, EXIT raises <code>FLOW_EXIT_EXCEPTION</code>. It does not perform a normal Flow or Loop break, even if Exit from is set to Loop.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="flow">
+  <header class="section-heading">
+    <p class="eyebrow">Exit from Flow</p>
+    <h2>Finish the complete reusable service early</h2>
+    <p>Set <code>Exit from = Flow</code> and <code>Exception = false</code>.</p>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>Remaining child and sibling steps are skipped.</li>
+    <li>Execution does not return to steps after the container that contains EXIT.</li>
+    <li>Pipeline values and Service Output values created before EXIT remain available to the caller.</li>
+    <li>The EXIT step is traced as EXIT rather than ERROR.</li>
+    <li>FINALLY cleanup associated with an enclosing TRY still runs before the flow exit completes.</li>
+  </ul>
+  <pre class="code-contract" aria-label="Normal flow exit example"><code>IF  (${pipeline.input.orders} == $null)
+├── Map pipeline: status = NO_ORDERS
+└── EXIT
+    Exit from: Flow
+    Exception: false
+
+LOOP: process orders
+Map pipeline: status = COMPLETED</code></pre>
+  <p>When orders is null, status remains NO_ORDERS and the LOOP and final MAP steps are skipped.</p>
+</section>
+
+<section class="doc-section" id="loop">
+  <header class="section-heading">
+    <p class="eyebrow">Exit from Loop</p>
+    <h2>Break iteration and continue after LOOP</h2>
+    <p>Set <code>Exit from = Loop</code>, provide the matching Loop id, and leave Exception false.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Name LOOP</strong><p>Set a unique Id such as <code>find-customer</code> on the enclosing LOOP.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Add EXIT inside that LOOP</strong><p>Usually EXIT is placed inside an IF or SWITCH branch that identifies the stopping condition.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Select Loop as the target</strong><p>Enter the same value, <code>find-customer</code>, in EXIT's Loop id.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Continue afterward</strong><p>When EXIT runs, remaining child steps and list items are skipped; the first step after LOOP executes.</p></div></li>
+  </ol>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>The Loop id must identify an active enclosing loop</strong><p>A wrong target that is not caught by an active loop eventually fails with <code>FLOW_EXIT_ERROR</code>. Configure explicit unique IDs instead of relying on internal step identifiers.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="exception">
+  <header class="section-heading">
+    <p class="eyebrow">Exceptional exit</p>
+    <h2>Raise a controlled service failure</h2>
+    <p>Set <code>Exception = true</code> when the current condition is invalid and the caller must receive a failure.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Behavior</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Error type</td><td><code>FLOW_EXIT_EXCEPTION</code></td></tr>
+        <tr><td>Error message</td><td>Resolved from the configured Error Message.</td></tr>
+        <tr><td>Remaining normal steps</td><td>Skipped unless the failure is handled and flow logic continues through a CATCH design.</td></tr>
+        <tr><td>Caller</td><td>Receives the service failure when no enclosing TRY/CATCH handles it.</td></tr>
+        <tr><td>Monitoring</td><td>Records the step as an error with the runtime error details.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="Exceptional EXIT example"><code>Comment: Reject requests without a customer id
+Exit from: Flow
+Exception: true
+Error Message: Customer id is required for request ${pipeline.input.requestId}</code></pre>
+</section>
+
+<section class="doc-section" id="message">
+  <header class="section-heading">
+    <p class="eyebrow">Pipeline-aware Error Message</p>
+    <h2>Include useful runtime context without exposing secrets</h2>
+    <p>The Error Message supports embedded pipeline substitution.</p>
+  </header>
+  <pre class="code-contract" aria-label="EXIT error message examples"><code>Order ${pipeline.input.order.orderId} cannot be processed
+
+Unsupported channel: ${pipeline.input.order.channel}
+
+Validation failed at item ${pipeline.output.loopIndex}</code></pre>
+  <p>See <a href="#/pipeline-sub"><strong>Pipeline Sub</strong></a> for paths, lists, documents, and copying variable syntax.</p>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Do not include secrets in errors</strong><p>Error messages can appear in execution history and logs. Never substitute passwords, bearer tokens, client secrets, private keys, or confidential payloads.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="try-catch">
+  <header class="section-heading">
+    <p class="eyebrow">Interaction with TRY/CATCH/FINALLY</p>
+    <h2>Normal exits and exception exits behave differently</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>EXIT behavior inside TRY</th><th>CATCH</th><th>FINALLY</th></tr></thead>
+      <tbody>
+        <tr><td>Exception false, Exit from Flow</td><td>Does not run because this is not an IntegrationRuntimeException.</td><td>Runs cleanup before the flow finishes.</td></tr>
+        <tr><td>Exception false, matching Exit from Loop</td><td>Does not run.</td><td>Runs while the exit propagates to the target loop.</td></tr>
+        <tr><td>Exception true</td><td>Runs when a matching enclosing TRY/CATCH handles <code>FLOW_EXIT_EXCEPTION</code>.</td><td>Runs after TRY/CATCH handling.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Use Exception true when the CATCH branch must build an error response or perform recovery. Use a normal exit for an expected early-completion path.</p>
+</section>
+
+<section class="doc-section" id="examples">
+  <header class="section-heading">
+    <p class="eyebrow">Practical examples</p>
+    <h2>Choose the EXIT mode from business intent</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Use case</th><th>Configuration</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>No data is a valid outcome</td><td>Flow, Exception false</td><td>Return an empty or NO_DATA response without running unnecessary steps.</td></tr>
+        <tr><td>Stop searching after a match</td><td>Loop, matching Loop id, Exception false</td><td>Break remaining iterations and use the found result afterward.</td></tr>
+        <tr><td>Required input is missing</td><td>Exception true with contextual message</td><td>Fail the caller or route the error through CATCH.</td></tr>
+        <tr><td>Unsupported SWITCH value</td><td>EXIT in DEFAULT, Exception true</td><td>Reject an unknown operation or channel explicitly.</td></tr>
+        <tr><td>Validation branch decides to stop normally</td><td>Map final status, then Flow with Exception false</td><td>Preserve a deliberate business result without treating it as a technical error.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc-section" id="practices">
+  <header class="section-heading">
+    <p class="eyebrow">Good practices</p>
+    <h2>Make early termination obvious</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>Add a Comment explaining the business reason for EXIT.</li>
+    <li>Map the intended final Service Output before a normal Flow exit.</li>
+    <li>Use explicit unique Loop IDs and match them exactly in EXIT.</li>
+    <li>Use Exception false for expected control flow and true for an actual failure.</li>
+    <li>Write actionable Error Messages with safe identifiers, not sensitive values.</li>
+    <li>Place cleanup in FINALLY when it must run for normal completion, exit, and error paths.</li>
+    <li>Test the non-exit path, normal Flow exit, Loop exit, exceptional exit, and TRY/CATCH behavior.</li>
+  </ul>
+</section>

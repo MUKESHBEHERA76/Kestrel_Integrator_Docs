@@ -1,30 +1,209 @@
-<section class="docs-grid">
-  <h1 data-page-title>Services</h1>
+<section class="doc-hero" id="reusable-service">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Reusable Service</p>
+    <h1>Build shared integration logic once and call it where needed.</h1>
+    <p class="lead">
+      A reusable service is a project-scoped flow with a defined input and output contract. It contains mapping,
+      utilities, control flow, and calls to other project services without owning a webhook or scheduler trigger.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Reusable Service page sections">
+  <div><p class="eyebrow">On this page</p><strong>Understand and build a reusable service</strong></div>
+  <div class="toc-links">
+    <a href="#/reusable-service/concept">Concept</a>
+    <a href="#/reusable-service/editor">Editor</a>
+    <a href="#/reusable-service/io">Service I/O</a>
+    <a href="#/reusable-service/flow-steps">Flow steps</a>
+    <a href="#/reusable-service/utils">Utils</a>
+    <a href="#/reusable-service/pipeline">Pipeline</a>
+    <a href="#/reusable-service/build">Build</a>
+    <a href="#/reusable-service/call">Call a service</a>
+    <a href="#/reusable-service/test">Run and debug</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="concept">
+  <header class="section-heading">
+    <p class="eyebrow">Reusable Service concept</p>
+    <h2>A callable unit of project logic</h2>
+    <p>Use a reusable service when multiple workflows or services need the same transformation, validation, calculation, lookup, or business rule.</p>
+  </header>
   <p>
-    Reusable services package shared logic into a flow-friendly unit that can be called by workflows and other integration assets.
+    The caller supplies values defined by the service input contract. The service executes its ordered flow steps and returns
+    values defined by its output contract. This keeps shared behavior in one place and prevents developers from rebuilding the
+    same mapping or utility sequence in multiple workflows.
   </p>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Workflow</th><th>Reusable Service</th></tr></thead>
+      <tbody>
+        <tr><td>Starts from one Webhook, Scheduler, or SubWorkflow trigger.</td><td>Has no trigger. It starts when a workflow, another service, or the Run action invokes it.</td></tr>
+        <tr><td>Describes an end-to-end integration topology.</td><td>Packages a focused piece of shared logic.</td></tr>
+        <tr><td>Uses a node canvas connected by arrows.</td><td>Uses an ordered, hierarchical flow tree.</td></tr>
+        <tr><td>Can use workflow-only connectors such as HTTP Request.</td><td>Uses flow steps, built-in utilities, and calls to project services.</td></tr>
+        <tr><td>Can be enabled or disabled for operational control.</td><td>Has no enable/disable state; a saved reusable service can be run or called.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
-  <article class="docs-card" id="service-contract" data-doc-anchor="service-contract">
-    <div class="docs-card-head">
-      <h3>Input contract</h3>
-      <small>01</small>
-    </div>
-    <p>Keep the service input panel and output panel tightly defined so callers know exactly what to provide and expect back.</p>
-  </article>
+<section class="doc-section" id="editor">
+  <header class="section-heading">
+    <p class="eyebrow">Reusable Service Editor</p>
+    <h2>What developers see on the edit page</h2>
+    <p>The editor keeps the step library, ordered flow, properties, and pipeline visible together.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Editor area</th><th>What it contains</th><th>How to use it</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Header</strong></td><td>Back, service name, handbook, Service I/O, Debug, Run, and Save.</td><td>Define the contract, inspect flow-step help, test the service, and save its design.</td></tr>
+        <tr><td><strong>Step library</strong></td><td>Flow and Utils tabs with a search field.</td><td>Click or drag a step into the service. Collapse the library when more editing space is needed.</td></tr>
+        <tr><td><strong>Flow tree</strong></td><td>Ordered and nested service steps.</td><td>Move steps up or down, drag to reorder, indent steps into containers, copy steps, collapse groups, or delete them.</td></tr>
+        <tr><td><strong>Properties</strong></td><td>Configuration for the selected flow step.</td><td>Edit comments, conditions, loop sources, switch values, exit behavior, and other step-specific options.</td></tr>
+        <tr><td><strong>Pipeline</strong></td><td>Source variables, selected-step inputs and outputs, hardcoded values, and runtime variables.</td><td>Map the selected step and retain the values needed by later steps or the final service output.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
-  <article class="docs-card" id="service-reuse" data-doc-anchor="service-reuse">
-    <div class="docs-card-head">
-      <h3>Reuse logic</h3>
-      <small>02</small>
-    </div>
-    <p>Services are ideal for shared transformations, common connector logic, and repeated business rules.</p>
-  </article>
+<section class="doc-section" id="io">
+  <header class="section-heading">
+    <p class="eyebrow">Service I/O</p>
+    <h2>Define the contract before implementing the flow</h2>
+    <p>Select <strong>Service I/O</strong> in the editor header to define what callers provide and what the service returns.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Contract area</th><th>Purpose</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Input</strong></td><td>Values required from the caller.</td><td><code>${pipeline.input.customerId}</code></td></tr>
+        <tr><td><strong>Output</strong></td><td>Values returned after the service finishes.</td><td><code>${pipeline.output.customerStatus}</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Contract fields can use String, String List, Document, Document List, and the other supported variable types.
+    Documents can define nested fields or reference an existing project Data Structure. Use clear names because callers see this contract in their pipeline mapper.
+  </p>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Treat contract changes as integration changes</strong><p>Renaming or removing an input/output can break mappings in workflows and services that already call this service. Review callers after changing the Service I/O contract.</p></div>
+  </div>
+</section>
 
-  <article class="docs-card" id="service-utilities" data-doc-anchor="service-utilities">
-    <div class="docs-card-head">
-      <h3>Use utilities inside services</h3>
-      <small>03</small>
-    </div>
-    <p>When a step is not a connector, pick a utility from the catalog and map its parameters directly from pipeline fields.</p>
-  </article>
+<section class="doc-section" id="flow-steps">
+  <header class="section-heading">
+    <p class="eyebrow">Flow tab</p>
+    <h2>Control execution with ordered and nested steps</h2>
+    <p>The Flow tab provides structure and control logic. Containers can own child steps in the flow tree.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Flow step</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Map pipeline</strong></td><td>Copies, transforms, hardcodes, drops, or creates values in the service pipeline.</td></tr>
+        <tr><td><strong><a href="#/if-else">IF / ELSE</a></strong></td><td>Runs the first branch whose pipeline-based condition matches. Optional ELSE IF and ELSE branches can be added.</td></tr>
+        <tr><td><strong><a href="#/loop">LOOP</a></strong></td><td>Iterates a String List, Document List, or other supported list variable and runs its child steps for each item.</td></tr>
+        <tr><td><strong><a href="#/switch-case">SWITCH</a></strong></td><td>Evaluates one expression and routes execution to matching case or default branches.</td></tr>
+        <tr><td><strong>Process Group</strong></td><td>Groups related child steps to keep a larger service organized.</td></tr>
+        <tr><td><strong><a href="#/error-handling">TRY / CATCH / FINALLY</a></strong></td><td>Handles step failures. CATCH receives error information; FINALLY performs cleanup after TRY/CATCH.</td></tr>
+        <tr><td><strong><a href="#/exit">EXIT</a></strong></td><td>Stops the current loop or the complete service. It can optionally raise an exception with a pipeline-substituted error message.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The handbook icon in the editor header provides short in-product guidance for these flow steps.</p>
+</section>
+
+<section class="doc-section" id="utils">
+  <header class="section-heading">
+    <p class="eyebrow">Utils tab</p>
+    <h2>Use built-in operations and other project services</h2>
+    <p>The Utils tab contains the utility catalog and available project reusable services. See the <a href="#/utils"><strong>complete Utils reference</strong></a> for each built-in operation's input/output contract and examples.</p>
+  </header>
+  <ul class="docs-bullet-list">
+    <li><strong>Built-in utilities</strong> — String, Math, Date, JSON, XML, List, Hashtable, KVS, and Flow operations.</li>
+    <li><strong>Project services</strong> — saved reusable services from the current project that can be invoked as service-call steps.</li>
+    <li><strong>Search</strong> — filter by utility, service, or group name before adding the step.</li>
+    <li><strong>Utility help</strong> — inspect the utility inputs, behavior, and output while designing the service.</li>
+  </ul>
+  <p>After adding a utility or service call, select it and use the Pipeline panel to supply its inputs and retain its outputs.</p>
+</section>
+
+<section class="doc-section" id="pipeline">
+  <header class="section-heading">
+    <p class="eyebrow">Service Pipeline</p>
+    <h2>Move data through each selected step</h2>
+    <p>The service pipeline uses the same typed mapping model as workflow steps.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Pipeline action</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Map</strong></td><td>Connect an available pipeline value to a selected step input, or connect the step result to pipeline output.</td></tr>
+        <tr><td><strong>Hardcode</strong></td><td>Provide a fixed String, Boolean, String List, Document, Document List, or JSON-compatible value.</td></tr>
+        <tr><td><strong>Runtime variable</strong></td><td>Create a new output variable, including nested structures, for later service steps.</td></tr>
+        <tr><td><strong>Copy</strong></td><td>Copy the selected normalized pipeline expression for use in conditions, messages, or hardcoded substitutions.</td></tr>
+        <tr><td><strong>Drop / Undrop</strong></td><td>Remove an unwanted branch from the pipeline or restore it.</td></tr>
+        <tr><td><strong>List index mapping</strong></td><td>Map a complete list or a selected list item using a fixed or pipeline-provided numeric index.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>See <a href="#/pipeline-sub"><strong>Pipeline Sub</strong></a> for String, String List, Document, and Document List syntax and copy instructions.</p>
+</section>
+
+<section class="doc-section" id="build">
+  <header class="section-heading">
+    <p class="eyebrow">Build sequence</p>
+    <h2>A simple way to create a reusable service</h2>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Define Service I/O</strong><p>Create the smallest clear input and output contract needed by callers.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Add flow structure</strong><p>Add Map pipeline, conditions, loops, error handling, or process groups in execution order.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add utilities and project services</strong><p>Use the Utils tab for the transformations and shared operations required by the implementation.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Order and nest steps</strong><p>Move or drag steps in the tree. Indent steps inside LOOP, IF, SWITCH, TRY/CATCH, or process-group containers.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Configure properties</strong><p>Select every step and define its condition, source list, case value, exit behavior, or service target.</p></div></li>
+    <li><span class="timeline-number">6</span><div><strong>Map the pipeline</strong><p>Supply every required Step In value and place the final results into the Service I/O output paths.</p></div></li>
+    <li><span class="timeline-number">7</span><div><strong>Run or debug</strong><p>Test representative input, inspect step behavior, and correct mappings before saving the final design.</p></div></li>
+    <li><span class="timeline-number">8</span><div><strong>Save</strong><p>Persist the reusable service so workflows and other services can discover its current contract.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="call">
+  <header class="section-heading">
+    <p class="eyebrow">Calling a service</p>
+    <h2>Invoke it from a workflow or another reusable service</h2>
+    <p>Saved project services appear as callable items in the caller's palette.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open the caller</strong><p>Edit a workflow or another reusable service in the same project.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Find the project service</strong><p>Use the Utils/service palette search and add the reusable service as a service-call step.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Map the service input</strong><p>The caller sees the saved Service I/O input fields. Map its pipeline values to those fields.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Map the service output</strong><p>Place returned values into the caller's pipeline for downstream steps.</p></div></li>
+  </ol>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Calls are project-scoped</strong><p>The service palette resolves reusable services from the current project. Use unique, descriptive names so developers select the intended service.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="test">
+  <header class="section-heading">
+    <p class="eyebrow">Run, debug, and operations</p>
+    <h2>Test the service independently</h2>
+    <p>A reusable service does not need to be enabled before it can run.</p>
+  </header>
+  <ul class="docs-bullet-list">
+    <li><strong>Run</strong> — execute the reusable service with test input and inspect the result.</li>
+    <li><strong>Debug</strong> — follow execution step by step and identify the currently executing flow-tree item.</li>
+    <li><strong>Save</strong> — persist changes before expecting callers to use the updated contract or implementation.</li>
+    <li><strong>No enable/disable state</strong> — every valid saved reusable service is callable.</li>
+    <li><strong>Execution history</strong> — reusable service executions appear in the monitoring experience for troubleshooting.</li>
+  </ul>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>A reusable service has no external trigger</strong><p>Use a workflow when the integration must start from a webhook or scheduler. The workflow can then call the reusable service for its shared implementation.</p></div>
+  </div>
 </section>

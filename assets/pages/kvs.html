@@ -1,0 +1,186 @@
+<section class="doc-hero kvs-hero" id="kvs">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / KVS</p>
+    <h1>Reusable project values, available at workflow runtime.</h1>
+    <p class="lead">
+      KVS means Key Value Store. It keeps related configuration under a named store, lets every key contain one or more ordered values,
+      and gives workflows a consistent way to retrieve them without hard-coding values into each design.
+    </p>
+    <div class="doc-actions">
+      <a class="primary-action" href="#/kvs/create-kvs">Add a KVS</a>
+      <a class="secondary-action" href="#/kvs/workflow-usage">Use KVS in a workflow</a>
+    </div>
+  </div>
+  <aside class="hero-aside" aria-label="KVS summary">
+    <span class="aside-icon kvs-icon" aria-hidden="true">K/V</span>
+    <p>
+      A KVS is scoped to one project. Values are encrypted before storage; password mode additionally prevents management screens and APIs from revealing them.
+      <strong>Centralized, reusable, and encrypted</strong>
+    </p>
+  </aside>
+</section>
+
+<nav class="page-toc" aria-label="KVS page sections">
+  <div><p class="eyebrow">On this page</p><strong>Configure and use a Key Value Store</strong></div>
+  <div class="toc-links">
+    <a href="#/kvs/what-is-kvs">Concept</a>
+    <a href="#/kvs/create-kvs">Add a KVS</a>
+    <a href="#/kvs/password-mode">Is Password</a>
+    <a href="#/kvs/workflow-usage">Workflow usage</a>
+    <a href="#/kvs/runtime-behavior">Runtime</a>
+    <a href="#/kvs/rules">Rules</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="what-is-kvs">
+  <header class="section-heading">
+    <p class="eyebrow">KVS concept</p>
+    <h2>Store once, resolve wherever the project needs it</h2>
+    <p>
+      A store groups related settings such as department codes, routing targets, feature switches, recipient lists, or credentials.
+      Each key has at least one value and can hold multiple values when a workflow needs a list.
+    </p>
+  </header>
+  <div class="kvs-model" role="img" aria-label="Project contains a KVS store. The store contains named keys, and every key contains one or more ordered values">
+    <div class="kvs-model-node project-node"><span>Scope</span><strong>Project</strong><small>Demo</small></div>
+    <span class="model-arrow" aria-hidden="true">→</span>
+    <div class="kvs-model-node store-node"><span>KVS store</span><strong>employee_store</strong><small>Related settings</small></div>
+    <span class="model-arrow" aria-hidden="true">→</span>
+    <div class="kvs-key-stack">
+      <div><span>employee_id</span><strong>12345</strong></div>
+      <div><span>department</span><strong>finance</strong></div>
+      <div><span>roles</span><strong>admin · user · viewer</strong></div>
+    </div>
+  </div>
+  <div class="benefit-grid">
+    <article><span aria-hidden="true">01</span><strong>Avoid hard-coding</strong><p>Change a shared setting without editing the same literal in every workflow.</p></article>
+    <article><span aria-hidden="true">02</span><strong>Keep project isolation</strong><p>Runtime lookup always uses the project ID of the executing artifact.</p></article>
+    <article><span aria-hidden="true">03</span><strong>Support lists</strong><p>One key can return its first value or all ordered values.</p></article>
+    <article><span aria-hidden="true">04</span><strong>Protect secrets</strong><p>Password mode keeps stored credentials masked in the management experience.</p></article>
+  </div>
+</section>
+
+<section class="doc-section" id="create-kvs">
+  <header class="section-heading">
+    <p class="eyebrow">Create a store</p>
+    <h2>How to add a KVS to a project</h2>
+    <p>Administrators and developers can create and manage KVS stores. Choose password mode when the store is first created.</p>
+  </header>
+  <ol class="runtime-timeline kvs-steps">
+    <li><span class="timeline-number">1</span><div><strong>Open the project</strong><p>Select the project that owns the configuration. The KVS will not be shared automatically with other projects.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Open KVS and select Add KVS</strong><p>The KVS page lists the existing stores for the current project and identifies each as Plain or Password.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Name and describe the store</strong><p>Use letters and underscores only—for example, <code>employee_store</code> or <code>integration_secrets</code>. The name must be unique inside the project.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Choose Is Password</strong><p>Enable it for credentials or other values that must never be returned to the management UI/API. This choice is locked after creation.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Add keys and values</strong><p>Every store needs at least one key, and every key needs at least one value. Add more value rows when that key represents an ordered list.</p></div></li>
+    <li><span class="timeline-number">6</span><div><strong>Create the store</strong><p>Kestrel encrypts every value before saving it and refreshes the project metadata cache used by workflow lookups.</p></div></li>
+  </ol>
+  <div class="example-panel">
+    <div><p class="eyebrow">Example</p><strong>employee_store</strong><small>Plain configuration</small></div>
+    <dl><div><dt>employee_id</dt><dd>12345</dd></div><div><dt>department</dt><dd>finance</dd></div><div><dt>roles</dt><dd>admin, user, viewer</dd></div></dl>
+  </div>
+</section>
+
+<section class="doc-section" id="password-mode">
+  <header class="section-heading">
+    <p class="eyebrow">Is Password</p>
+    <h2>Encryption is always on; visibility is the difference</h2>
+    <p>
+      The <strong>Is Password</strong> option does not decide whether Kestrel encrypts values. All KVS values are encrypted before PostgreSQL storage.
+      It decides whether authorized management users can read the original value again.
+    </p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table kvs-comparison">
+      <thead><tr><th>Behavior</th><th>Is Password off</th><th>Is Password on</th></tr></thead>
+      <tbody>
+        <tr><td>Stored in PostgreSQL</td><td>Encrypted</td><td>Encrypted</td></tr>
+        <tr><td>View or edit screen</td><td>Decrypted value is shown to an authorized user</td><td>Only <code>••••••••</code> is shown</td></tr>
+        <tr><td>Management API response</td><td>Returns the decrypted value</td><td>Returns a mask, never the secret</td></tr>
+        <tr><td>Existing value during edit</td><td>Can be read and changed</td><td>Leave the masked value field blank to preserve it</td></tr>
+        <tr><td>Replace a value</td><td>Enter and save the new value</td><td>Enter a new value; Kestrel encrypts it and replaces the old secret</td></tr>
+        <tr><td>Workflow lookup</td><td>Decrypted for the running workflow</td><td>Decrypted for the running workflow</td></tr>
+        <tr><td>Change mode later</td><td colspan="2">The UI locks this setting after the store is created. Choose the mode deliberately.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-critical security-callout">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div>
+      <strong>A retrieved secret enters the workflow pipeline</strong>
+      <p>Password mode protects management visibility and storage. After a workflow retrieves a secret, do not send it to Logger/Pipeline Logger or include it in snapshots. Use secret-like field names so baseline masking can recognize it, and map it only to the connector input that needs it.</p>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section" id="workflow-usage">
+  <header class="section-heading">
+    <p class="eyebrow">Workflow utilities</p>
+    <h2>Read KVS values with three utility operations</h2>
+    <p>Use the store and key reference format <code>kvsName.keyName</code>. Pipeline substitution can provide these inputs dynamically.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table utility-table">
+      <thead><tr><th>Utility</th><th>Input</th><th>Output</th><th>Use when</th></tr></thead>
+      <tbody>
+        <tr><td><code>kvs:getValue</code></td><td><code>employee_store.employee_id</code></td><td><code>{ "value": "12345" }</code></td><td>You need the first value for one key.</td></tr>
+        <tr><td><code>kvs:getValues</code></td><td><code>employee_store.roles</code></td><td><code>{ "values": ["admin", "user", "viewer"] }</code></td><td>You need every ordered value for one key.</td></tr>
+        <tr><td><code>kvs:getValuesList</code></td><td><code>[employee_store.employee_id, employee_store.department]</code></td><td><code>{ "values": ["12345", "finance"] }</code></td><td>You need the first value from several keys in the same input order.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="error-behavior-grid">
+    <article><span class="status-chip quiet">Default</span><h3><code>throwErrorOnFailure = false</code></h3><p>A missing or invalid reference returns an empty string or empty list, allowing the workflow to decide what happens next.</p></article>
+    <article><span class="status-chip strict">Strict</span><h3><code>throwErrorOnFailure = true</code></h3><p>An invalid reference, missing KVS, or missing key fails the step with <code>UTILITY_ERROR</code>. The option must resolve to literal <code>true</code> or <code>false</code>.</p></article>
+  </div>
+</section>
+
+<section class="doc-section" id="runtime-behavior">
+  <header class="section-heading">
+    <p class="eyebrow">Runtime behavior</p>
+    <h2>How a saved value reaches a running workflow</h2>
+    <p>The database remains persistent storage. A bounded metadata cache reduces repeated reads, while decryption occurs inside the KVS lookup utility.</p>
+  </header>
+  <div class="kvs-runtime-flow" role="img" aria-label="KVS values move from management UI through the API, encryption, PostgreSQL and metadata cache, then through runtime decryption into the workflow pipeline">
+    <div><span>1</span><strong>Management UI</strong><small>Enter values</small></div>
+    <i aria-hidden="true">→</i>
+    <div><span>2</span><strong>KVS service</strong><small>Validate + encrypt</small></div>
+    <i aria-hidden="true">→</i>
+    <div><span>3</span><strong>PostgreSQL</strong><small>Persistent encrypted values</small></div>
+    <i aria-hidden="true">⇄</i>
+    <div><span>4</span><strong>Metadata cache</strong><small>Memory or optional Redis</small></div>
+    <i aria-hidden="true">→</i>
+    <div><span>5</span><strong>KVS utility</strong><small>Project lookup + decrypt</small></div>
+    <i aria-hidden="true">→</i>
+    <div><span>6</span><strong>Pipeline</strong><small>Value available to steps</small></div>
+  </div>
+  <div class="runtime-notes">
+    <article><strong>Project-scoped resolution</strong><p>The worker injects the executing workflow's project ID. A store with the same name in another project is a different store.</p></article>
+    <article><strong>Cache is not the source of truth</strong><p>Kestrel can use its in-memory metadata cache or Redis. Cache misses fall back to PostgreSQL, and create/update/delete operations invalidate cached KVS metadata.</p></article>
+    <article><strong>Ordered results</strong><p>Keys and their values retain their configured order. <code>getValuesList</code> also preserves the order of the requested references.</p></article>
+  </div>
+</section>
+
+<section class="doc-section" id="rules">
+  <header class="section-heading">
+    <p class="eyebrow">Rules and management</p>
+    <h2>What Kestrel validates</h2>
+    <p>These rules come directly from the KVS API and runtime implementation.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table rules-table">
+      <thead><tr><th>Item</th><th>Rule</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>KVS name</td><td>Required; letters and underscores only; unique within its project</td><td><code>integration_secrets</code></td></tr>
+        <tr><td>Key name</td><td>Required; letters and underscores only; unique within the KVS</td><td><code>client_secret</code></td></tr>
+        <tr><td>Keys</td><td>At least one key per store</td><td><code>endpoint</code></td></tr>
+        <tr><td>Values</td><td>At least one value per key; multiple ordered values are supported</td><td><code>primary</code>, <code>backup</code></td></tr>
+        <tr><td>Runtime reference</td><td>KVS name and key name separated by the first period</td><td><code>integration_secrets.client_secret</code></td></tr>
+        <tr><td>Management roles</td><td>Administrator and Developer can create, rename, edit, and delete</td><td>Other authorized roles use the read-only experience</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Names do not accept digits, spaces, or hyphens</strong><p>Use <code>employee_store</code>, not <code>employee-store-1</code>. The same naming rule applies to keys.</p></div>
+  </div>
+</section>

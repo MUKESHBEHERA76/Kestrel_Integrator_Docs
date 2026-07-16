@@ -1,0 +1,74 @@
+<section class="doc-hero" id="utils">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Utils</p>
+    <h1>Use built-in operations without writing connector code.</h1>
+    <p class="lead">
+      Utilities perform focused transformations, calculations, lookups, and flow operations. Select a utility from
+      the nested menu for its exact inputs, outputs, data types, runtime behavior, example, and failure notes.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Utils page sections">
+  <div><p class="eyebrow">On this page</p><strong>Using utility steps</strong></div>
+  <div class="toc-links">
+    <a href="#/utils/using-utilities">Use a utility</a>
+    <a href="#/utils/mapping-model">Mapping model</a>
+    <a href="#/utils/catalog">Catalog</a>
+    <a href="#/utils/errors">Errors</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="using-utilities">
+  <header class="section-heading">
+    <p class="eyebrow">Add and configure</p>
+    <h2>Select Utils, then map the operation</h2>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open the Utils palette</strong><p>In Workflow or Reusable Service, select the Utils tab and add the required operation.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Open its pipeline</strong><p>Select the utility step to view its typed Step In/Service In and Step Out/Service Out contract.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Map or hardcode inputs</strong><p>Connect pipeline values to required inputs. Optional inputs may be omitted when the documented default is suitable.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Map outputs explicitly</strong><p>Connect only the outputs needed by downstream steps. Utility output is not automatically copied to Pipeline Out.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Test edge cases</strong><p>Test empty values, invalid formats, list boundaries, time zones, and failure handling before deployment.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="mapping-model">
+  <header class="section-heading">
+    <p class="eyebrow">Pipeline contract</p>
+    <h2>Inputs and outputs are isolated around the utility</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Editor label</th><th>Logical path</th><th>Developer action</th></tr></thead>
+      <tbody>
+        <tr><td>Step In / Service In</td><td><code>${service.input.fieldName}</code></td><td>Map from Pipeline In or hardcode a value.</td></tr>
+        <tr><td>Step Out / Service Out</td><td><code>${service.output.fieldName}</code></td><td>Map to a chosen Pipeline Out variable.</td></tr>
+        <tr><td>Pipeline values</td><td><code>${pipeline.input...}</code> or <code>${pipeline.output...}</code></td><td>Provide runtime data and retain selected results.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>See <a href="#/pipeline-sub">Pipeline Sub</a> for path syntax and copying variable expressions.</p>
+</section>
+
+<section class="doc-section" id="catalog">
+  <header class="section-heading">
+    <p class="eyebrow">Utility catalog</p>
+    <h2>Browse all executable editor utilities</h2>
+    <p>Availability is stated on each detail page because the workflow and reusable-service palettes are currently not identical.</p>
+  </header>
+  <div data-utility-catalog></div>
+</section>
+
+<section class="doc-section" id="errors">
+  <header class="section-heading">
+    <p class="eyebrow">Failure behavior</p>
+    <h2>Invalid utility input fails the step</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>Unsupported operations, invalid numbers, malformed JSON/XML, invalid dates, and invalid time zones raise a runtime utility error.</li>
+    <li>A utility error stops the normal branch unless an enclosing <a href="#/error-handling">TRY/CATCH</a> handles it.</li>
+    <li>Do not log KVS secrets, decoded credentials, tokens, or confidential documents while troubleshooting.</li>
+    <li>Use the exact types shown in each utility contract; apparent scalar values are frequently represented as Strings in the pipeline editor.</li>
+  </ul>
+</section>

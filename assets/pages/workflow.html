@@ -1,30 +1,170 @@
-<section class="docs-grid">
-  <h1 data-page-title>Workflow</h1>
+<section class="doc-hero" id="workflow">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Workflow</p>
+    <h1>Design an integration as connected, executable steps.</h1>
+    <p class="lead">
+      A workflow defines how an integration starts, which operations run, how data moves between them,
+      how failures are handled, and where execution finishes.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Workflow page sections">
+  <div><p class="eyebrow">On this page</p><strong>Understand and build a workflow</strong></div>
+  <div class="toc-links">
+    <a href="#/workflow/what-is-workflow">Concept</a>
+    <a href="#/workflow/editor">Editor</a>
+    <a href="#/workflow/triggers">Triggers</a>
+    <a href="#/workflow/utils">Utils</a>
+    <a href="#/workflow/pipeline">Pipeline</a>
+    <a href="#/workflow/build">Build a workflow</a>
+    <a href="#/workflow/save-run">Save and run</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="what-is-workflow">
+  <header class="section-heading">
+    <p class="eyebrow">Workflow concept</p>
+    <h2>One project-owned integration flow</h2>
+    <p>A workflow belongs to a project and combines a trigger, connected steps, pipeline mappings, branching rules, and error handling into one versioned design.</p>
+  </header>
   <p>
-    Workflow design connects triggers, actions, branches, mapping panels, and runtime variables into a single execution pipeline.
+    At runtime, Kestrel executes the saved workflow topology from its trigger through the connected arrows.
+    Each step reads its mapped inputs, performs one operation, and writes outputs that later steps can use.
+    A workflow can call external systems through connectors, transform values through utilities, invoke project services,
+    return an HTTP response, log useful information, and finish explicitly.
   </p>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>A workflow is different from a reusable service</strong><p>A workflow owns an execution entry point. A reusable service packages shared logic that another flow calls and does not require its own external trigger.</p></div>
+  </div>
+</section>
 
-  <article class="docs-card" id="workflow-canvas" data-doc-anchor="workflow-canvas">
-    <div class="docs-card-head">
-      <h3>Canvas and steps</h3>
-      <small>01</small>
-    </div>
-    <p>Drag steps onto the canvas, connect them with visible paths, and keep the canvas responsive to screen size changes.</p>
-  </article>
+<section class="doc-section" id="editor">
+  <header class="section-heading">
+    <p class="eyebrow">Workflow Editor</p>
+    <h2>What developers see on the edit page</h2>
+    <p>The editor separates workflow navigation, available steps, topology, configuration, and validation.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Editor area</th><th>What it contains</th><th>How to use it</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Header</strong></td><td>Back, workflow name, workflow type, Delete, Run, Save, workflow information, and issue indicators.</td><td>Use it to leave the editor, manage the design, review warnings, save, or start an eligible workflow.</td></tr>
+        <tr><td><strong>Left palette</strong></td><td>Search plus Connectors, Workflow Trigger, and Utils tabs.</td><td>Find a step and drag it onto the canvas. The palette can be collapsed when more canvas space is needed.</td></tr>
+        <tr><td><strong>Canvas</strong></td><td>Trigger, connector, utility, service, action, exception, and end nodes connected by arrows.</td><td>Drag steps into position and connect an output handle to the next step's input handle.</td></tr>
+        <tr><td><strong>Step configurator</strong></td><td>Settings specific to the selected trigger, connector, utility, or action.</td><td>Double-click a step to configure it. Available fields depend on the step type.</td></tr>
+        <tr><td><strong>Pipeline mapper</strong></td><td>Pipeline In, Step In, Step Out, and Pipeline Out variables.</td><td>Use the settings icon to map step inputs and outputs, create runtime variables, hardcode values, or copy pipeline syntax.</td></tr>
+        <tr><td><strong>Arrows</strong></td><td>Execution paths between steps, including optional conditions.</td><td>Connect the topology. Select or double-click an arrow to define a branch condition using pipeline expressions.</td></tr>
+        <tr><td><strong>Issues panel</strong></td><td>Missing or invalid workflow configuration.</td><td>Select an issue to locate the affected step, correct it, and review again before saving.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
-  <article class="docs-card" id="workflow-mapping" data-doc-anchor="workflow-mapping">
-    <div class="docs-card-head">
-      <h3>Pipeline mapping</h3>
-      <small>02</small>
-    </div>
-    <p>Map pipeline input and output values while preserving the connectors that show how data moves across the flow.</p>
-  </article>
+<section class="doc-section" id="triggers">
+  <header class="section-heading">
+    <p class="eyebrow">Workflow Trigger</p>
+    <h2>The trigger defines how execution begins</h2>
+    <p>Every workflow requires one trigger, and only one trigger is allowed. Add it first; Connectors and Utils unlock after a trigger exists.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Trigger</th><th>Use it when</th><th>Key configuration</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Webhook Trigger</strong></td><td>An external client must start the workflow through HTTP.</td><td>Resource name, HTTP method, expected query parameters and headers, plus optional Basic or API-key authentication alias. The incoming request becomes available to the workflow pipeline.</td></tr>
+        <tr><td><strong>Scheduler Trigger</strong></td><td>The workflow must run on a time-based schedule.</td><td>Cron schedule and scheduler state. The workflow must be enabled before its scheduler can be enabled.</td></tr>
+        <tr><td><strong>SubWorkflow Trigger</strong></td><td>Another workflow must invoke this workflow as a reusable child flow.</td><td>Workflow input and output signature. The editor exposes a Workflow I/O action for defining the contract.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>The trigger is the first topology step</strong><p>Connect the trigger to the first executable step. If you need a different trigger type, remove the existing trigger before adding another one.</p></div>
+  </div>
+</section>
 
-  <article class="docs-card" id="workflow-monitoring" data-doc-anchor="workflow-monitoring">
-    <div class="docs-card-head">
-      <h3>Monitoring</h3>
-      <small>03</small>
-    </div>
-    <p>Use execution logs to inspect step status, retries, failures, and runtime output after a run completes.</p>
-  </article>
+<section class="doc-section" id="utils">
+  <header class="section-heading">
+    <p class="eyebrow">Utils</p>
+    <h2>Small built-in operations for common data work</h2>
+    <p>Utilities perform focused transformations without requiring an external connection or a custom reusable service. See the <a href="#/utils"><strong>complete Utils reference</strong></a> for each operation's typed inputs, outputs, examples, and runtime notes.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Utility group</th><th>Typical use</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr><td><strong>String</strong></td><td>Build, inspect, normalize, split, encode, or decode text.</td><td><code>string:concat</code>, <code>string:replace</code>, <code>string:tokenize</code>, <code>string:base64Encode</code></td></tr>
+        <tr><td><strong>Math</strong></td><td>Calculate, compare, round, and convert numeric values.</td><td><code>math:addInts</code>, <code>math:divideFloats</code>, <code>math:roundNumber</code></td></tr>
+        <tr><td><strong>Date</strong></td><td>Get, format, compare, or increment dates.</td><td><code>date:getCurrentDate</code>, <code>date:dateFormat</code>, <code>date:incrementDate</code></td></tr>
+        <tr><td><strong>JSON and XML</strong></td><td>Convert between documents, JSON text, and XML text.</td><td><code>json:jsonToDocument</code>, <code>json:documentToJSON</code>, <code>xml:xmlToDoc</code></td></tr>
+        <tr><td><strong>List</strong></td><td>Append items or obtain a list size.</td><td><code>list:appendToStringList</code>, <code>list:appendToDocumentList</code>, <code>list:sizeOfList</code></td></tr>
+        <tr><td><strong>Hashtable</strong></td><td>Create and manipulate key/value objects.</td><td><code>hashtable:createHashtable</code>, <code>hashtable:get</code>, <code>hashtable:put</code></td></tr>
+        <tr><td><strong>KVS</strong></td><td>Read project configuration or secrets from a named Key Value Store.</td><td><code>kvs:getValue</code>, <code>kvs:getValues</code>, <code>kvs:getValuesList</code></td></tr>
+        <tr><td><strong>Flow</strong></td><td>Influence execution behavior.</td><td><code>flow:throwExceptionForRetry</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>How to use a utility</h3>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open Utils</strong><p>Add and configure the workflow trigger first, then select the Utils tab in the palette.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Find the utility</strong><p>Use the palette search or browse the grouped utility names.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Drag it onto the canvas</strong><p>Place the utility in the required execution order and connect the previous step to it.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Map Step In</strong><p>Open pipeline settings and map the source pipeline values to the utility's required input fields.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Map Step Out</strong><p>Map the utility result to Pipeline Out so later steps can consume it, then connect the next arrow.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="pipeline">
+  <header class="section-heading">
+    <p class="eyebrow">Data movement</p>
+    <h2>The pipeline carries data between workflow steps</h2>
+    <p>Topology controls execution order; pipeline mapping controls values.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Mapper column</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Pipeline In</strong></td><td>Values already available before the selected step runs.</td></tr>
+        <tr><td><strong>Step In</strong></td><td>The selected step's input contract. Map or hardcode the values the step requires.</td></tr>
+        <tr><td><strong>Step Out</strong></td><td>Values produced by the selected step.</td></tr>
+        <tr><td><strong>Pipeline Out</strong></td><td>Values retained for downstream steps.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>For direct expressions, list indexing, document fields, and copying variable paths, see <a href="#/pipeline-sub"><strong>Pipeline Sub</strong></a>.</p>
+</section>
+
+<section class="doc-section" id="build">
+  <header class="section-heading">
+    <p class="eyebrow">Overall workflow</p>
+    <h2>A practical build sequence</h2>
+    <p>Following the same order makes the editor easier to understand and reduces validation issues.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Add and configure one trigger</strong><p>Choose Webhook, Scheduler, or SubWorkflow based on who starts the execution.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Add an Exception Handler</strong><p>Every workflow requires one exception handler with a connected recovery path.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add connectors, utilities, services, and actions</strong><p>Drag only the steps needed for the integration and keep each step focused.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Connect the topology</strong><p>Draw arrows in execution order. Add conditions only where the flow branches.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Configure every step</strong><p>Double-click each node and provide its required design-time options.</p></div></li>
+    <li><span class="timeline-number">6</span><div><strong>Map data</strong><p>Open pipeline settings for each step and map Step In and Step Out deliberately.</p></div></li>
+    <li><span class="timeline-number">7</span><div><strong>Add the intended outcome</strong><p>Use Send HttpResponse for request-driven responses and Workflow End for an explicit terminal step where appropriate.</p></div></li>
+    <li><span class="timeline-number">8</span><div><strong>Review issues and save</strong><p>Correct missing trigger, exception handling, connector configuration, and other reported problems before execution.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="save-run">
+  <header class="section-heading">
+    <p class="eyebrow">Save and execution</p>
+    <h2>Validate the design before running it</h2>
+    <p>Save persists a new workflow definition version after validation. Run eligibility depends on the trigger type.</p>
+  </header>
+  <ul class="docs-bullet-list">
+    <li><strong>Save</strong> — review the issues indicator first, then save the configured topology and mappings.</li>
+    <li><strong>Run</strong> — manual editor execution is available for eligible trigger types such as Scheduler and SubWorkflow.</li>
+    <li><strong>Webhook</strong> — invoke the generated trigger URL using its configured HTTP method instead of the editor Run button.</li>
+    <li><strong>Scheduler</strong> — enable the workflow before enabling its scheduler.</li>
+    <li><strong>Enabled state</strong> — disabling a workflow prevents scheduled execution without deleting its design.</li>
+    <li><strong>Monitoring</strong> — use Monitor → Local Analytics for PostgreSQL-backed execution history and OpenSearch Analytics when external log search is configured.</li>
+  </ul>
 </section>

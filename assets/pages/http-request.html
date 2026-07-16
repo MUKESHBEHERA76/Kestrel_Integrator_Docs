@@ -1,0 +1,275 @@
+<section class="doc-hero" id="http-request">
+  <div class="hero-copy">
+    <p class="eyebrow">Connector / HTTP Request</p>
+    <h1 data-page-title>Call REST, GraphQL, and SOAP APIs from a workflow.</h1>
+    <p class="lead">
+      HTTP Request is a workflow-only connector. Its configurator selects the API type; its pipeline supplies the URL,
+      headers, authentication, request data, timeout, and protocol-specific values at runtime.
+    </p>
+    <div class="doc-actions">
+      <a class="primary-action" href="#/http-request/getting-started">Add the connector</a>
+      <a class="secondary-action" href="#/http-request/pipeline-inputs">View pipeline inputs</a>
+    </div>
+  </div>
+  <aside class="hero-aside" aria-label="HTTP Request summary">
+    <span class="aside-icon" aria-hidden="true">HTTP</span>
+    <p><strong>Raw response contract</strong> The connector returns the status code, response headers, and response body without imposing a data structure.</p>
+  </aside>
+</section>
+
+<nav class="page-toc" aria-label="HTTP Request page sections">
+  <div><p class="eyebrow">On this page</p><strong>Complete HTTP Request developer guide</strong></div>
+  <div class="toc-links">
+    <a href="#/http-request/getting-started">Setup</a>
+    <a href="#/http-request/pipeline-inputs">Inputs</a>
+    <a href="#/http-request/authentication">Authentication</a>
+    <a href="#/http-request/rest">REST</a>
+    <a href="#/http-request/graphql">GraphQL</a>
+    <a href="#/http-request/soap">SOAP</a>
+    <a href="#/http-request/multipart">Multipart</a>
+    <a href="#/http-request/outputs">Outputs</a>
+    <a href="#/http-request/runtime">Runtime</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="getting-started">
+  <header class="section-heading">
+    <p class="eyebrow">Getting started</p>
+    <h2>Add and configure the connector</h2>
+    <p>HTTP Request is available in the Workflow Editor and is intentionally not available in the Reusable Service Editor.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open a workflow</strong><p>Drag <strong>HTTP Request</strong> from the HTTP Request connector category onto the workflow canvas.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Open the configurator</strong><p>Double-click the step. Connector name is read-only; Comment is editable.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Select API Type</strong><p>Choose REST, GraphQL, or SOAP. The workflow cannot be saved while the API type is missing.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Open pipeline settings</strong><p>Select the step and use its settings icon. The Step In fields change to match the selected API type.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Map deliberately</strong><p>Connect pipeline values or hardcode only the intended fields. HTTP Request does not automatically copy incoming fields into headers or other inputs.</p></div></li>
+    <li><span class="timeline-number">6</span><div><strong>Map the response</strong><p>Map statusCode, responseHeaders, and responseBody to the pipeline output fields needed by later steps.</p></div></li>
+  </ol>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Changing API Type changes the Step In contract</strong><p>Review mappings after switching between REST, GraphQL, and SOAP because protocol-specific inputs are rebuilt for the selected type.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="pipeline-inputs">
+  <header class="section-heading">
+    <p class="eyebrow">Common pipeline contract</p>
+    <h2>Inputs available for every API type</h2>
+    <p>Every field supports mapping from the workflow pipeline. Strings inside mapped documents and lists also support pipeline substitution.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Step In field</th><th>Type</th><th>Required</th><th>Runtime behavior</th></tr></thead>
+      <tbody>
+        <tr><td><code>url</code></td><td>String</td><td>Yes</td><td>Absolute target endpoint. Query parameters are appended after URL encoding.</td></tr>
+        <tr><td><code>headers</code></td><td>Document</td><td>No</td><td>Explicit request headers only. Nothing from the incoming webhook or previous step is copied automatically.</td></tr>
+        <tr><td><code>queryParams</code></td><td>Document</td><td>No</td><td>Key/value query parameters. Existing query text in the URL is preserved.</td></tr>
+        <tr><td><code>timeoutMillis</code></td><td>String/number</td><td>No</td><td>Positive integer in milliseconds. Default is 30,000 ms. One deadline covers OAuth token retrieval and the API call.</td></tr>
+        <tr><td><code>authentication</code></td><td>Document</td><td>No</td><td>Optional structured authentication settings described below.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Map, hardcode, or substitute</strong><p>An exact expression such as <code>${pipeline.input.endpoint}</code> keeps the original value type. Embedded expressions such as <code>https://api.example.com/users/${pipeline.input.userId}</code> are substituted into the surrounding string. The same recursive substitution applies inside headers, query parameters, authentication, GraphQL variables, form fields, and attachment documents.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="authentication">
+  <header class="section-heading">
+    <p class="eyebrow">Authentication document</p>
+    <h2>Build authorization at runtime</h2>
+    <p>Map credentials from secure pipeline values. Do not log authentication fields or hardcode production secrets in the workflow definition.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th><code>authType</code></th><th>Fields used</th><th>What the connector sends</th></tr></thead>
+      <tbody>
+        <tr><td><code>NONE</code></td><td>None</td><td>No generated Authorization header. This is also the default when authType is empty.</td></tr>
+        <tr><td><code>BASIC</code></td><td><code>username</code>, <code>password</code></td><td><code>Authorization: Basic &lt;base64(username:password)&gt;</code></td></tr>
+        <tr><td><code>BEARER</code></td><td><code>bearerToken</code></td><td><code>Authorization: Bearer &lt;token&gt;</code></td></tr>
+        <tr><td><code>OAUTH2_CLIENT_CREDENTIALS</code></td><td><code>tokenUrl</code>, <code>clientId</code>, <code>clientSecret</code>; optional <code>scope</code>, <code>audience</code></td><td>Calls the token endpoint using a form-encoded client-credentials request, then sends the returned token type and access token in Authorization.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>API keys are explicit values</strong><p>Place an API key directly in <code>headers</code> using the provider's required header name, or in <code>queryParams</code> when the provider explicitly requires a query key. No API key is added automatically.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="rest">
+  <header class="section-heading">
+    <p class="eyebrow">API Type: REST</p>
+    <h2>Send standard HTTP requests and raw bodies</h2>
+    <p>REST adds method, requestBody, formFields, and attachments to the common inputs.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>method</code></td><td>String</td><td>GET, POST, PUT, PATCH, DELETE, HEAD, or OPTIONS. Default is GET.</td></tr>
+        <tr><td><code>requestBody</code></td><td>String</td><td>Raw payload sent as UTF-8. It can contain JSON, XML, text, or another format understood by the API.</td></tr>
+        <tr><td><code>formFields</code></td><td>Document</td><td>Text parts used only when the explicitly mapped Content-Type starts with <code>multipart/form-data</code>.</td></tr>
+        <tr><td><code>attachments</code></td><td>Document List</td><td>Binary multipart parts supplied as Base64 or bytes from the pipeline.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="REST JSON request example"><code>url: https://api.example.com/orders
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+requestBody: |
+  {"customerId":"${pipeline.input.customerId}","amount":125.50}
+timeoutMillis: 15000</code></pre>
+  <p>The connector does not infer a body format. Set the matching <code>Content-Type</code> explicitly in <code>headers</code>.</p>
+</section>
+
+<section class="doc-section" id="graphql">
+  <header class="section-heading">
+    <p class="eyebrow">API Type: GraphQL</p>
+    <h2>Use one field for queries and mutations</h2>
+    <p>GraphQL always uses POST. The connector builds a JSON envelope containing <code>query</code> and <code>variables</code> and defaults Content-Type to application/json.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>graphqlQuery</code></td><td>String</td><td>Required GraphQL query or mutation text. Mutations are entered here, not in requestBody.</td></tr>
+        <tr><td><code>graphqlVariables</code></td><td>Document</td><td>Variables object. It may be mapped as a document or entered as valid JSON text.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="GraphQL mutation example"><code>graphqlQuery:
+  mutation CreateUser($name: String!, $email: String!) {
+    createUser(name: $name, email: $email) {
+      id
+      name
+      email
+    }
+  }
+
+graphqlVariables:
+  {
+    "name": "${pipeline.input.name}",
+    "email": "${pipeline.input.email}"
+  }</code></pre>
+  <p>The transmitted body is equivalent to <code>{"query":"mutation ...","variables":{"name":"...","email":"..."}}</code>.</p>
+</section>
+
+<section class="doc-section" id="soap">
+  <header class="section-heading">
+    <p class="eyebrow">API Type: SOAP</p>
+    <h2>Send a complete SOAP XML envelope</h2>
+    <p>SOAP always uses POST. Supply the final XML envelope in requestBody; the connector does not import a WSDL or generate an operation payload.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Field</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>soapVersion</code></td><td>No</td><td><code>1.1</code> by default, or <code>1.2</code>.</td></tr>
+        <tr><td><code>soapAction</code></td><td>Service-dependent</td><td>For SOAP 1.1 it becomes the SOAPAction header. For SOAP 1.2 it is added as the Content-Type action parameter.</td></tr>
+        <tr><td><code>requestBody</code></td><td>Yes</td><td>Complete SOAP XML envelope as a String. Pipeline expressions can be embedded in the XML.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="SOAP request example"><code>url: https://www.dataaccess.com/webservicesserver/NumberConversion.wso
+soapVersion: 1.1
+soapAction: https://www.dataaccess.com/webservicesserver/NumberToWords
+requestBody: |
+  &lt;?xml version="1.0" encoding="utf-8"?&gt;
+  &lt;soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
+    &lt;soap:Body&gt;
+      &lt;NumberToWords xmlns="http://www.dataaccess.com/webservicesserver/"&gt;
+        &lt;ubiNum&gt;${pipeline.input.number}&lt;/ubiNum&gt;
+      &lt;/NumberToWords&gt;
+    &lt;/soap:Body&gt;
+  &lt;/soap:Envelope&gt;</code></pre>
+</section>
+
+<section class="doc-section" id="multipart">
+  <header class="section-heading">
+    <p class="eyebrow">REST multipart requests</p>
+    <h2>Send text fields and pipeline-supplied attachments</h2>
+    <p>Multipart is a REST body format, not an API type. Activate it by explicitly mapping <code>Content-Type: multipart/form-data</code> in headers.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Attachment field</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>fieldName</code></td><td>No</td><td>Multipart form field name. Defaults to <code>file</code>.</td></tr>
+        <tr><td><code>fileName</code></td><td>Yes</td><td>Filename included in Content-Disposition.</td></tr>
+        <tr><td><code>contentType</code></td><td>No</td><td>File media type. Defaults to <code>application/octet-stream</code>.</td></tr>
+        <tr><td><code>contentBase64</code></td><td>One content field</td><td>Base64-encoded content from the pipeline.</td></tr>
+        <tr><td><code>contentBytes</code></td><td>One content field</td><td>Byte array or numeric byte list from the pipeline. Takes precedence over contentBase64.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="Multipart request example"><code>method: POST
+headers:
+  Content-Type: multipart/form-data
+formFields:
+  description: Monthly report
+attachments:
+  - fieldName: file
+    fileName: report.pdf
+    contentType: application/pdf
+    contentBase64: ${pipeline.input.reportBase64}</code></pre>
+  <p>Kestrel generates the multipart boundary and replaces the Content-Type value with <code>multipart/form-data; boundary=...</code>.</p>
+</section>
+
+<section class="doc-section" id="outputs">
+  <header class="section-heading">
+    <p class="eyebrow">Step Out contract</p>
+    <h2>Receive the response without forced parsing</h2>
+    <p>The connector returns transport-level results for every API type. Parse or map the response explicitly in later workflow steps.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Step Out field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>statusCode</code></td><td>Integer</td><td>HTTP response status such as 200, 404, or 500.</td></tr>
+        <tr><td><code>responseHeaders</code></td><td>Document</td><td>Response header map. A header with one value is a string; repeated values are returned as a list.</td></tr>
+        <tr><td><code>responseBody</code></td><td>String</td><td>Raw response decoded using the response charset; UTF-8 is used when none is declared or the charset is invalid.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>HTTP error statuses are still responses</strong><p>A 4xx or 5xx response is returned through statusCode, responseHeaders, and responseBody. Use workflow logic to decide which status codes are acceptable. Transport, timeout, and configuration failures raise connector errors.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="runtime">
+  <header class="section-heading">
+    <p class="eyebrow">Runtime and operational behavior</p>
+    <h2>Timeouts, redirects, headers, and failures</h2>
+    <p>These details are important when troubleshooting production integrations.</p>
+  </header>
+  <div class="runtime-notes">
+    <article><strong>Timeout deadline</strong><p><code>timeoutMillis</code> must be positive. The remaining time is recalculated across OAuth2 token acquisition, connection, and response waiting.</p></article>
+    <article><strong>Redirects</strong><p>The Java HTTP client follows normal redirects. The final response is returned to the pipeline.</p></article>
+    <article><strong>Explicit headers only</strong><p>Inbound webhook and previous-step headers do not flow into the outbound request unless the developer maps them intentionally.</p></article>
+    <article><strong>Restricted headers</strong><p>Transport-controlled headers are ignored, including Host, Content-Length, Connection, Expect, Transfer-Encoding, Upgrade, HTTP/2 pseudo-headers, and related hop-by-hop headers.</p></article>
+    <article><strong>Interrupted execution</strong><p>An interrupted request restores the Java thread interruption flag and raises <code>HTTP_REQUEST_INTERRUPTED</code>.</p></article>
+    <article><strong>Raw output</strong><p>JSON, XML, GraphQL, SOAP, text, and error bodies remain strings so the workflow can choose its own parsing and data structure mapping.</p></article>
+  </div>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Error code</th><th>Meaning</th><th>Typical cause</th></tr></thead>
+      <tbody>
+        <tr><td><code>HTTP_REQUEST_CONFIGURATION_ERROR</code></td><td>The request cannot be constructed.</td><td>Missing URL/query/XML, invalid timeout, invalid Base64, unsupported method/auth type, or malformed GraphQL variables.</td></tr>
+        <tr><td><code>HTTP_REQUEST_TIMEOUT</code></td><td>The configured deadline expired.</td><td>Slow token endpoint, connection, or remote API.</td></tr>
+        <tr><td><code>HTTP_REQUEST_INTERRUPTED</code></td><td>The execution thread was interrupted.</td><td>Runtime shutdown or cancellation.</td></tr>
+        <tr><td><code>HTTP_REQUEST_ERROR</code></td><td>The HTTP operation failed.</td><td>Invalid URI, network/DNS/TLS problem, or I/O failure.</td></tr>
+        <tr><td><code>HTTP_OAUTH_ERROR</code></td><td>OAuth2 token retrieval failed.</td><td>Non-2xx token response, invalid token JSON, or missing access_token.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Protect credentials and sensitive responses</strong><p>Map secrets only into the field that needs them. Avoid Logger and Pipeline Logger for Authorization values, tokens, passwords, client secrets, attachment content, and sensitive response bodies.</p></div>
+  </div>
+</section>

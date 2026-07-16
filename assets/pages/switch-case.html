@@ -1,0 +1,210 @@
+<section class="doc-hero" id="switch-case">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Reusable Service / Switch Case</p>
+    <h1>Route service execution by matching one pipeline value.</h1>
+    <p class="lead">
+      SWITCH resolves one expression and compares it with ordered CASE values. It runs the children of the first matching CASE,
+      otherwise it runs the optional DEFAULT branch, then continues after the SWITCH block.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Switch Case page sections">
+  <div><p class="eyebrow">On this page</p><strong>Using SWITCH and CASE branches</strong></div>
+  <div class="toc-links">
+    <a href="#/switch-case/concept">Concept</a>
+    <a href="#/switch-case/add">Add SWITCH</a>
+    <a href="#/switch-case/properties">Properties</a>
+    <a href="#/switch-case/expression">Expression</a>
+    <a href="#/switch-case/cases">Cases</a>
+    <a href="#/switch-case/matching">Matching</a>
+    <a href="#/switch-case/steps">Child steps</a>
+    <a href="#/switch-case/example">Real example</a>
+    <a href="#/switch-case/practices">Good practices</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="concept">
+  <header class="section-heading">
+    <p class="eyebrow">What SWITCH does</p>
+    <h2>Compare one value with several possible cases</h2>
+    <p>Use SWITCH when each branch depends on the same pipeline value, such as status, channel, country, type, or operation name.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Part</th><th>Purpose</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><strong>SWITCH expression</strong></td><td>Resolves the value used for every comparison.</td><td><code>${pipeline.input.order.channel}</code></td></tr>
+        <tr><td><strong>CASE</strong></td><td>Defines one exact value, substituted value, or regular expression.</td><td><code>WEB</code> or <code>/^PARTNER_.+$/</code></td></tr>
+        <tr><td><strong>DEFAULT</strong></td><td>Provides fallback behavior when no CASE matches.</td><td>Reject or route an unknown channel.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Only one branch runs</strong><p>CASE branches are checked in order. After the first match, its children run and remaining cases are skipped. DEFAULT is considered after every normal CASE. If nothing matches and DEFAULT is absent, SWITCH performs no child work and execution continues afterward.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="add">
+  <header class="section-heading">
+    <p class="eyebrow">Add the flow step</p>
+    <h2>Create SWITCH from the reusable service Flow tab</h2>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Prepare the source value</strong><p>Make sure the selected value exists in Service Input or is produced by an earlier MAP, utility, or service-call step.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select Flow</strong><p>Find <strong>SWITCH</strong> in the reusable service step library.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add SWITCH</strong><p>Click it or drag it into the intended position in the service tree.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Set the expression</strong><p>Select SWITCH and use the Expression action in Properties.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Add cases</strong><p>Use ADD CASE for every expected value, then configure each branch's Runtime value.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="properties">
+  <header class="section-heading">
+    <p class="eyebrow">SWITCH and CASE properties</p>
+    <h2>Describe the decision and configure each branch</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Selected item</th><th>Property</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>SWITCH</td><td><strong>Comment</strong></td><td>Explains the business value being routed. The comment appears beside the step name in the flow tree.</td></tr>
+        <tr><td>SWITCH</td><td><strong>Expression</strong></td><td>Pipeline value that drives case matching.</td></tr>
+        <tr><td>SWITCH</td><td><strong>ADD CASE</strong></td><td>Adds another CASE branch.</td></tr>
+        <tr><td>CASE</td><td><strong>Comment</strong></td><td>Explains the business meaning of that case.</td></tr>
+        <tr><td>CASE</td><td><strong>Case type</strong></td><td>Selects <code>case</code> for matching or <code>default</code> for fallback behavior.</td></tr>
+        <tr><td>CASE</td><td><strong>Runtime value</strong></td><td>Exact value, pipeline-substituted value, or regex used by a normal CASE. Disabled for DEFAULT.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="Useful SWITCH comments"><code>SWITCH comment: Route order processing by sales channel
+CASE comment: Orders created by the web storefront
+CASE comment: Orders received from a partner integration
+DEFAULT comment: Unsupported or missing sales channel</code></pre>
+</section>
+
+<section class="doc-section" id="expression">
+  <header class="section-heading">
+    <p class="eyebrow">Switch expression</p>
+    <h2>Select the pipeline value to compare</h2>
+    <p>The expression editor is designed for a pipeline value such as a String, number, Boolean, or another scalar value.</p>
+  </header>
+  <pre class="code-contract" aria-label="SWITCH expression examples"><code>${pipeline.input.order.channel}
+
+${pipeline.output.normalizedStatus}
+
+${pipeline.temp.loopItem.type}</code></pre>
+  <p>Pipeline substitution is applied before matching. A missing or blank expression resolves to no value; only a matching null case or DEFAULT can handle it.</p>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Use IF-ELSE for multiple independent comparisons</strong><p>SWITCH compares one resolved value. If the decision needs amount ranges combined with status, country, and Boolean flags, use <a href="#/if-else"><strong>IF-ELSE</strong></a>.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="cases">
+  <header class="section-heading">
+    <p class="eyebrow">CASE and DEFAULT branches</p>
+    <h2>Add one branch per expected value</h2>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Select SWITCH and click ADD CASE</strong><p>A new CASE branch is added and selected.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Add a Comment</strong><p>Describe what the value means to the business.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Edit Runtime value</strong><p>Enter an exact value, a pipeline substitution, or a regex wrapped in forward slashes.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Repeat for remaining values</strong><p>Use Move up/down or drag cases to establish their matching order when patterns can overlap.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Create the fallback</strong><p>Change one branch's Case type from case to default. Its Runtime value is cleared and the UI places it after normal cases.</p></div></li>
+  </ol>
+  <p>Use only one DEFAULT branch. Multiple defaults make later defaults unreachable because the first DEFAULT always matches.</p>
+</section>
+
+<section class="doc-section" id="matching">
+  <header class="section-heading">
+    <p class="eyebrow">Runtime matching</p>
+    <h2>Exact, numeric, null, substituted, and regex cases</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Case style</th><th>Runtime value</th><th>Behavior</th></tr></thead>
+      <tbody>
+        <tr><td>Exact text</td><td><code>WEB</code></td><td>Matches trimmed text without case sensitivity, so <code>WEB</code> also matches <code>web</code>.</td></tr>
+        <tr><td>Number</td><td><code>10</code></td><td>Numeric-looking values are compared numerically.</td></tr>
+        <tr><td>Boolean</td><td><code>true</code></td><td>Matches a Boolean true value or its normalized text representation.</td></tr>
+        <tr><td>Null</td><td><code>$null</code></td><td>Matches when the SWITCH expression resolves to null.</td></tr>
+        <tr><td>Pipeline substitution</td><td><code>${pipeline.input.expectedChannel}</code></td><td>Resolves the expected value at runtime before comparison.</td></tr>
+        <tr><td>Regular expression</td><td><code>/^PARTNER_[A-Z]+$/</code></td><td>Applies a Java regular expression to the complete trimmed SWITCH value.</td></tr>
+        <tr><td>DEFAULT</td><td>Not applicable</td><td>Matches only after no normal CASE matched.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Invalid regex fails the service</strong><p>A malformed value enclosed in <code>/slashes/</code> raises <code>SWITCH_ERROR</code>. Test regex cases with expected, unexpected, and empty values.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="steps">
+  <header class="section-heading">
+    <p class="eyebrow">Steps inside cases</p>
+    <h2>Each CASE owns an ordered child flow</h2>
+    <p>CASE and DEFAULT are containers. Only the selected branch's child steps execute.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Select CASE or DEFAULT</strong><p>Choose the branch in the service flow tree.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Add a child</strong><p>Use Add child to create a Map pipeline child, or drag a Flow/Utils step onto the branch and drop it inside.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add the branch implementation</strong><p>Cases can contain mappings, utilities, project-service calls, loops, TRY/CATCH, process groups, and other supported steps.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Map each child</strong><p>The SWITCH and CASE control items do not expose pipeline mapping. Select executable children to configure their pipeline.</p></div></li>
+  </ol>
+  <pre class="code-contract" aria-label="SWITCH flow tree example"><code>SWITCH  (${pipeline.input.order.channel})
+├── CASE  WEB
+│   ├── Map pipeline: route = WEB_ORDER
+│   └── Project service: validateWebOrder
+├── CASE  /^PARTNER_[A-Z]+$/
+│   └── Project service: validatePartnerOrder
+└── DEFAULT
+    └── EXIT: unsupported order channel
+
+Map pipeline: build final response</code></pre>
+  <p>The final MAP step is outside SWITCH, so it runs after the selected case finishes.</p>
+</section>
+
+<section class="doc-section" id="example">
+  <header class="section-heading">
+    <p class="eyebrow">Real use case</p>
+    <h2>Route orders by sales channel</h2>
+    <p>The reusable service receives orders from a storefront, mobile application, and several named partners.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Branch</th><th>Runtime value</th><th>Comment</th><th>Child work</th></tr></thead>
+      <tbody>
+        <tr><td>CASE</td><td><code>WEB</code></td><td>Storefront orders</td><td>Map route to WEB_ORDER and invoke storefront validation.</td></tr>
+        <tr><td>CASE</td><td><code>MOBILE</code></td><td>Mobile application orders</td><td>Map route to MOBILE_ORDER and validate the device token.</td></tr>
+        <tr><td>CASE</td><td><code>/^PARTNER_[A-Z]+$/</code></td><td>All registered partner channels</td><td>Invoke shared partner-order validation.</td></tr>
+        <tr><td>DEFAULT</td><td>None</td><td>Unknown channel</td><td>Exit with an unsupported-channel exception.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="Sales channel switch values"><code>Expression: ${pipeline.input.order.channel}
+
+Input WEB          → WEB case
+Input mobile       → MOBILE case
+Input PARTNER_ACME → regex partner case
+Input STORE        → DEFAULT</code></pre>
+</section>
+
+<section class="doc-section" id="practices">
+  <header class="section-heading">
+    <p class="eyebrow">Good practices</p>
+    <h2>Keep case routing predictable</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>Use a scalar and stable pipeline value as the SWITCH expression.</li>
+    <li>Add Comments that explain the business meaning of SWITCH and every CASE.</li>
+    <li>Place exact values before broad regex patterns when both could match.</li>
+    <li>Use anchors such as <code>^</code> and <code>$</code> to make regex intent clear.</li>
+    <li>Keep one DEFAULT branch and use it for safe fallback or explicit rejection.</li>
+    <li>Use IF-ELSE when branches depend on different fields or numeric ranges rather than one value.</li>
+    <li>Keep side effects inside cases intentional because only one case executes.</li>
+    <li>Test exact case, case-insensitive text, regex, null, blank, unknown, and DEFAULT behavior.</li>
+  </ul>
+</section>

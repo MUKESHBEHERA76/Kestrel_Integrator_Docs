@@ -1,0 +1,87 @@
+<section class="doc-hero project-hero" id="project">
+  <div class="hero-copy">
+    <p class="eyebrow">Project</p>
+    <h1>Keep one integration domain together.</h1>
+    <p class="lead">
+      A project is the working boundary for related workflows, reusable services, connections, schedules, schemas,
+      transformations, and configuration. It gives every runtime artifact a stable project identity.
+    </p>
+    <div class="doc-actions">
+      <a class="primary-action" href="#/utils">Explore Utils</a>
+      <a class="secondary-action" href="#/kvs">Understand KVS</a>
+      <a class="secondary-action" href="#/project/project-boundary">Explore the project model</a>
+    </div>
+  </div>
+  <aside class="hero-aside" aria-label="Project summary">
+    <span class="aside-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M3.5 7.5h6l1.6 2H20.5v9A2.5 2.5 0 0 1 18 21H6a2.5 2.5 0 0 1-2.5-2.5v-11Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="M3.5 9.5v-4A2.5 2.5 0 0 1 6 3h4l1.5 2h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </svg>
+    </span>
+    <p>
+      Workflows resolve project-scoped resources by the project ID attached to their immutable runtime plan.
+      <strong>One boundary for design and execution</strong>
+    </p>
+  </aside>
+</section>
+
+<nav class="page-toc" aria-label="Project page sections">
+  <div><p class="eyebrow">On this page</p><strong>Understand the project boundary</strong></div>
+  <div class="toc-links">
+    <a href="#/project/project-boundary">Project boundary</a>
+    <a href="#/project/project-resources">Resources</a>
+    <a href="#/project/runtime-identity">Runtime identity</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="project-boundary">
+  <header class="section-heading">
+    <p class="eyebrow">Project boundary</p>
+    <h2>A home for one related set of integrations</h2>
+    <p>
+      Projects help teams group the artifacts and metadata that belong together. A project has a unique name,
+      description, creator, and stable identifier. Kestrel carries that identifier into artifact versions and execution commands,
+      so runtime lookups do not accidentally cross into another project.
+    </p>
+  </header>
+  <div class="project-boundary-visual" role="img" aria-label="A Kestrel project contains workflows, reusable services, connections, schedules, schemas, transformations, and KVS stores">
+    <div class="project-core"><span>Project</span><strong>Integration boundary</strong></div>
+    <div class="project-orbit-grid">
+      <span>Workflows</span><span>Reusable services</span><a href="#/utils">Utils</a><span>Connections</span><span>Schedules</span>
+      <span>Data structures</span><span>XSLT aliases</span><span>Webhook auth</span><a href="#/kvs">KVS</a>
+    </div>
+  </div>
+</section>
+
+<section class="doc-section" id="project-resources">
+  <header class="section-heading">
+    <p class="eyebrow">Project resources</p>
+    <h2>Design logic and reusable configuration separately</h2>
+    <p>Workflows describe behavior. Project resources provide definitions and configuration that multiple workflows can reuse.</p>
+  </header>
+  <div class="card-grid project-card-grid">
+    <article class="info-card"><span class="card-number">01</span><h3>Workflow logic</h3><p>Workflows and reusable services define the steps, mappings, utilities, connectors, and outcomes executed by workers.</p><a href="#/utils">Browse the Utils reference <span aria-hidden="true">→</span></a></article>
+    <article class="info-card"><span class="card-number">02</span><h3>Connectivity</h3><p>Connections and authentication definitions keep endpoint details separate from individual workflow steps.</p></article>
+    <article class="info-card"><span class="card-number">03</span><h3>Data definitions</h3><p>Data structures and XSLT aliases make transformation contracts reusable across artifacts.</p></article>
+    <article class="info-card featured-resource"><span class="card-number">04</span><h3>KVS</h3><p>Stores project-scoped keys with one or more ordered values, including secrets protected by password mode.</p><a href="#/kvs">Read the KVS guide <span aria-hidden="true">→</span></a></article>
+  </div>
+</section>
+
+<section class="doc-section" id="runtime-identity">
+  <header class="section-heading">
+    <p class="eyebrow">Runtime identity</p>
+    <h2>The project follows the artifact into execution</h2>
+    <p>Kestrel does not discover project resources by display name alone. Runtime commands and immutable plans retain the project ID.</p>
+  </header>
+  <div class="execution-flow compact-flow" role="img" aria-label="Project design becomes a versioned artifact, then an execution command and a worker runtime context">
+    <div class="flow-step"><span>Design</span><strong>Project resource</strong></div>
+    <div class="flow-step"><span>Version</span><strong>Immutable artifact</strong></div>
+    <div class="flow-step"><span>Admission</span><strong>Project ID in command</strong></div>
+    <div class="flow-step"><span>Worker</span><strong>Project-scoped lookup</strong></div>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Global Project</strong><p>Kestrel also maintains a system-created Global Project for globally reusable services. Ordinary projects are created and managed by administrators and developers.</p></div>
+  </div>
+</section>

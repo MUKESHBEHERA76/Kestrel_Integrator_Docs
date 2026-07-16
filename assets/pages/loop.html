@@ -1,0 +1,240 @@
+<section class="doc-hero" id="loop">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Reusable Service / Loop</p>
+    <h1>Run child steps once for every item in a list.</h1>
+    <p class="lead">
+      LOOP iterates a selected String List, Document List, Document Reference List, or Object List in order.
+      During each iteration, child steps see the selected list path as the current single item and receive a zero-based loopIndex.
+    </p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Loop page sections">
+  <div><p class="eyebrow">On this page</p><strong>Using LOOP in a reusable service</strong></div>
+  <div class="toc-links">
+    <a href="#/loop/concept">Concept</a>
+    <a href="#/loop/add">Add LOOP</a>
+    <a href="#/loop/properties">Properties</a>
+    <a href="#/loop/current-item">Current item</a>
+    <a href="#/loop/steps">Child steps</a>
+    <a href="#/loop/index">loopIndex</a>
+    <a href="#/loop/exit">Exit Loop</a>
+    <a href="#/loop/example">Real example</a>
+    <a href="#/loop/runtime">Runtime behavior</a>
+    <a href="#/loop/practices">Good practices</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="concept">
+  <header class="section-heading">
+    <p class="eyebrow">What LOOP does</p>
+    <h2>Iterate list items sequentially</h2>
+    <p>Use LOOP when the same mapping, utility, validation, or service call must run for every item in a list.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Input type</th><th>Current item type inside LOOP</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><strong>String List</strong></td><td>String</td><td><code>tags</code> becomes one tag per iteration.</td></tr>
+        <tr><td><strong>Document List</strong></td><td>Document</td><td><code>orders</code> becomes one order document.</td></tr>
+        <tr><td><strong>Document Reference List</strong></td><td>Document Reference</td><td>The referenced list becomes one typed document.</td></tr>
+        <tr><td><strong>Object List</strong></td><td>Object</td><td>The list becomes one object per iteration.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Items execute in their original list order. LOOP completes one item's child steps before starting the next item.</p>
+</section>
+
+<section class="doc-section" id="add">
+  <header class="section-heading">
+    <p class="eyebrow">Add the flow step</p>
+    <h2>Create LOOP from the reusable service Flow tab</h2>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Prepare a list variable</strong><p>Add it to Service Input or produce it in an earlier MAP, utility, or project-service call.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select Flow</strong><p>Find <strong>LOOP</strong> in the reusable service step library.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add LOOP</strong><p>Click it or drag it into the intended position in the flow tree.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Select Input list</strong><p>In Properties, use the picker beside Input list. The picker shows available list variables, including nested document lists.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Add child steps</strong><p>Use Add child or drag Flow/Utils steps inside LOOP.</p></div></li>
+  </ol>
+</section>
+
+<section class="doc-section" id="properties">
+  <header class="section-heading">
+    <p class="eyebrow">LOOP properties</p>
+    <h2>Choose the list and give the loop a useful identity</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Property</th><th>Required</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Step name</strong></td><td>Automatic</td><td>Displays LOOP in the service tree.</td></tr>
+        <tr><td><strong>Comment</strong></td><td>No</td><td>Explains what is being iterated, such as “Process every order line”. The comment appears beside the step name.</td></tr>
+        <tr><td><strong>Input list</strong></td><td>Yes</td><td>Pipeline path of the String List, Document List, Document Reference List, or Object List to iterate.</td></tr>
+        <tr><td><strong>Id</strong></td><td>Recommended</td><td>Stable identifier used by an EXIT step when it must stop this loop, especially when loops are nested.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="LOOP property example"><code>Comment: Process each incoming order
+Input list: ${pipeline.input.orders}
+Id: process-orders</code></pre>
+</section>
+
+<section class="doc-section" id="current-item">
+  <header class="section-heading">
+    <p class="eyebrow">Current item behavior</p>
+    <h2>The selected list path becomes one item inside child steps</h2>
+    <p>LOOP temporarily replaces the list value at its original pipeline path with the current item.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Outside LOOP</th><th>Inside a LOOP child</th></tr></thead>
+      <tbody>
+        <tr><td><code>${pipeline.input.orders}</code> is a Document List.</td><td><code>${pipeline.input.orders}</code> is the current Document.</td></tr>
+        <tr><td>A field normally requires an index: <code>${pipeline.input.orders[0].orderId}</code>.</td><td>Use the current item directly: <code>${pipeline.input.orders.orderId}</code>.</td></tr>
+        <tr><td><code>${pipeline.input.tags}</code> is a String List.</td><td><code>${pipeline.input.tags}</code> is the current String.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>The original list is restored afterward</strong><p>After normal completion, loop exit, or an error, Kestrel restores the original list at the selected path. Output values created by child steps remain available.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="steps">
+  <header class="section-heading">
+    <p class="eyebrow">Steps inside LOOP</p>
+    <h2>Build the work performed for each item</h2>
+    <p>LOOP is a container. It does not expose its own pipeline mapper; select its child steps to configure data movement.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Select LOOP</strong><p>Use its Add child action to create a Map pipeline child, or drag another Flow/Utils item inside it.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Map the current item</strong><p>Child pipeline fields display the chosen list as the corresponding single-item type.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Add processing steps</strong><p>Use mappings, utilities, project-service calls, IF-ELSE, SWITCH, TRY/CATCH, nested loops, or EXIT as required.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Order the children</strong><p>Every child runs in tree order for the current item before the next iteration begins.</p></div></li>
+  </ol>
+  <pre class="code-contract" aria-label="LOOP child flow example"><code>LOOP  (${pipeline.input.orders})
+├── Map pipeline: prepare current order request
+├── Project service: validateOrder
+├── IF-ELSE: validation result
+│   ├── IF valid: append result
+│   └── ELSE: EXIT Loop or raise error
+└── Logger: processed current order
+
+Map pipeline: build final response</code></pre>
+</section>
+
+<section class="doc-section" id="index">
+  <header class="section-heading">
+    <p class="eyebrow">loopIndex</p>
+    <h2>Know which item is currently executing</h2>
+    <p>For each iteration, Kestrel writes the zero-based index as a String at <code>${pipeline.output.loopIndex}</code>.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Iteration</th><th><code>${pipeline.output.loopIndex}</code></th></tr></thead>
+      <tbody>
+        <tr><td>First item</td><td><code>"0"</code></td></tr>
+        <tr><td>Second item</td><td><code>"1"</code></td></tr>
+        <tr><td>Third item</td><td><code>"2"</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Use loopIndex in messages, conditions, target-list index mapping, or correlation fields. When mapping the current item into a result Document List, set the target index to <code>${pipeline.output.loopIndex}</code>.</p>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>loopIndex exists only in loop scope</strong><p>After LOOP finishes, the previous loopIndex is restored. If there was no previous value, it is removed.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="exit">
+  <header class="section-heading">
+    <p class="eyebrow">Stop iteration</p>
+    <h2>Use EXIT to break out of LOOP</h2>
+    <p>An EXIT child can stop only the current loop or stop the complete reusable service.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>EXIT configuration</th><th>Behavior</th></tr></thead>
+      <tbody>
+        <tr><td><code>Exit from = Loop</code> with matching Loop id</td><td>Stops remaining iterations and continues with the first step after LOOP.</td></tr>
+        <tr><td><code>Exit from = Flow</code></td><td>Stops the complete reusable service flow.</td></tr>
+        <tr><td><code>Exception = true</code></td><td>Raises an error using the configured, pipeline-substituted Error Message.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Give every loop a unique Id and enter that same value in the EXIT step's Loop id. Explicit IDs make nested-loop behavior clear and avoid relying on internal step identifiers.</p>
+</section>
+
+<section class="doc-section" id="example">
+  <header class="section-heading">
+    <p class="eyebrow">Real use case</p>
+    <h2>Validate and collect order results</h2>
+    <p>A reusable service accepts a Document List of orders, validates each one, and builds an equally ordered result list.</p>
+  </header>
+  <h3>Service input</h3>
+  <pre class="code-contract" aria-label="Order list input"><code>{
+  "orders": [
+    { "orderId": "ORD-1", "amount": 125.00 },
+    { "orderId": "ORD-2", "amount": 80.00 }
+  ]
+}</code></pre>
+  <h3>LOOP configuration</h3>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Item</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Input list</td><td><code>${pipeline.input.orders}</code></td></tr>
+        <tr><td>Loop Id</td><td><code>validate-orders</code></td></tr>
+        <tr><td>Current order ID inside child</td><td><code>${pipeline.input.orders.orderId}</code></td></tr>
+        <tr><td>Current amount inside child</td><td><code>${pipeline.input.orders.amount}</code></td></tr>
+        <tr><td>Result target index</td><td><code>${pipeline.output.loopIndex}</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Service output</h3>
+  <pre class="code-contract" aria-label="Order validation output"><code>{
+  "results": [
+    { "orderId": "ORD-1", "valid": true },
+    { "orderId": "ORD-2", "valid": true }
+  ]
+}</code></pre>
+  <p>The result mapping uses loopIndex as the target-list index, preserving the input order.</p>
+</section>
+
+<section class="doc-section" id="runtime">
+  <header class="section-heading">
+    <p class="eyebrow">Runtime behavior</p>
+    <h2>What happens for missing, empty, and invalid input</h2>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Situation</th><th>Runtime result</th></tr></thead>
+      <tbody>
+        <tr><td>Input list property is blank</td><td>LOOP fails with <code>LOOP_ERROR</code>.</td></tr>
+        <tr><td>Resolved value is an empty list</td><td>No child steps run; execution continues after LOOP.</td></tr>
+        <tr><td>Resolved value is null or not a List</td><td>No child steps run; execution continues after LOOP.</td></tr>
+        <tr><td>A child step fails</td><td>The original list and earlier loopIndex are restored, then the error follows normal service error handling.</td></tr>
+        <tr><td>EXIT targets this Loop Id</td><td>Remaining items are skipped and execution continues after LOOP.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc-section" id="practices">
+  <header class="section-heading">
+    <p class="eyebrow">Good practices</p>
+    <h2>Keep iteration predictable</h2>
+  </header>
+  <ul class="docs-bullet-list">
+    <li>Add a Comment that states what the loop processes.</li>
+    <li>Assign a unique Loop Id, especially when loops are nested or EXIT is used.</li>
+    <li>Remember that the selected list path represents the current item inside children.</li>
+    <li>Use loopIndex when building an output list that must retain input order.</li>
+    <li>Keep side-effecting child calls idempotent when retries could repeat an item.</li>
+    <li>Use TRY/CATCH inside LOOP when one failed item should be handled without losing the intended service behavior.</li>
+    <li>Avoid logging complete current documents when they contain credentials or sensitive business data.</li>
+    <li>Test empty, one-item, multi-item, invalid-item, and early-exit scenarios.</li>
+  </ul>
+</section>
