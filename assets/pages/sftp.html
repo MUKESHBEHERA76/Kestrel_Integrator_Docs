@@ -1,0 +1,294 @@
+<section class="doc-hero" id="sftp">
+  <div class="hero-copy">
+    <p class="eyebrow">Workflow / SFTP</p>
+    <h1 data-page-title>Connect to an SFTP server and manage remote files.</h1>
+    <p class="lead">
+      Set up SFTP in three parts: trust the server, create a reusable project connection, and select that connection
+      in a workflow SFTP step. The workflow exchanges structured documents named <code>SFTP_Request</code> and
+      <code>SFTP_Response</code>.
+    </p>
+    <div class="doc-actions">
+      <a class="primary-action" href="#/sftp/setup">Follow the setup</a>
+      <a class="secondary-action" href="#/sftp/operations">View all operations</a>
+    </div>
+  </div>
+  <aside class="hero-aside" aria-label="SFTP summary">
+    <span class="aside-icon" aria-hidden="true">SFTP</span>
+    <p><strong>Secure by default</strong> Server host verification is mandatory. Remote paths are restricted to the connection's configured directory.</p>
+  </aside>
+</section>
+
+<nav class="page-toc" aria-label="SFTP page sections">
+  <div><p class="eyebrow">On this page</p><strong>SFTP setup and operation reference</strong></div>
+  <div class="toc-links">
+    <a href="#/sftp/setup">Setup overview</a>
+    <a href="#/sftp/known-hosts">Known Hosts</a>
+    <a href="#/sftp/connection">Connection</a>
+    <a href="#/sftp/workflow">Workflow</a>
+    <a href="#/sftp/contracts">Documents</a>
+    <a href="#/sftp/operations">Operations</a>
+    <a href="#/sftp/examples">Examples</a>
+    <a href="#/sftp/troubleshooting">Troubleshooting</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="setup">
+  <header class="section-heading">
+    <p class="eyebrow">Setup overview</p>
+    <h2>Complete these four steps in order</h2>
+    <p>You need the SFTP hostname, port, username, authentication details, and permitted remote directory.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Verify the server key</strong><p>Get the server's SSH host public key and verify its fingerprint with the server administrator.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Create a Known Hosts credential</strong><p>Store the verified host public key in <strong>Security → Security Credentials</strong>.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Create an SFTP connection</strong><p>In the project's <strong>Connections</strong> tab, enter the endpoint and user authentication details, then test the connection.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Configure the workflow step</strong><p>Add SFTP to a workflow, select the connection and operation, then map <code>SFTP_Request</code> and <code>SFTP_Response</code>.</p></div></li>
+  </ol>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Host key and login key are different</strong><p>The server's <em>host public key</em> verifies the server and belongs in Known Hosts. A user's <em>private key</em> authenticates Kestrel to the server and belongs in the Keystore. Never put a private key in Known Hosts.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="known-hosts">
+  <header class="section-heading">
+    <p class="eyebrow">Step 1 and 2</p>
+    <h2>Generate and store Known Hosts content</h2>
+    <p>The examples use reserved placeholder values. Replace <code>sftp.example.com</code> and <code>22</code> with your server's real hostname and port.</p>
+  </header>
+  <h3>1. Read the server host keys</h3>
+  <pre class="code-contract" aria-label="Read SFTP server host keys"><code>ssh-keyscan -p 22 sftp.example.com</code></pre>
+  <p>The command returns comments and one or more public-key entries:</p>
+  <pre class="code-contract" aria-label="Example ssh-keyscan output"><code># sftp.example.com:22 SSH-2.0-OpenSSH
+sftp.example.com ssh-ed25519 &lt;complete-base64-public-key&gt;
+sftp.example.com ecdsa-sha2-nistp256 &lt;complete-base64-public-key&gt;
+sftp.example.com ssh-rsa &lt;complete-base64-public-key&gt;</code></pre>
+  <p>Use the complete output from your command. Each key entry must stay on one line:</p>
+  <pre class="code-contract" aria-label="Known Hosts entry format"><code>hostname key-algorithm complete-base64-public-key</code></pre>
+  <h3>2. Calculate the SHA-256 fingerprints</h3>
+  <pre class="code-contract" aria-label="Calculate host key fingerprints"><code>ssh-keyscan -p 22 sftp.example.com 2&gt;/dev/null | ssh-keygen -lf - -E sha256</code></pre>
+  <pre class="code-contract" aria-label="Example fingerprint output"><code>256 SHA256:&lt;fingerprint&gt; sftp.example.com (ED25519)
+256 SHA256:&lt;fingerprint&gt; sftp.example.com (ECDSA)
+3072 SHA256:&lt;fingerprint&gt; sftp.example.com (RSA)</code></pre>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Verify before trusting</strong><p><code>ssh-keyscan</code> reads the key but does not prove it is genuine. Compare the fingerprint with the SFTP administrator or provider through a separate trusted channel.</p></div>
+  </div>
+  <h3>3. Save the credential in Kestrel</h3>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open Security Credentials</strong><p>Go to <strong>Security → Security Credentials</strong> and select <strong>Add security credential</strong>.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select the correct type</strong><p>Choose <strong>Known Hosts (SSH)</strong>.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Enter the values</strong><p>Use a neutral alias such as <code>SFTP_PRODUCTION_KNOWN_HOSTS</code>, add a description, and paste the complete key entries.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Save</strong><p>The credential is now available in the SFTP connection editor. Refresh the Connections page if it was already open.</p></div></li>
+  </ol>
+  <pre class="code-contract" aria-label="Known Hosts credential example"><code>Alias name: SFTP_PRODUCTION_KNOWN_HOSTS
+Credential Type: Known Hosts (SSH)
+Description: Verified host keys for the production SFTP endpoint
+Known Hosts content:
+  sftp.example.com ssh-ed25519 &lt;complete-base64-public-key&gt;
+  sftp.example.com ecdsa-sha2-nistp256 &lt;complete-base64-public-key&gt;</code></pre>
+  <p>For a non-default port, OpenSSH normally produces a host token such as <code>[sftp.example.com]:2222</code>. Kestrel also supports hashed OpenSSH host entries.</p>
+</section>
+
+<section class="doc-section" id="connection">
+  <header class="section-heading">
+    <p class="eyebrow">Step 3</p>
+    <h2>Create and test the project SFTP connection</h2>
+    <p>Open the project, go to <strong>Connections</strong>, add an <strong>SFTP</strong> connection, and complete the fields below.</p>
+  </header>
+  <h3>Choose how Kestrel signs in</h3>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Authentication type</th><th>What you must provide</th></tr></thead>
+      <tbody>
+        <tr><td>Password</td><td>Username and password.</td></tr>
+        <tr><td>Private key</td><td>Username, SSH private-key alias from <strong>Security → Keystore</strong>, and the key passphrase if encrypted. The matching public key must be installed on the SFTP account.</td></tr>
+        <tr><td>Password and private key</td><td>All password and private-key values when the server requires both methods.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Complete the connection fields</h3>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Field</th><th>Required/default</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Connection name</td><td>Required</td><td>Name shown in the workflow connection dropdown.</td></tr>
+        <tr><td>Host</td><td>Required</td><td>SFTP server hostname or IP address.</td></tr>
+        <tr><td>Port</td><td><code>22</code></td><td>SSH port, from 1 through 65535.</td></tr>
+        <tr><td>Username</td><td>Required</td><td>Remote SFTP account.</td></tr>
+        <tr><td>Authentication type</td><td>Password</td><td>Select Password, Private key, or both.</td></tr>
+        <tr><td>Password</td><td>When password is selected</td><td>Remote account password.</td></tr>
+        <tr><td>SSH private key alias</td><td>When private key is selected</td><td>SSH/RSA private key stored in the Keystore.</td></tr>
+        <tr><td>Private key passphrase</td><td>When the key is encrypted</td><td>Unlocks the selected private key.</td></tr>
+        <tr><td>Server host verification</td><td>Required</td><td>Select the Known Hosts credential or enter a verified pinned <code>SHA256:...</code> fingerprint. Verification cannot be disabled.</td></tr>
+        <tr><td>Default remote directory</td><td><code>/</code></td><td>Root directory available to this connection. Workflow paths cannot escape it.</td></tr>
+        <tr><td>Connection timeout</td><td><code>15</code> seconds</td><td>Allowed range: 1–120 seconds.</td></tr>
+        <tr><td>Operation timeout</td><td><code>60</code> seconds</td><td>Allowed range: 1–600 seconds.</td></tr>
+        <tr><td>Maximum inline file size</td><td><code>1,048,576</code> bytes</td><td>Upload/download limit. Allowed range: 1,024–10,485,760 bytes.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="Neutral SFTP connection example"><code>Connection name: Production SFTP
+Host: sftp.example.com
+Port: 22
+Username: sftp-user
+Authentication type: Password
+Server host verification: Known Hosts credential
+Known Hosts credential: SFTP_PRODUCTION_KNOWN_HOSTS
+Default remote directory: /data/inbound
+Connection timeout: 15
+Operation timeout: 60
+Maximum inline file size: 1048576</code></pre>
+  <p>Select <strong>Test connection</strong>. A successful test confirms server identity, user authentication, SFTP negotiation, and access to the default directory. Save and enable the connection after the test succeeds.</p>
+</section>
+
+<section class="doc-section" id="workflow">
+  <header class="section-heading">
+    <p class="eyebrow">Step 4</p>
+    <h2>Add SFTP to a workflow</h2>
+    <p>The workflow uses an active SFTP connection from the same project.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Add the connector</strong><p>Drag <strong>SFTP</strong> from the connector palette onto the workflow canvas.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Configure the step</strong><p>Double-click the step and select the project SFTP connection.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Select an operation</strong><p>Choose the file or directory action to perform.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Map the request</strong><p>Open Pipeline settings and map or hardcode fields under the <code>SFTP_Request</code> Document.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Map the response</strong><p>Map values from the <code>SFTP_Response</code> Document to the next step or pipeline output.</p></div></li>
+    <li><span class="timeline-number">6</span><div><strong>Save and run</strong><p>Save the mapping and workflow, then inspect the execution result.</p></div></li>
+  </ol>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Review mappings after changing an operation</strong><p>Each operation has a different request and response structure. Changing the selected operation rebuilds the Step In and Step Out fields.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="contracts">
+  <header class="section-heading">
+    <p class="eyebrow">Document contract</p>
+    <h2>Understand the request and response documents</h2>
+    <p>Inputs are children of <code>${pipeline.input.SFTP_Request}</code>. Results are written to <code>${pipeline.output.SFTP_Response}</code>.</p>
+  </header>
+  <h3>Fields returned by every successful operation</h3>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>success</code></td><td>Boolean</td><td><code>true</code>. Failures raise <code>SFTP_EXECUTION_ERROR</code>.</td></tr>
+        <tr><td><code>operation</code></td><td>String</td><td>Executed operation, such as <code>LIST</code> or <code>UPLOAD</code>.</td></tr>
+        <tr><td><code>path</code></td><td>String</td><td>Resolved remote path.</td></tr>
+        <tr><td><code>timestamp</code></td><td>String</td><td>UTC ISO-8601 completion time.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>File metadata document</h3>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>path</code></td><td>String</td><td>Full resolved path.</td></tr>
+        <tr><td><code>name</code></td><td>String</td><td>File or directory name.</td></tr>
+        <tr><td><code>size</code></td><td>Number</td><td>Size in bytes.</td></tr>
+        <tr><td><code>directory</code></td><td>Boolean</td><td>Whether it is a directory.</td></tr>
+        <tr><td><code>regularFile</code></td><td>Boolean</td><td>Whether it is a regular file.</td></tr>
+        <tr><td><code>symbolicLink</code></td><td>Boolean</td><td>Whether it is a symbolic link.</td></tr>
+        <tr><td><code>permissions</code></td><td>String</td><td>Unix permission bits in octal text.</td></tr>
+        <tr><td><code>modifiedAt</code></td><td>String</td><td>UTC modification time when supplied by the server.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="doc-section" id="operations">
+  <header class="section-heading">
+    <p class="eyebrow">Operation reference</p>
+    <h2>Inputs, outputs, and purpose of every operation</h2>
+    <p>Every response also includes <code>success</code>, <code>operation</code>, <code>path</code>, and <code>timestamp</code>.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Operation</th><th><code>SFTP_Request</code> fields</th><th>Additional <code>SFTP_Response</code> fields</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>LIST</code></td><td><code>path</code> String, optional; default <code>.</code></td><td><code>files</code> Document List, <code>count</code> Number</td><td>Lists the direct children of a directory. It excludes <code>.</code> and <code>..</code>.</td></tr>
+        <tr><td><code>STAT</code></td><td><code>path</code> String, required</td><td><code>metadata</code> Document</td><td>Returns metadata for a file, directory, or symbolic link.</td></tr>
+        <tr><td><code>EXISTS</code></td><td><code>path</code> String, required</td><td><code>exists</code> Boolean; <code>metadata</code> Document when found</td><td>Checks whether a remote path exists. A missing path is a successful response with <code>exists: false</code>.</td></tr>
+        <tr><td><code>DOWNLOAD</code></td><td><code>path</code> String, required</td><td><code>content</code> String, <code>contentBase64</code> String, <code>size</code> Number, <code>metadata</code> Document</td><td>Reads a file into the pipeline. Use <code>content</code> for UTF-8 text and <code>contentBase64</code> for binary data.</td></tr>
+        <tr><td><code>UPLOAD</code></td><td><code>path</code> String required; <code>content</code> String; <code>contentEncoding</code> String default <code>UTF8</code>; <code>overwrite</code> Boolean default <code>false</code>; <code>createParentDirectories</code> Boolean default <code>true</code></td><td><code>size</code> Number, <code>metadata</code> Document</td><td>Writes UTF-8 or Base64-decoded content to a remote file.</td></tr>
+        <tr><td><code>MOVE</code></td><td><code>sourcePath</code> and <code>targetPath</code> Strings required; <code>overwrite</code> Boolean default <code>false</code>; <code>createParentDirectories</code> Boolean default <code>true</code></td><td><code>sourcePath</code> String, <code>targetPath</code> String</td><td>Moves or renames a remote file or directory.</td></tr>
+        <tr><td><code>DELETE</code></td><td><code>path</code> String, required</td><td><code>deleted</code> Boolean</td><td>Deletes one remote file.</td></tr>
+        <tr><td><code>CREATE_DIRECTORY</code></td><td><code>path</code> String, required</td><td><code>created</code> String with value <code>"true"</code></td><td>Creates the directory and any missing parent directories.</td></tr>
+        <tr><td><code>DELETE_DIRECTORY</code></td><td><code>path</code> String, required</td><td><code>deleted</code> Boolean</td><td>Deletes one empty directory. It does not delete recursively.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Important Upload behavior</h3>
+  <p>Upload first writes a temporary file named like <code>&lt;target&gt;.kestrel-&lt;unique-id&gt;.part</code>. After all bytes are written, the connector renames it to the requested target. This prevents another process from reading a partially uploaded file. The connector attempts to remove the temporary file if the upload fails.</p>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Current design-time field visibility</strong><p>The runtime Upload response contains <code>size</code>, and Move contains <code>sourcePath</code> and <code>targetPath</code>. These fields may not appear in the current Step Out tree, but they are present in the runtime <code>SFTP_Response</code>.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="examples">
+  <header class="section-heading">
+    <p class="eyebrow">Mapping examples</p>
+    <h2>Use relative paths inside the configured directory</h2>
+    <p>These examples assume the Default remote directory is <code>/data/inbound</code>.</p>
+  </header>
+  <h3>List the default directory</h3>
+  <pre class="code-contract"><code>SFTP_Request:
+  path: .</code></pre>
+  <h3>Upload a UTF-8 JSON document</h3>
+  <pre class="code-contract"><code>SFTP_Request:
+  path: orders.json
+  content: ${pipeline.input.orderJson}
+  contentEncoding: UTF8
+  overwrite: false
+  createParentDirectories: true
+
+# Final path: /data/inbound/orders.json</code></pre>
+  <h3>Upload a Base64 file</h3>
+  <pre class="code-contract"><code>SFTP_Request:
+  path: documents/report.pdf
+  content: ${pipeline.input.reportBase64}
+  contentEncoding: BASE64
+  overwrite: true
+  createParentDirectories: true</code></pre>
+  <h3>Move a processed file</h3>
+  <pre class="code-contract"><code>SFTP_Request:
+  sourcePath: orders.json
+  targetPath: archive/orders.json
+  overwrite: false
+  createParentDirectories: true</code></pre>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Prefer relative paths</strong><p>For Default remote directory <code>/data/inbound</code>, the relative path <code>orders.json</code> resolves to <code>/data/inbound/orders.json</code>. Relative paths make workflows easier to move between environments.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="troubleshooting">
+  <header class="section-heading">
+    <p class="eyebrow">Troubleshooting</p>
+    <h2>Common SFTP setup and execution errors</h2>
+    <p>Test the project connection first. If it succeeds, check the workflow connection selection and request mapping.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Error or symptom</th><th>What to check</th></tr></thead>
+      <tbody>
+        <tr><td><code>Server key did not validate</code></td><td>Use the exact hostname and port. Ensure every Known Hosts entry is complete and on one line. Verify the current fingerprint with the server owner before updating it.</td></tr>
+        <tr><td>Known Hosts credential is not listed</td><td>Confirm the credential type is <strong>Known Hosts (SSH)</strong>, save it, and refresh or reopen the Connections page.</td></tr>
+        <tr><td><code>No more authentication methods available</code></td><td>Check username, password, private-key alias, key passphrase, selected authentication type, and whether the matching public key is installed for the remote account.</td></tr>
+        <tr><td>SFTP connection is not listed in the workflow</td><td>Confirm it is an active SFTP connection in the same project, then refresh or reopen the workflow editor.</td></tr>
+        <tr><td>Path is outside the Default Directory</td><td>Use a relative path or an absolute path below the configured directory. Parent traversal with <code>..</code> is not allowed.</td></tr>
+        <tr><td>File exceeds the inline limit</td><td>Increase Maximum inline file size within the allowed range or use a streaming design for larger files.</td></tr>
+        <tr><td>Rename or overwrite is rejected</td><td>The server may not support the requested SFTP rename mode. Try a new target with overwrite disabled, or confirm overwrite/rename support with the server administrator.</td></tr>
+        <tr><td>Permission denied</td><td>Confirm the account has the required list, read, write, rename, or delete permission on the configured directory.</td></tr>
+        <tr><td>Delete directory fails</td><td>The directory must be empty and must not be the configured root.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-critical">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Do not bypass a host-key failure</strong><p>A changed host key can indicate a legitimate rotation or a security problem. Verify the new fingerprint through a trusted channel before changing the credential.</p></div>
+  </div>
+</section>

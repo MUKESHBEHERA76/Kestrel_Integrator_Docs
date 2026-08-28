@@ -22,7 +22,8 @@ This folder contains a static documentation app that can be hosted independently
 - `assets/pages/kvs.html` - KVS configuration, password handling, and workflow usage
 - `assets/pages/execution.html` - Execution architecture content
 - `assets/pages/connectors.html` - Connector concepts and catalog
-- `assets/pages/http-request.html` - Complete HTTP Request connector guide
+- `assets/pages/http-request.html` - Workflow HTTP Request guide covering REST, GraphQL, SOAP, authentication, retries, and pipeline variables
+- `assets/pages/sftp.html` - SFTP prerequisites, Known Hosts verification, project connection setup, workflow operations, pipeline contracts, and troubleshooting
 - `assets/pages/pipeline-sub.html` - Pipeline substitution syntax and copy instructions
 - `assets/images/kestrel-logo.png` - local logo asset used by the header
 

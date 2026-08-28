@@ -83,8 +83,13 @@ const pages = Object.freeze({
   },
   'http-request': {
     title: 'HTTP Request',
-    description: 'REST, GraphQL, SOAP, authentication, and multipart requests',
+    description: 'Workflow REST, GraphQL, SOAP, authentication, retries, and pipeline contracts',
     source: './assets/pages/http-request.html'
+  },
+  sftp: {
+    title: 'SFTP',
+    description: 'SFTP prerequisites, host verification, connections, operations, and pipeline contracts',
+    source: './assets/pages/sftp.html'
   }
 });
 
@@ -97,8 +102,8 @@ const sidebarClose = document.querySelector('#sidebarClose');
 const sidebarOverlay = document.querySelector('#sidebarOverlay');
 const projectNavBranch = document.querySelector('#projectNavBranch');
 const projectMenuToggle = document.querySelector('#projectMenuToggle');
-const connectorNavBranch = document.querySelector('#connectorNavBranch');
-const connectorMenuToggle = document.querySelector('#connectorMenuToggle');
+const workflowNavBranch = document.querySelector('#workflowNavBranch');
+const workflowMenuToggle = document.querySelector('#workflowMenuToggle');
 const reusableServiceNavBranch = document.querySelector('#reusableServiceNavBranch');
 const reusableServiceMenuToggle = document.querySelector('#reusableServiceMenuToggle');
 const utilsNavBranch = document.querySelector('#utilsNavBranch');
@@ -147,14 +152,14 @@ function updateNavigation(route, anchor = '') {
     }
   });
 
-  if (route === 'project' || route === 'kvs' || route === 'workflow' || route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling' || route === 'utils') {
+  if (route === 'project' || route === 'kvs' || route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling' || route === 'utils') {
     setProjectMenuOpen(true);
+  }
+  if (route === 'workflow' || route === 'http-request' || route === 'sftp') {
+    setWorkflowMenuOpen(true);
   }
   if (route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling') {
     setReusableServiceMenuOpen(true);
-  }
-  if (route === 'connector' || route === 'http-request') {
-    setConnectorMenuOpen(true);
   }
   if (route === 'utils') {
     setUtilsMenuOpen(true);
@@ -168,11 +173,11 @@ function setProjectMenuOpen(open) {
   projectMenuToggle?.setAttribute('aria-label', isOpen ? 'Collapse Project menu' : 'Expand Project menu');
 }
 
-function setConnectorMenuOpen(open) {
+function setWorkflowMenuOpen(open) {
   const isOpen = Boolean(open);
-  connectorNavBranch?.classList.toggle('collapsed', !isOpen);
-  connectorMenuToggle?.setAttribute('aria-expanded', String(isOpen));
-  connectorMenuToggle?.setAttribute('aria-label', isOpen ? 'Collapse Connector menu' : 'Expand Connector menu');
+  workflowNavBranch?.classList.toggle('collapsed', !isOpen);
+  workflowMenuToggle?.setAttribute('aria-expanded', String(isOpen));
+  workflowMenuToggle?.setAttribute('aria-label', isOpen ? 'Collapse Workflow menu' : 'Expand Workflow menu');
 }
 
 function setReusableServiceMenuOpen(open) {
@@ -311,8 +316,8 @@ sidebarOverlay.addEventListener('click', () => setMenuOpen(false));
 projectMenuToggle?.addEventListener('click', () => {
   setProjectMenuOpen(projectNavBranch?.classList.contains('collapsed'));
 });
-connectorMenuToggle?.addEventListener('click', () => {
-  setConnectorMenuOpen(connectorNavBranch?.classList.contains('collapsed'));
+workflowMenuToggle?.addEventListener('click', () => {
+  setWorkflowMenuOpen(workflowNavBranch?.classList.contains('collapsed'));
 });
 reusableServiceMenuToggle?.addEventListener('click', () => {
   setReusableServiceMenuOpen(reusableServiceNavBranch?.classList.contains('collapsed'));

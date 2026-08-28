@@ -1,10 +1,10 @@
 <section class="doc-hero" id="http-request">
   <div class="hero-copy">
-    <p class="eyebrow">Connector / HTTP Request</p>
+    <p class="eyebrow">Workflow / HTTP Request</p>
     <h1 data-page-title>Call REST, GraphQL, and SOAP APIs from a workflow.</h1>
     <p class="lead">
       HTTP Request is a workflow-only connector. Its configurator selects the API type; its pipeline supplies the URL,
-      headers, authentication, request data, timeout, and protocol-specific values at runtime.
+      headers, authentication, request data, timeout, retry policy, and protocol-specific values at runtime.
     </p>
     <div class="doc-actions">
       <a class="primary-action" href="#/http-request/getting-started">Add the connector</a>
@@ -13,7 +13,7 @@
   </div>
   <aside class="hero-aside" aria-label="HTTP Request summary">
     <span class="aside-icon" aria-hidden="true">HTTP</span>
-    <p><strong>Raw response contract</strong> The connector returns the status code, response headers, and response body without imposing a data structure.</p>
+    <p><strong>Raw response contract</strong> The connector returns the status code, response headers, response body, and number of retry attempts without imposing a response data structure.</p>
   </aside>
 </section>
 
@@ -22,12 +22,14 @@
   <div class="toc-links">
     <a href="#/http-request/getting-started">Setup</a>
     <a href="#/http-request/pipeline-inputs">Inputs</a>
+    <a href="#/http-request/retry">Retry</a>
     <a href="#/http-request/authentication">Authentication</a>
     <a href="#/http-request/rest">REST</a>
     <a href="#/http-request/graphql">GraphQL</a>
     <a href="#/http-request/soap">SOAP</a>
     <a href="#/http-request/multipart">Multipart</a>
     <a href="#/http-request/outputs">Outputs</a>
+    <a href="#/http-request/complete-example">Complete example</a>
     <a href="#/http-request/runtime">Runtime</a>
   </div>
 </nav>
@@ -44,7 +46,7 @@
     <li><span class="timeline-number">3</span><div><strong>Select API Type</strong><p>Choose REST, GraphQL, or SOAP. The workflow cannot be saved while the API type is missing.</p></div></li>
     <li><span class="timeline-number">4</span><div><strong>Open pipeline settings</strong><p>Select the step and use its settings icon. The Step In fields change to match the selected API type.</p></div></li>
     <li><span class="timeline-number">5</span><div><strong>Map deliberately</strong><p>Connect pipeline values or hardcode only the intended fields. HTTP Request does not automatically copy incoming fields into headers or other inputs.</p></div></li>
-    <li><span class="timeline-number">6</span><div><strong>Map the response</strong><p>Map statusCode, responseHeaders, and responseBody to the pipeline output fields needed by later steps.</p></div></li>
+    <li><span class="timeline-number">6</span><div><strong>Map the response</strong><p>Map statusCode, responseHeaders, responseBody, and retryAttempts to the pipeline output fields needed by later steps.</p></div></li>
   </ol>
   <div class="callout callout-warning">
     <span class="callout-mark" aria-hidden="true">!</span>
@@ -60,19 +62,74 @@
   </header>
   <div class="comparison-table-wrap">
     <table class="comparison-table">
-      <thead><tr><th>Step In field</th><th>Type</th><th>Required</th><th>Runtime behavior</th></tr></thead>
+      <thead><tr><th>Step In field</th><th>Type</th><th>Required</th><th>Probable values and runtime behavior</th></tr></thead>
       <tbody>
-        <tr><td><code>url</code></td><td>String</td><td>Yes</td><td>Absolute target endpoint. Query parameters are appended after URL encoding.</td></tr>
-        <tr><td><code>headers</code></td><td>Document</td><td>No</td><td>Explicit request headers only. Nothing from the incoming webhook or previous step is copied automatically.</td></tr>
-        <tr><td><code>queryParams</code></td><td>Document</td><td>No</td><td>Key/value query parameters. Existing query text in the URL is preserved.</td></tr>
-        <tr><td><code>timeoutMillis</code></td><td>String/number</td><td>No</td><td>Positive integer in milliseconds. Default is 30,000 ms. One deadline covers OAuth token retrieval and the API call.</td></tr>
-        <tr><td><code>authentication</code></td><td>Document</td><td>No</td><td>Optional structured authentication settings described below.</td></tr>
+        <tr><td><code>${pipeline.input.url}</code></td><td>String</td><td>Yes</td><td>Absolute target endpoint. Query parameters are appended after URL encoding.</td></tr>
+        <tr><td><code>${pipeline.input.headers}</code></td><td>Document</td><td>No</td><td>Explicit request headers only. Nothing from the incoming webhook or previous step is copied automatically.</td></tr>
+        <tr><td><code>${pipeline.input.queryParams}</code></td><td>Document</td><td>No</td><td>Key/value query parameters. Existing query text in the URL is preserved.</td></tr>
+        <tr><td><code>${pipeline.input.timeoutMillis}</code></td><td>String</td><td>No</td><td>Positive integer in milliseconds, for example <code>5000</code> or <code>30000</code>. Default: <code>30000</code>. One deadline covers OAuth token retrieval, retry intervals, and every API attempt.</td></tr>
+        <tr><td><code>${pipeline.input.authentication}</code></td><td>Document</td><td>No</td><td>Optional structured authentication settings described below.</td></tr>
+        <tr><td><code>${pipeline.input.retryConfig}</code></td><td>Document</td><td>No</td><td>Common retry settings for REST, GraphQL, and SOAP. <code>retryConfig.retry</code> defaults to the String <code>"false"</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Pipeline variable</th><th>Type</th><th>Required when</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>${pipeline.input.authentication.authType}</code></td><td>String</td><td>Only when authentication is used</td><td><code>NONE</code>, <code>BASIC</code>, <code>BEARER</code>, or <code>OAUTH2_CLIENT_CREDENTIALS</code></td></tr>
+        <tr><td><code>${pipeline.input.authentication.username}</code></td><td>String</td><td><code>BASIC</code></td><td><code>api-user</code></td></tr>
+        <tr><td><code>${pipeline.input.authentication.password}</code></td><td>String</td><td><code>BASIC</code></td><td>A securely mapped password value</td></tr>
+        <tr><td><code>${pipeline.input.authentication.bearerToken}</code></td><td>String</td><td><code>BEARER</code></td><td>A token value without the <code>Bearer </code> prefix</td></tr>
+        <tr><td><code>${pipeline.input.authentication.tokenUrl}</code></td><td>String</td><td><code>OAUTH2_CLIENT_CREDENTIALS</code></td><td><code>https://identity.example.com/oauth2/token</code></td></tr>
+        <tr><td><code>${pipeline.input.authentication.clientId}</code></td><td>String</td><td><code>OAUTH2_CLIENT_CREDENTIALS</code></td><td>OAuth client identifier</td></tr>
+        <tr><td><code>${pipeline.input.authentication.clientSecret}</code></td><td>String</td><td><code>OAUTH2_CLIENT_CREDENTIALS</code></td><td>A securely mapped client secret</td></tr>
+        <tr><td><code>${pipeline.input.authentication.scope}</code></td><td>String</td><td>Optional for OAuth2</td><td><code>orders.read orders.write</code></td></tr>
+        <tr><td><code>${pipeline.input.authentication.audience}</code></td><td>String</td><td>Optional for OAuth2</td><td><code>https://api.example.com</code></td></tr>
       </tbody>
     </table>
   </div>
   <div class="callout">
     <span class="callout-mark" aria-hidden="true">i</span>
     <div><strong>Map, hardcode, or substitute</strong><p>An exact expression such as <code>${pipeline.input.endpoint}</code> keeps the original value type. Embedded expressions such as <code>https://api.example.com/users/${pipeline.input.userId}</code> are substituted into the surrounding string. The same recursive substitution applies inside headers, query parameters, authentication, GraphQL variables, form fields, and attachment documents.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="retry">
+  <header class="section-heading">
+    <p class="eyebrow">Retry configuration</p>
+    <h2>Retry only the HTTP statuses you choose</h2>
+    <p><code>retryConfig</code> is a Step In Document available for REST, GraphQL, and SOAP. Every child is a String pipeline variable.</p>
+  </header>
+  <div class="comparison-table-wrap">
+    <table class="comparison-table">
+      <thead><tr><th>Pipeline variable</th><th>Required</th><th>Default / valid values</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>${pipeline.input.retryConfig.retry}</code></td><td>Always available</td><td><code>"false"</code> by default; <code>"true"</code> or <code>"false"</code></td><td>Enables or disables status-code retries. Values are case-insensitive at runtime.</td></tr>
+        <tr><td><code>${pipeline.input.retryConfig.retrycount}</code></td><td>When retry is <code>"true"</code></td><td>Positive whole-number String such as <code>"1"</code>, <code>"3"</code>, or <code>"5"</code></td><td>Maximum number of additional HTTP attempts after the initial request. Zero is not valid when retry is enabled.</td></tr>
+        <tr><td><code>${pipeline.input.retryConfig.retryIntervalInSec}</code></td><td>When retry is <code>"true"</code></td><td>Positive whole-number String such as <code>"1"</code>, <code>"5"</code>, or <code>"30"</code></td><td>Seconds to wait before each additional attempt. Zero is not valid when retry is enabled.</td></tr>
+        <tr><td><code>${pipeline.input.retryConfig.retryStatusCodes}</code></td><td>When retry is <code>"true"</code></td><td>Comma-separated HTTP codes from 100 through 599, for example <code>"408,429,500,502,503,504"</code></td><td>A retry occurs only when the response status is in this set and retrycount has not been exhausted.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="code-contract" aria-label="HTTP retry configuration example"><code>retryConfig:
+  retry: "true"
+  retrycount: "3"
+  retryIntervalInSec: "5"
+  retryStatusCodes: "408,429,500,502,503,504"</code></pre>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Initial request</strong><p>The first outbound request is not counted as a retry. <code>retryAttempts</code> starts at <code>0</code>.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Status evaluation</strong><p>If the response status is absent from retryStatusCodes, the connector returns it immediately, including 4xx and 5xx responses.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Wait and retry</strong><p>For a configured status, the connector waits retryIntervalInSec and sends the same request again. retryAttempts increments only when the additional request is attempted.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Final response</strong><p>The first non-retryable response, or the last response after retrycount is exhausted, becomes the normal Step Out response.</p></div></li>
+  </ol>
+  <div class="callout callout-warning">
+    <span class="callout-mark" aria-hidden="true">!</span>
+    <div><strong>Conditional workflow validation</strong><p>When retry is hardcoded to <code>"true"</code>, workflow Issues requires all three companion fields and validates positive counts, positive intervals, and status-code syntax. Dynamically mapped values receive the same checks at runtime. The total <code>timeoutMillis</code> must be long enough for the request attempts and retry waits.</p></div>
+  </div>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>What is not retried</strong><p><code>retryStatusCodes</code> controls HTTP response retries. Configuration errors, invalid mappings, DNS/TLS/I/O failures, interruption, and an exhausted timeout raise their normal connector error instead of being selected by an HTTP status code.</p></div>
   </div>
 </section>
 
@@ -107,12 +164,12 @@
   </header>
   <div class="comparison-table-wrap">
     <table class="comparison-table">
-      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description and probable values</th></tr></thead>
       <tbody>
-        <tr><td><code>method</code></td><td>String</td><td>GET, POST, PUT, PATCH, DELETE, HEAD, or OPTIONS. Default is GET.</td></tr>
-        <tr><td><code>requestBody</code></td><td>String</td><td>Raw payload sent as UTF-8. It can contain JSON, XML, text, or another format understood by the API.</td></tr>
-        <tr><td><code>formFields</code></td><td>Document</td><td>Text parts used only when the explicitly mapped Content-Type starts with <code>multipart/form-data</code>.</td></tr>
-        <tr><td><code>attachments</code></td><td>Document List</td><td>Binary multipart parts supplied as Base64 or bytes from the pipeline.</td></tr>
+        <tr><td><code>${pipeline.input.method}</code></td><td>String</td><td>No</td><td><code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code>, <code>HEAD</code>, or <code>OPTIONS</code>. Default: <code>GET</code>.</td></tr>
+        <tr><td><code>${pipeline.input.requestBody}</code></td><td>String</td><td>API-dependent</td><td>Raw UTF-8 JSON, XML, text, or another payload format understood by the API.</td></tr>
+        <tr><td><code>${pipeline.input.formFields}</code></td><td>Document</td><td>No</td><td>Text parts used only when the explicitly mapped Content-Type starts with <code>multipart/form-data</code>.</td></tr>
+        <tr><td><code>${pipeline.input.attachments}</code></td><td>Document List</td><td>No</td><td>Binary multipart parts supplied as Base64 or bytes from the pipeline.</td></tr>
       </tbody>
     </table>
   </div>
@@ -135,10 +192,10 @@ timeoutMillis: 15000</code></pre>
   </header>
   <div class="comparison-table-wrap">
     <table class="comparison-table">
-      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td><code>graphqlQuery</code></td><td>String</td><td>Required GraphQL query or mutation text. Mutations are entered here, not in requestBody.</td></tr>
-        <tr><td><code>graphqlVariables</code></td><td>Document</td><td>Variables object. It may be mapped as a document or entered as valid JSON text.</td></tr>
+        <tr><td><code>${pipeline.input.graphqlQuery}</code></td><td>String</td><td>Yes</td><td>GraphQL query or mutation text. Mutations are entered here, not in requestBody.</td></tr>
+        <tr><td><code>${pipeline.input.graphqlVariables}</code></td><td>Document</td><td>No</td><td>Variables object. It may be mapped as a document or entered as valid JSON text.</td></tr>
       </tbody>
     </table>
   </div>
@@ -167,11 +224,11 @@ graphqlVariables:
   </header>
   <div class="comparison-table-wrap">
     <table class="comparison-table">
-      <thead><tr><th>Field</th><th>Required</th><th>Description</th></tr></thead>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description and probable values</th></tr></thead>
       <tbody>
-        <tr><td><code>soapVersion</code></td><td>No</td><td><code>1.1</code> by default, or <code>1.2</code>.</td></tr>
-        <tr><td><code>soapAction</code></td><td>Service-dependent</td><td>For SOAP 1.1 it becomes the SOAPAction header. For SOAP 1.2 it is added as the Content-Type action parameter.</td></tr>
-        <tr><td><code>requestBody</code></td><td>Yes</td><td>Complete SOAP XML envelope as a String. Pipeline expressions can be embedded in the XML.</td></tr>
+        <tr><td><code>${pipeline.input.soapVersion}</code></td><td>String</td><td>No</td><td><code>1.1</code> by default, or <code>1.2</code>.</td></tr>
+        <tr><td><code>${pipeline.input.soapAction}</code></td><td>String</td><td>Service-dependent</td><td>For SOAP 1.1 it becomes the SOAPAction header. For SOAP 1.2 it is added as the Content-Type action parameter.</td></tr>
+        <tr><td><code>${pipeline.input.requestBody}</code></td><td>String</td><td>Yes</td><td>Complete SOAP XML envelope. Pipeline expressions can be embedded in the XML.</td></tr>
       </tbody>
     </table>
   </div>
@@ -199,11 +256,11 @@ requestBody: |
     <table class="comparison-table">
       <thead><tr><th>Attachment field</th><th>Required</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td><code>fieldName</code></td><td>No</td><td>Multipart form field name. Defaults to <code>file</code>.</td></tr>
-        <tr><td><code>fileName</code></td><td>Yes</td><td>Filename included in Content-Disposition.</td></tr>
-        <tr><td><code>contentType</code></td><td>No</td><td>File media type. Defaults to <code>application/octet-stream</code>.</td></tr>
-        <tr><td><code>contentBase64</code></td><td>One content field</td><td>Base64-encoded content from the pipeline.</td></tr>
-        <tr><td><code>contentBytes</code></td><td>One content field</td><td>Byte array or numeric byte list from the pipeline. Takes precedence over contentBase64.</td></tr>
+        <tr><td><code>${pipeline.input.attachments.fieldName}</code></td><td>No</td><td>Multipart form field name. Defaults to <code>file</code>.</td></tr>
+        <tr><td><code>${pipeline.input.attachments.fileName}</code></td><td>Yes</td><td>Filename included in Content-Disposition.</td></tr>
+        <tr><td><code>${pipeline.input.attachments.contentType}</code></td><td>No</td><td>File media type. Defaults to <code>application/octet-stream</code>.</td></tr>
+        <tr><td><code>${pipeline.input.attachments.contentBase64}</code></td><td>One content field</td><td>Base64-encoded content from the pipeline.</td></tr>
+        <tr><td><code>${pipeline.input.attachments.contentBytes}</code></td><td>One content field</td><td>Byte array or numeric byte list from the pipeline. Takes precedence over contentBase64.</td></tr>
       </tbody>
     </table>
   </div>
@@ -230,15 +287,64 @@ attachments:
     <table class="comparison-table">
       <thead><tr><th>Step Out field</th><th>Type</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td><code>statusCode</code></td><td>Integer</td><td>HTTP response status such as 200, 404, or 500.</td></tr>
-        <tr><td><code>responseHeaders</code></td><td>Document</td><td>Response header map. A header with one value is a string; repeated values are returned as a list.</td></tr>
-        <tr><td><code>responseBody</code></td><td>String</td><td>Raw response decoded using the response charset; UTF-8 is used when none is declared or the charset is invalid.</td></tr>
+        <tr><td><code>${pipeline.output.statusCode}</code></td><td>Integer</td><td>HTTP response status such as 200, 404, or 500.</td></tr>
+        <tr><td><code>${pipeline.output.responseHeaders}</code></td><td>Document</td><td>Response header map. A header with one value is a string; repeated values are returned as a list.</td></tr>
+        <tr><td><code>${pipeline.output.responseBody}</code></td><td>String</td><td>Raw response decoded using the response charset; UTF-8 is used when none is declared or the charset is invalid.</td></tr>
+        <tr><td><code>${pipeline.output.retryAttempts}</code></td><td>Integer</td><td>Number of additional HTTP attempts made. It is always <code>0</code> when no retry occurred, even when retry is disabled.</td></tr>
       </tbody>
     </table>
   </div>
   <div class="callout">
     <span class="callout-mark" aria-hidden="true">i</span>
-    <div><strong>HTTP error statuses are still responses</strong><p>A 4xx or 5xx response is returned through statusCode, responseHeaders, and responseBody. Use workflow logic to decide which status codes are acceptable. Transport, timeout, and configuration failures raise connector errors.</p></div>
+    <div><strong>HTTP error statuses are still responses</strong><p>A 4xx or 5xx response is returned through statusCode, responseHeaders, responseBody, and retryAttempts after any configured status-code retries finish. Use workflow logic to decide which final statuses are acceptable. Transport, timeout, and configuration failures raise connector errors.</p></div>
+  </div>
+</section>
+
+<section class="doc-section" id="complete-example">
+  <header class="section-heading">
+    <p class="eyebrow">End-to-end workflow example</p>
+    <h2>Create an order with bearer authentication and controlled retries</h2>
+    <p>This example maps an incoming customer identifier and access token, sends a REST request, retries temporary remote failures, and exposes the result to later workflow steps.</p>
+  </header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Select REST</strong><p>Double-click HTTP Request and set API Type to <code>REST</code>.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Open Step In</strong><p>Open pipeline settings. Hardcode stable request settings and map runtime values from the workflow pipeline.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Configure retry</strong><p>Expand retryConfig and hardcode all four String children as shown below.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Map Step Out</strong><p>Map response fields into named pipeline output variables for the IF step, logger, response step, or following connector.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Review Issues</strong><p>Resolve any missing retry fields, invalid positive numbers, malformed status codes, or missing API Type before saving.</p></div></li>
+  </ol>
+  <pre class="code-contract" aria-label="Complete HTTP Request pipeline example"><code>Step In
+url = "https://api.example.com/v1/orders"
+method = "POST"
+headers = {
+  "Content-Type": "application/json",
+  "Accept": "application/json",
+  "X-Correlation-Id": "${pipeline.input.correlationId}"
+}
+queryParams = {
+  "source": "kestrel"
+}
+timeoutMillis = "30000"
+authentication = {
+  "authType": "BEARER",
+  "bearerToken": "${pipeline.input.accessToken}"
+}
+requestBody = "{\"customerId\":\"${pipeline.input.customerId}\",\"amount\":125.50}"
+retryConfig = {
+  "retry": "true",
+  "retrycount": "3",
+  "retryIntervalInSec": "5",
+  "retryStatusCodes": "408,429,500,502,503,504"
+}
+
+Step Out
+${pipeline.output.statusCode}      -&gt; ${pipeline.output.orderApiStatus}
+${pipeline.output.responseHeaders} -&gt; ${pipeline.output.orderApiHeaders}
+${pipeline.output.responseBody}    -&gt; ${pipeline.output.orderApiBody}
+${pipeline.output.retryAttempts}   -&gt; ${pipeline.output.orderApiRetries}</code></pre>
+  <div class="callout">
+    <span class="callout-mark" aria-hidden="true">i</span>
+    <div><strong>Example result</strong><p>If the API returns 503, then 503, then 201, the connector sends three total requests and returns <code>statusCode = 201</code> with <code>retryAttempts = 2</code>. If the first request returns 201, retryAttempts is <code>0</code>.</p></div>
   </div>
 </section>
 
@@ -249,7 +355,8 @@ attachments:
     <p>These details are important when troubleshooting production integrations.</p>
   </header>
   <div class="runtime-notes">
-    <article><strong>Timeout deadline</strong><p><code>timeoutMillis</code> must be positive. The remaining time is recalculated across OAuth2 token acquisition, connection, and response waiting.</p></article>
+    <article><strong>Timeout deadline</strong><p><code>timeoutMillis</code> must be positive. The remaining time is recalculated across OAuth2 token acquisition, every connection and response wait, and every configured retry interval.</p></article>
+    <article><strong>Retry output</strong><p><code>${pipeline.output.retryAttempts}</code> is initialized to <code>0</code> before request execution and records only additional attempts, not the initial request.</p></article>
     <article><strong>Redirects</strong><p>The Java HTTP client follows normal redirects. The final response is returned to the pipeline.</p></article>
     <article><strong>Explicit headers only</strong><p>Inbound webhook and previous-step headers do not flow into the outbound request unless the developer maps them intentionally.</p></article>
     <article><strong>Restricted headers</strong><p>Transport-controlled headers are ignored, including Host, Content-Length, Connection, Expect, Transfer-Encoding, Upgrade, HTTP/2 pseudo-headers, and related hop-by-hop headers.</p></article>
@@ -260,7 +367,7 @@ attachments:
     <table class="comparison-table">
       <thead><tr><th>Error code</th><th>Meaning</th><th>Typical cause</th></tr></thead>
       <tbody>
-        <tr><td><code>HTTP_REQUEST_CONFIGURATION_ERROR</code></td><td>The request cannot be constructed.</td><td>Missing URL/query/XML, invalid timeout, invalid Base64, unsupported method/auth type, or malformed GraphQL variables.</td></tr>
+        <tr><td><code>HTTP_REQUEST_CONFIGURATION_ERROR</code></td><td>The request cannot be constructed.</td><td>Missing URL/query/XML, invalid timeout, incomplete or invalid retryConfig, invalid Base64, unsupported method/auth type, or malformed GraphQL variables.</td></tr>
         <tr><td><code>HTTP_REQUEST_TIMEOUT</code></td><td>The configured deadline expired.</td><td>Slow token endpoint, connection, or remote API.</td></tr>
         <tr><td><code>HTTP_REQUEST_INTERRUPTED</code></td><td>The execution thread was interrupted.</td><td>Runtime shutdown or cancellation.</td></tr>
         <tr><td><code>HTTP_REQUEST_ERROR</code></td><td>The HTTP operation failed.</td><td>Invalid URI, network/DNS/TLS problem, or I/O failure.</td></tr>

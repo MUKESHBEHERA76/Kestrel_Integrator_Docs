@@ -575,7 +575,7 @@ export const DOCS_SECTIONS = {
   },
   connectors: {
     title: 'Connections',
-    intro: 'Connections are reusable credentials and endpoint definitions. The connection docs cover Snowflake, Postgres, MSSQL, MySql, MariaDB, OracleDB, IBMDB2, and PGP profiles, while the workflow connector pages cover Logger, Data Transformer, Send HttpResponse, Workflow End, CSV Parser, Pipeline Logger, XSLT Transformer, Sleep, Raise Exception, and Multi Transformation.',
+    intro: 'Connections are reusable credentials and endpoint definitions. The connection docs cover SFTP, Snowflake, Postgres, MSSQL, MySql, MariaDB, OracleDB, IBMDB2, and PGP profiles, while the workflow connector pages cover SFTP, HTTP Request, Logger, Data Transformer, Send HttpResponse, Workflow End, CSV Parser, Pipeline Logger, XSLT Transformer, Sleep, Raise Exception, and Multi Transformation.',
     cards: [
       { title: 'Catalog first', body: 'Open the catalog, choose the connector type, then configure host, port, database, username, password, keys, or other required fields.' },
       { title: 'Enable or disable', body: 'Use the On/Off toggle to control which connections are available to the workflow and SQL console runtime.' },
@@ -584,10 +584,10 @@ export const DOCS_SECTIONS = {
   },
   workflow: {
     title: 'Workflow',
-    intro: 'Workflow pipelines connect trigger, action, branch, and utility steps. The workflow connector pages document Logger, Data Transformer, Send HttpResponse, Workflow End, CSV Parser, Pipeline Logger, XSLT Transformer, Sleep, Raise Exception, Multi Transformation, and the reusable database and security connectors used inside the canvas.',
+    intro: 'Workflow pipelines connect trigger, action, branch, and utility steps. The workflow connector pages document SFTP, HTTP Request, Logger, Data Transformer, Send HttpResponse, Workflow End, CSV Parser, Pipeline Logger, XSLT Transformer, Sleep, Raise Exception, Multi Transformation, and the reusable database and security connectors used inside the canvas.',
     cards: [
       { title: 'Drag steps onto the canvas', body: 'Choose a connector or utility step, then drop it on the workflow canvas and map the required inputs and outputs.' },
-      { title: 'Connector menu', body: 'Workflow > Connector contains the dedicated pages for Logger, Data Transformer, Send HttpResponse, Workflow End, CSV Parser, Pipeline Logger, XSLT Transformer, Sleep, Raise Exception, Multi Transformation, PGP, Snowflake, Postgres, MSSQL, MySql, MariaDB, OracleDB, and IBMDB2.' },
+      { title: 'Connector menu', body: 'Workflow > Connector contains the dedicated pages for SFTP, HTTP Request, Logger, Data Transformer, Send HttpResponse, Workflow End, CSV Parser, Pipeline Logger, XSLT Transformer, Sleep, Raise Exception, Multi Transformation, PGP, Snowflake, Postgres, MSSQL, MySql, MariaDB, OracleDB, and IBMDB2.' },
       { title: 'Use pipeline scopes', body: 'Runtime variables follow pipeline scopes like `$pipeline.input`, `$pipeline.output`, `$pipeline.temp`, `$pipeline.system`, and `$pipeline.error`.' },
       { title: 'Inspect executions', body: 'Monitor page cards and execution drilldowns help you see logs, branches, and errors after each run.' }
     ]

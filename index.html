@@ -104,10 +104,36 @@
               </button>
             </div>
             <div class="nav-children" id="projectSubmenu">
-              <a class="nav-child-link" href="#/workflow" data-route="workflow">
-                <span class="nav-child-marker" aria-hidden="true"></span>
-                <span><strong>Workflow</strong><small>Design and execution</small></span>
-              </a>
+              <div class="nav-branch nested collapsed" id="workflowNavBranch">
+                <div class="nav-branch-row">
+                  <a class="nav-child-link" href="#/workflow" data-route="workflow">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>Workflow</strong><small>Design and execution</small></span>
+                  </a>
+                  <button
+                    class="nav-branch-toggle"
+                    id="workflowMenuToggle"
+                    type="button"
+                    aria-label="Expand Workflow menu"
+                    aria-controls="workflowSubmenu"
+                    aria-expanded="false"
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="m6.5 8 3.5 3.5L13.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="nav-children" id="workflowSubmenu">
+                  <a class="nav-child-link" href="#/http-request" data-route="http-request">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>HTTP Request</strong><small>REST, GraphQL, SOAP, and retries</small></span>
+                  </a>
+                  <a class="nav-child-link" href="#/sftp" data-route="sftp">
+                    <span class="nav-child-marker" aria-hidden="true"></span>
+                    <span><strong>SFTP</strong><small>Secure file transfer operations</small></span>
+                  </a>
+                </div>
+              </div>
               <div class="nav-branch nested collapsed" id="reusableServiceNavBranch">
                 <div class="nav-branch-row">
                   <a class="nav-child-link" href="#/reusable-service" data-route="reusable-service">
@@ -204,39 +230,17 @@
               <small>Runtime architecture</small>
             </span>
           </a>
-          <div class="nav-branch collapsed" id="connectorNavBranch">
-            <div class="nav-branch-row">
-              <a class="nav-link" href="#/connector" data-route="connector">
-                <span class="nav-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M8.5 8.5 5 12l3.5 3.5M15.5 8.5 19 12l-3.5 3.5M13.5 5l-3 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </span>
-                <span>
-                  <strong>Connector</strong>
-                  <small>Workflow integrations</small>
-                </span>
-              </a>
-              <button
-                class="nav-branch-toggle"
-                id="connectorMenuToggle"
-                type="button"
-                aria-label="Expand Connector menu"
-                aria-controls="connectorSubmenu"
-                aria-expanded="false"
-              >
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="m6.5 8 3.5 3.5L13.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </button>
-            </div>
-            <div class="nav-children" id="connectorSubmenu">
-              <a class="nav-child-link" href="#/http-request" data-route="http-request">
-                <span class="nav-child-marker" aria-hidden="true"></span>
-                <span><strong>HTTP Request</strong><small>REST, GraphQL, and SOAP</small></span>
-              </a>
-            </div>
-          </div>
+          <a class="nav-link" href="#/connector" data-route="connector">
+            <span class="nav-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8.5 8.5 5 12l3.5 3.5M15.5 8.5 19 12l-3.5 3.5M13.5 5l-3 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <span>
+              <strong>Connector</strong>
+              <small>Connector catalog</small>
+            </span>
+          </a>
         </nav>
 
         <div class="sidebar-footer">
