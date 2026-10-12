@@ -21,6 +21,46 @@ const pages = Object.freeze({
     description: 'Workflow concepts, editor, triggers, utilities, and execution',
     source: './assets/pages/workflow.html'
   },
+  'workflow-triggers': {
+    title: 'Workflow triggers',
+    description: 'Choose how a workflow starts',
+    source: './assets/pages/workflow-triggers.html'
+  },
+  'webhook-trigger': {
+    title: 'Webhook Trigger',
+    description: 'HTTP requests, payloads, authentication, and responses',
+    source: './assets/pages/webhook-trigger.html'
+  },
+  'webhook-auth': {
+    title: 'Webhook Auth',
+    description: 'Create and manage centralized webhook authentication aliases',
+    source: './assets/pages/webhook-auth.html'
+  },
+  'email-trigger': {
+    title: 'Email Trigger',
+    description: 'Start workflows from incoming IMAP or POP3 messages',
+    source: './assets/pages/email-trigger.html'
+  },
+  connections: {
+    title: 'Connections',
+    description: 'Create and test project connections',
+    source: './assets/pages/connections.html'
+  },
+  'smtp-connection': {
+    title: 'Email (SMTP) connection',
+    description: 'Configure outbound email transport',
+    source: './assets/pages/smtp-connection.html'
+  },
+  'incoming-email-connection': {
+    title: 'Email (IMAP/POP3) connection',
+    description: 'Configure an incoming mailbox',
+    source: './assets/pages/incoming-email-connection.html'
+  },
+  'send-email': {
+    title: 'Send Email',
+    description: 'Send text, HTML, and attachments from workflows',
+    source: './assets/pages/send-email.html'
+  },
   'reusable-service': {
     title: 'Reusable Service',
     description: 'Reusable service contracts, flow steps, mapping, and invocation',
@@ -104,6 +144,10 @@ const projectNavBranch = document.querySelector('#projectNavBranch');
 const projectMenuToggle = document.querySelector('#projectMenuToggle');
 const workflowNavBranch = document.querySelector('#workflowNavBranch');
 const workflowMenuToggle = document.querySelector('#workflowMenuToggle');
+const workflowTriggersNavBranch = document.querySelector('#workflowTriggersNavBranch');
+const workflowTriggersMenuToggle = document.querySelector('#workflowTriggersMenuToggle');
+const connectionsNavBranch = document.querySelector('#connectionsNavBranch');
+const connectionsMenuToggle = document.querySelector('#connectionsMenuToggle');
 const reusableServiceNavBranch = document.querySelector('#reusableServiceNavBranch');
 const reusableServiceMenuToggle = document.querySelector('#reusableServiceMenuToggle');
 const utilsNavBranch = document.querySelector('#utilsNavBranch');
@@ -152,12 +196,14 @@ function updateNavigation(route, anchor = '') {
     }
   });
 
-  if (route === 'project' || route === 'kvs' || route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling' || route === 'utils') {
+  if (route === 'project' || route === 'kvs' || route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger' || route === 'connections' || route === 'smtp-connection' || route === 'incoming-email-connection' || route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling' || route === 'utils') {
     setProjectMenuOpen(true);
   }
-  if (route === 'workflow' || route === 'http-request' || route === 'sftp') {
+  if (route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger') {
     setWorkflowMenuOpen(true);
   }
+  if (['workflow-triggers', 'webhook-trigger', 'email-trigger'].includes(route)) setNestedMenuOpen(workflowTriggersNavBranch, workflowTriggersMenuToggle, 'Workflow triggers', true);
+  if (['connections', 'smtp-connection', 'incoming-email-connection'].includes(route)) setNestedMenuOpen(connectionsNavBranch, connectionsMenuToggle, 'Connections', true);
   if (route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling') {
     setReusableServiceMenuOpen(true);
   }
@@ -178,6 +224,12 @@ function setWorkflowMenuOpen(open) {
   workflowNavBranch?.classList.toggle('collapsed', !isOpen);
   workflowMenuToggle?.setAttribute('aria-expanded', String(isOpen));
   workflowMenuToggle?.setAttribute('aria-label', isOpen ? 'Collapse Workflow menu' : 'Expand Workflow menu');
+}
+
+function setNestedMenuOpen(branch, toggle, name, open) {
+  branch?.classList.toggle('collapsed', !open);
+  toggle?.setAttribute('aria-expanded', String(Boolean(open)));
+  toggle?.setAttribute('aria-label', `${open ? 'Collapse' : 'Expand'} ${name} menu`);
 }
 
 function setReusableServiceMenuOpen(open) {
@@ -318,6 +370,12 @@ projectMenuToggle?.addEventListener('click', () => {
 });
 workflowMenuToggle?.addEventListener('click', () => {
   setWorkflowMenuOpen(workflowNavBranch?.classList.contains('collapsed'));
+});
+workflowTriggersMenuToggle?.addEventListener('click', () => {
+  setNestedMenuOpen(workflowTriggersNavBranch, workflowTriggersMenuToggle, 'Workflow triggers', workflowTriggersNavBranch?.classList.contains('collapsed'));
+});
+connectionsMenuToggle?.addEventListener('click', () => {
+  setNestedMenuOpen(connectionsNavBranch, connectionsMenuToggle, 'Connections', connectionsNavBranch?.classList.contains('collapsed'));
 });
 reusableServiceMenuToggle?.addEventListener('click', () => {
   setReusableServiceMenuOpen(reusableServiceNavBranch?.classList.contains('collapsed'));

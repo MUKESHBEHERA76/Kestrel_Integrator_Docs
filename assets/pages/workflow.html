@@ -72,7 +72,8 @@
     <table class="comparison-table">
       <thead><tr><th>Trigger</th><th>Use it when</th><th>Key configuration</th></tr></thead>
       <tbody>
-        <tr><td><strong>Webhook Trigger</strong></td><td>An external client must start the workflow through HTTP.</td><td>Resource name, HTTP method, expected query parameters and headers, plus optional Basic or API-key authentication alias. The incoming request becomes available to the workflow pipeline.</td></tr>
+        <tr><td><strong><a href="#/webhook-trigger">Webhook Trigger</a></strong></td><td>An external client must start the workflow through HTTP.</td><td>Resource name, HTTP method, optional authentication, and an incoming pipeline document that supports JSON, forms, and files.</td></tr>
+        <tr><td><strong><a href="#/email-trigger">Email Trigger</a></strong></td><td>A matching message arrives in a mailbox.</td><td>Select an <a href="#/incoming-email-connection">Email (IMAP/POP3) connection</a>, conditions, polling interval, and optional after-success mailbox action.</td></tr>
         <tr><td><strong>Scheduler Trigger</strong></td><td>The workflow must run on a time-based schedule.</td><td>Cron schedule and scheduler state. The workflow must be enabled before its scheduler can be enabled.</td></tr>
         <tr><td><strong>SubWorkflow Trigger</strong></td><td>Another workflow must invoke this workflow as a reusable child flow.</td><td>Workflow input and output signature. The editor exposes a Workflow I/O action for defining the contract.</td></tr>
       </tbody>
