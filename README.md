@@ -57,3 +57,6 @@ python3 -m http.server 8080
 ```
 
 Then open `http://localhost:8080`. Hash-based routes keep direct links and browser back/forward navigation compatible with static hosting.
+
+- `assets/pages/snowflake-connection.html` - Snowflake JDBC connection, alias authentication, advanced properties, and examples
+- `assets/pages/snowflake-connector.html` - Workflow SQL step configuration, pipeline contract, examples, and errors
