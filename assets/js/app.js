@@ -66,6 +66,8 @@ const pages = Object.freeze({
     description: 'Schedule workflow runs with UTC cron expressions',
     source: './assets/pages/scheduler-trigger.html'
   },
+  'mongodb-connection': { title: 'MongoDB connection', description: 'Create and test a project MongoDB connection', source: './assets/pages/mongodb-connection.html' },
+  'mongodb-connector': { title: 'MongoDB connector', description: 'Run MongoDB document operations in a workflow', source: './assets/pages/mongodb-connector.html' },
   'snowflake-connection': { title: 'Snowflake connection', description: 'Create and test a project Snowflake JDBC connection', source: './assets/pages/snowflake-connection.html' },
   'snowflake-connector': { title: 'Snowflake connector', description: 'Execute SQL in a workflow', source: './assets/pages/snowflake-connector.html' },
   'amqp-trigger': { title: 'AMQP Trigger', description: 'Consume AMQP 0-9-1 queue messages', source: './assets/pages/amqp-trigger.html' },
@@ -249,14 +251,14 @@ function updateNavigation(route, anchor = '') {
     }
   });
 
-  if (route === 'project' || route === 'kvs' || route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'salesforce-connector' || route === 'schema-validator' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger' || route === 'salesforce-trigger' || route === 'scheduler-trigger' || route === 'subworkflow-trigger' || route === 'amqp-trigger' || route === 'amqp10-trigger' || route === 'amqp-connection' || route === 'amqp10-connection' || route === 'snowflake-connection' || route === 'snowflake-connector' || route === 'connections' || route === 'smtp-connection' || route === 'incoming-email-connection' || route === 'salesforce-connection' || route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling' || route === 'utils') {
+  if (route === 'project' || route === 'kvs' || route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'salesforce-connector' || route === 'schema-validator' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger' || route === 'salesforce-trigger' || route === 'scheduler-trigger' || route === 'subworkflow-trigger' || route === 'amqp-trigger' || route === 'amqp10-trigger' || route === 'amqp-connection' || route === 'amqp10-connection' || route === 'mongodb-connection' || route === 'mongodb-connector' || route === 'snowflake-connection' || route === 'snowflake-connector' || route === 'connections' || route === 'smtp-connection' || route === 'incoming-email-connection' || route === 'salesforce-connection' || route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling' || route === 'utils') {
     setProjectMenuOpen(true);
   }
-  if (route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'salesforce-connector' || route === 'schema-validator' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger' || route === 'salesforce-trigger' || route === 'scheduler-trigger' || route === 'subworkflow-trigger' || route === 'amqp-trigger' || route === 'amqp10-trigger' || route === 'snowflake-connector') {
+  if (route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'salesforce-connector' || route === 'schema-validator' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger' || route === 'salesforce-trigger' || route === 'scheduler-trigger' || route === 'subworkflow-trigger' || route === 'amqp-trigger' || route === 'amqp10-trigger' || route === 'mongodb-connector' || route === 'snowflake-connector') {
     setWorkflowMenuOpen(true);
   }
   if (['workflow-triggers', 'webhook-trigger', 'email-trigger', 'salesforce-trigger', 'scheduler-trigger', 'subworkflow-trigger', 'amqp-trigger', 'amqp10-trigger'].includes(route)) setNestedMenuOpen(workflowTriggersNavBranch, workflowTriggersMenuToggle, 'Workflow triggers', true);
-  if (['connections', 'smtp-connection', 'incoming-email-connection', 'salesforce-connection', 'amqp-connection', 'amqp10-connection', 'snowflake-connection'].includes(route)) setNestedMenuOpen(connectionsNavBranch, connectionsMenuToggle, 'Connections', true);
+  if (['connections', 'smtp-connection', 'incoming-email-connection', 'salesforce-connection', 'amqp-connection', 'amqp10-connection', 'snowflake-connection', 'mongodb-connection'].includes(route)) setNestedMenuOpen(connectionsNavBranch, connectionsMenuToggle, 'Connections', true);
   if (['security', 'webhook-auth', 'security-credentials', 'keystore'].includes(route)) setNestedMenuOpen(securityNavBranch, securityMenuToggle, 'Security', true);
   if (route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling') {
     setReusableServiceMenuOpen(true);

@@ -60,3 +60,6 @@ Then open `http://localhost:8080`. Hash-based routes keep direct links and brows
 
 - `assets/pages/snowflake-connection.html` - Snowflake JDBC connection, alias authentication, advanced properties, and examples
 - `assets/pages/snowflake-connector.html` - Workflow SQL step configuration, pipeline contract, examples, and errors
+
+- `assets/pages/mongodb-connection.html` - MongoDB project connection, Security Credentials, TLS, and test examples
+- `assets/pages/mongodb-connector.html` - MongoDB workflow operations, pipeline inputs and outputs, and examples
