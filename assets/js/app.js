@@ -36,10 +36,44 @@ const pages = Object.freeze({
     description: 'Create and manage centralized webhook authentication aliases',
     source: './assets/pages/webhook-auth.html'
   },
+  security: {
+    title: 'Security',
+    description: 'Credentials, Keystore, and Webhook Auth guides',
+    source: './assets/pages/security.html'
+  },
+  'security-credentials': {
+    title: 'Security Credentials',
+    description: 'Create and manage every supported credential type',
+    source: './assets/pages/security-credentials.html'
+  },
+  keystore: {
+    title: 'Keystore',
+    description: 'Create and import keys, certificates, and keystores',
+    source: './assets/pages/keystore.html'
+  },
   'email-trigger': {
     title: 'Email Trigger',
     description: 'Start workflows from incoming IMAP or POP3 messages',
     source: './assets/pages/email-trigger.html'
+  },
+  'salesforce-trigger': {
+    title: 'Salesforce Trigger',
+    description: 'Subscribe to Salesforce CDC, event, Generic, and PushTopic channels',
+    source: './assets/pages/salesforce-trigger.html'
+  },
+  'scheduler-trigger': {
+    title: 'Scheduler Trigger',
+    description: 'Schedule workflow runs with UTC cron expressions',
+    source: './assets/pages/scheduler-trigger.html'
+  },
+  'amqp-trigger': { title: 'AMQP Trigger', description: 'Consume AMQP 0-9-1 queue messages', source: './assets/pages/amqp-trigger.html' },
+  'amqp10-trigger': { title: 'AMQP 1.0 Trigger', description: 'Consume AMQP 1.0 source messages', source: './assets/pages/amqp10-trigger.html' },
+  'amqp-connection': { title: 'AMQP connection', description: 'Create and test an AMQP 0-9-1 project connection', source: './assets/pages/amqp-connection.html' },
+  'amqp10-connection': { title: 'AMQP 1.0 connection', description: 'Create and test an AMQP 1.0 project connection', source: './assets/pages/amqp10-connection.html' },
+  'subworkflow-trigger': {
+    title: 'SubWorkflow Trigger',
+    description: 'Define a callable workflow contract and map parent inputs and outputs',
+    source: './assets/pages/subworkflow-trigger.html'
   },
   connections: {
     title: 'Connections',
@@ -55,6 +89,21 @@ const pages = Object.freeze({
     title: 'Email (IMAP/POP3) connection',
     description: 'Configure an incoming mailbox',
     source: './assets/pages/incoming-email-connection.html'
+  },
+  'salesforce-connection': {
+    title: 'Salesforce Connection',
+    description: 'Create and test a project Salesforce connection',
+    source: './assets/pages/salesforce-connection.html'
+  },
+  'salesforce-connector': {
+    title: 'Salesforce connector',
+    description: 'Salesforce REST, Apex, Bulk, event, and Place Order operations',
+    source: './assets/pages/salesforce-connector.html'
+  },
+  'schema-validator': {
+    title: 'Schema Validator',
+    description: 'Validate XML against XSD or JSON against an OpenAPI operation',
+    source: './assets/pages/schema-validator.html'
   },
   'send-email': {
     title: 'Send Email',
@@ -148,6 +197,8 @@ const workflowTriggersNavBranch = document.querySelector('#workflowTriggersNavBr
 const workflowTriggersMenuToggle = document.querySelector('#workflowTriggersMenuToggle');
 const connectionsNavBranch = document.querySelector('#connectionsNavBranch');
 const connectionsMenuToggle = document.querySelector('#connectionsMenuToggle');
+const securityNavBranch = document.querySelector('#securityNavBranch');
+const securityMenuToggle = document.querySelector('#securityMenuToggle');
 const reusableServiceNavBranch = document.querySelector('#reusableServiceNavBranch');
 const reusableServiceMenuToggle = document.querySelector('#reusableServiceMenuToggle');
 const utilsNavBranch = document.querySelector('#utilsNavBranch');
@@ -196,14 +247,15 @@ function updateNavigation(route, anchor = '') {
     }
   });
 
-  if (route === 'project' || route === 'kvs' || route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger' || route === 'connections' || route === 'smtp-connection' || route === 'incoming-email-connection' || route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling' || route === 'utils') {
+  if (route === 'project' || route === 'kvs' || route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'salesforce-connector' || route === 'schema-validator' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger' || route === 'salesforce-trigger' || route === 'scheduler-trigger' || route === 'subworkflow-trigger' || route === 'amqp-trigger' || route === 'amqp10-trigger' || route === 'amqp-connection' || route === 'amqp10-connection' || route === 'connections' || route === 'smtp-connection' || route === 'incoming-email-connection' || route === 'salesforce-connection' || route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling' || route === 'utils') {
     setProjectMenuOpen(true);
   }
-  if (route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger') {
+  if (route === 'workflow' || route === 'http-request' || route === 'sftp' || route === 'send-email' || route === 'salesforce-connector' || route === 'schema-validator' || route === 'workflow-triggers' || route === 'webhook-trigger' || route === 'email-trigger' || route === 'salesforce-trigger' || route === 'scheduler-trigger' || route === 'subworkflow-trigger' || route === 'amqp-trigger' || route === 'amqp10-trigger') {
     setWorkflowMenuOpen(true);
   }
-  if (['workflow-triggers', 'webhook-trigger', 'email-trigger'].includes(route)) setNestedMenuOpen(workflowTriggersNavBranch, workflowTriggersMenuToggle, 'Workflow triggers', true);
-  if (['connections', 'smtp-connection', 'incoming-email-connection'].includes(route)) setNestedMenuOpen(connectionsNavBranch, connectionsMenuToggle, 'Connections', true);
+  if (['workflow-triggers', 'webhook-trigger', 'email-trigger', 'salesforce-trigger', 'scheduler-trigger', 'subworkflow-trigger', 'amqp-trigger', 'amqp10-trigger'].includes(route)) setNestedMenuOpen(workflowTriggersNavBranch, workflowTriggersMenuToggle, 'Workflow triggers', true);
+  if (['connections', 'smtp-connection', 'incoming-email-connection', 'salesforce-connection', 'amqp-connection', 'amqp10-connection'].includes(route)) setNestedMenuOpen(connectionsNavBranch, connectionsMenuToggle, 'Connections', true);
+  if (['security', 'webhook-auth', 'security-credentials', 'keystore'].includes(route)) setNestedMenuOpen(securityNavBranch, securityMenuToggle, 'Security', true);
   if (route === 'reusable-service' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling') {
     setReusableServiceMenuOpen(true);
   }
@@ -376,6 +428,9 @@ workflowTriggersMenuToggle?.addEventListener('click', () => {
 });
 connectionsMenuToggle?.addEventListener('click', () => {
   setNestedMenuOpen(connectionsNavBranch, connectionsMenuToggle, 'Connections', connectionsNavBranch?.classList.contains('collapsed'));
+});
+securityMenuToggle?.addEventListener('click', () => {
+  setNestedMenuOpen(securityNavBranch, securityMenuToggle, 'Security', securityNavBranch?.classList.contains('collapsed'));
 });
 reusableServiceMenuToggle?.addEventListener('click', () => {
   setReusableServiceMenuOpen(reusableServiceNavBranch?.classList.contains('collapsed'));

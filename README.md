@@ -23,6 +23,17 @@ This folder contains a static documentation app that can be hosted independently
 - `assets/pages/execution.html` - Execution architecture content
 - `assets/pages/connectors.html` - Connector concepts and catalog
 - `assets/pages/http-request.html` - Workflow HTTP Request guide covering REST, GraphQL, SOAP, authentication, retries, and pipeline variables
+- `assets/pages/salesforce-connection.html` - Salesforce Security Credential, project connection, and test setup
+- `assets/pages/salesforce-trigger.html` - Salesforce event subscription, replay, pipeline output, and diagnostics
+- `assets/pages/scheduler-trigger.html` - Scheduler Trigger setup, UTC cron examples, activation, and troubleshooting
+- `assets/pages/amqp-trigger.html` and `amqp10-trigger.html` - AMQP 0-9-1 and AMQP 1.0 workflow trigger setup, pipeline, delivery, and troubleshooting
+- `assets/pages/amqp-connection.html` and `amqp10-connection.html` - Project AMQP connection setup and examples by protocol
+- `assets/pages/subworkflow-trigger.html` - Callable child workflow setup, Workflow I/O contract, parent mappings, examples, and errors
+- `assets/pages/salesforce-connector.html` - Salesforce API actions, request and response mapping, examples, and errors
+- `assets/pages/schema-validator.html` - XML XSD and OpenAPI JSON validation setup, pipeline contract, and examples
+- `assets/pages/security.html` - Security landing page for Webhook Auth, Security Credentials, and Keystore
+- `assets/pages/security-credentials.html` - All credential types, required fields, lifecycle, and Salesforce JWT example
+- `assets/pages/keystore.html` - Key and certificate entry types, creation, import, and Salesforce JWT setup
 - `assets/pages/sftp.html` - SFTP prerequisites, Known Hosts verification, project connection setup, workflow operations, pipeline contracts, and troubleshooting
 - `assets/pages/pipeline-sub.html` - Pipeline substitution syntax and copy instructions
 - `assets/images/kestrel-logo.png` - local logo asset used by the header

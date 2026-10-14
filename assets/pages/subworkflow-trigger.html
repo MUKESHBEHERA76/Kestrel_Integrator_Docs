@@ -1,0 +1,75 @@
+<section class="doc-hero" id="subworkflow-trigger">
+  <div class="hero-copy">
+    <p class="eyebrow">Workflow triggers / SubWorkflow</p>
+    <h1 data-page-title>Invoke one workflow from another.</h1>
+    <p class="lead">A <strong>subworkflow is a workflow that another workflow invokes</strong>. Put SubWorkflow Trigger at the start of the callable workflow, define its input and output variables, then use Call SubWorkflow in a parent workflow to run it.</p>
+    <div class="doc-actions"><a class="primary-action" href="#/subworkflow-trigger/setup">Create a callable workflow</a><a class="secondary-action" href="#/subworkflow-trigger/example">See a complete example</a></div>
+  </div>
+  <aside class="hero-aside"><span class="aside-icon" aria-hidden="true">↳</span><p><strong>At a glance</strong> Parent workflow → Call SubWorkflow → child workflow with SubWorkflow Trigger → parent resumes with the child's output.</p></aside>
+</section>
+<nav class="page-toc" aria-label="SubWorkflow Trigger sections"><div><p class="eyebrow">On this page</p><strong>Developer guide</strong></div><div class="toc-links"><a href="#/subworkflow-trigger/when">Purpose</a><a href="#/subworkflow-trigger/setup">Child setup</a><a href="#/subworkflow-trigger/contract">Input and output</a><a href="#/subworkflow-trigger/call">Parent setup</a><a href="#/subworkflow-trigger/example">Example</a><a href="#/subworkflow-trigger/runtime">Execution</a><a href="#/subworkflow-trigger/troubleshoot">Troubleshooting</a></div></nav>
+<section class="doc-section" id="when">
+  <header class="section-heading"><p class="eyebrow">Purpose</p><h2>Why create a subworkflow?</h2></header>
+  <p>Several workflows often need the same business logic: validate a customer, normalize an address, enrich an order, or format a response. Build that logic once as a child workflow and call it from each parent. Its named input and output variables make the boundary clear to other developers.</p>
+  <p><strong>SubWorkflow Trigger belongs in the child.</strong> It marks that workflow as callable. <strong>Call SubWorkflow belongs in the parent.</strong> It selects the child and maps data across the call. The child is still a normal workflow with processing steps; it is started by another workflow instead of an external HTTP request, incoming email, or schedule. Each workflow has one trigger, so do not add another trigger to the child.</p>
+  <p>A parent and its child must be in the same project. The call needs no separate connection or credential. Use a subworkflow when you want a reusable, named workflow operation; use an ordinary connector when you only need that connector's single action.</p>
+</section>
+<section class="doc-section" id="setup">
+  <header class="section-heading"><p class="eyebrow">Child workflow</p><h2>Create the workflow that will be invoked</h2></header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Create and name the child</strong><p>Open <strong>Projects → your project → Workflows</strong> and create a workflow, for example <code>NormalizeCustomer</code>. Give it a name that tells callers what it does.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Add SubWorkflow Trigger</strong><p>Drag <strong>SubWorkflow Trigger</strong> from the workflow trigger palette onto the canvas. Connect it to the first processing step. Double-click the trigger to see its input and output counts; the variable editor is the <strong>Workflow I/O</strong> action in the editor header.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Declare Workflow I/O</strong><p>Open <strong>Workflow I/O</strong>. On the Input tab add the values the child expects. On the Output tab add the results it will return. Select <strong>Apply</strong>.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Build the logic</strong><p>Configure the child's steps to read its input variables and write its output variables. Declaring an output does not populate it; a step must produce the value.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Save the workflow</strong><p>Save the child before selecting it in a parent. The parent selector shows saved callable workflows from the same project.</p></div></li>
+  </ol>
+</section>
+<section class="doc-section" id="contract">
+  <header class="section-heading"><p class="eyebrow">Workflow I/O</p><h2>Define the contract between parent and child</h2></header>
+  <p>The <strong>Input</strong> tab describes what the child receives; the <strong>Output</strong> tab describes what it returns. Each variable has a name and type. Names start with a letter and then use letters, digits, or underscores. Use <strong>Add child field</strong> on Document or DocumentList to model nested data. DocumentReference and DocumentReferenceList can point to a project Data Structure.</p>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Side</th><th>Example</th><th>Child pipeline path</th><th>Developer responsibility</th></tr></thead><tbody>
+    <tr><td>Input</td><td><code>customerId</code> (String)</td><td><code>${pipeline.input.customerId}</code></td><td>Map a parent value into it; read it in a child step.</td></tr>
+    <tr><td>Input</td><td><code>customer</code> (Document)</td><td><code>${pipeline.input.customer}</code></td><td>Map structured data when the child needs several related fields.</td></tr>
+    <tr><td>Output</td><td><code>normalizedName</code> (String)</td><td><code>${pipeline.output.normalizedName}</code></td><td>Write this value in the child; map or use it in the parent after the call.</td></tr>
+  </tbody></table></div>
+  <p>Supported variable types are String, Boolean, Number, Integer, Float, Object, ObjectList, StringList, Document, DocumentList, DocumentReference, and DocumentReferenceList. Keep the contract focused. When you rename, remove, or change a variable, review each parent workflow's Call SubWorkflow mappings.</p>
+</section>
+<section class="doc-section" id="call">
+  <header class="section-heading"><p class="eyebrow">Parent workflow</p><h2>Call the child and use its result</h2></header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Place Call SubWorkflow</strong><p>Open a parent workflow in the same project. Drag <strong>Call SubWorkflow</strong> from Connectors into its execution path. The parent keeps its own trigger, such as Webhook Trigger.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Select the child</strong><p>Double-click Call SubWorkflow and choose the saved child. The selector lists workflows with SubWorkflow Trigger in this project and shows the selected signature counts.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Map Step In</strong><p>Open the call connector's pipeline settings. Connect the parent values to the child inputs that its logic needs. For example, map the parent's <code>${pipeline.input.customerId}</code> to child input <code>customerId</code>. A constant can be used where appropriate.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Map Step Out</strong><p>Map the child's output into a parent pipeline path that later steps will read. For example, make <code>normalizedName</code> available to a following response or database step. Keep input and output mapping directions distinct.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Save and exercise the call</strong><p>Save the parent and run a representative request. Inspect the call step, returned values, and any errors in the execution details.</p></div></li>
+  </ol>
+  <p>A workflow without SubWorkflow Trigger cannot be selected as a child. A workflow in another project does not appear in the selector.</p>
+</section>
+<section class="doc-section" id="example">
+  <header class="section-heading"><p class="eyebrow">Worked example</p><h2>Reuse customer name normalization</h2></header>
+  <p><strong>Child: <code>NormalizeCustomer</code>.</strong> Add SubWorkflow Trigger. In Workflow I/O declare Input <code>fullName</code> (String) and Output <code>normalizedName</code> (String). Add processing logic that trims extra spaces and writes the result to <code>${pipeline.output.normalizedName}</code>.</p>
+  <p><strong>Parent: <code>CreateCustomer</code>.</strong> Start it with an appropriate trigger. Add Call SubWorkflow, select <code>NormalizeCustomer</code>, and map the parent's incoming name to child input <code>fullName</code>. Map child output <code>normalizedName</code> to a parent pipeline field. Use that field in the next step.</p>
+  <pre class="code-contract"><code>Parent input:              fullName = "  Alex  Rivera  "
+Call Step In:             fullName = "  Alex  Rivera  "
+Child writes:             normalizedName = "Alex Rivera"
+Call Step Out in parent:  normalizedName = "Alex Rivera"
+Next parent step:         reads normalizedName</code></pre>
+  <p>The names in this example are illustrative. The actual pipeline also contains other values; mappings decide which data crosses the call boundary. A declared output with no value written by child logic will not magically contain a result.</p>
+</section>
+<section class="doc-section" id="runtime">
+  <header class="section-heading"><p class="eyebrow">Runtime behavior</p><h2>What happens when the parent reaches the call</h2></header>
+  <p>Kestrel resolves the selected saved workflow in the parent's project and checks that it has SubWorkflow Trigger. It creates a nested pipeline from the parent pipeline, applies configured input mappings, and executes the child topology within the parent's execution run. When the child completes, Kestrel applies output mappings and declared outputs to the parent pipeline. The parent then continues with its next step.</p>
+  <p>The call is synchronous: the parent waits for the child to finish. If the child fails, the error propagates to the parent workflow, where an Exception Handler path can handle it. Direct self-calls are rejected. Avoid indirect call cycles between several workflows as well. Save and retest parent mappings whenever the child contract changes.</p>
+</section>
+<section class="doc-section" id="troubleshoot">
+  <header class="section-heading"><p class="eyebrow">Troubleshooting</p><h2>Diagnose common issues</h2></header>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Symptom</th><th>What to check</th></tr></thead><tbody>
+    <tr><td>Child does not appear in the dropdown</td><td>Confirm it is saved, has SubWorkflow Trigger, and belongs to the same project. Refresh the parent editor if it was just created.</td></tr>
+    <tr><td><code>SUBWORKFLOW_NOT_FOUND</code></td><td>The saved child ID or name cannot be resolved in this project. Reselect it in Call SubWorkflow.</td></tr>
+    <tr><td><code>SUBWORKFLOW_NOT_CALLABLE</code></td><td>The selected workflow no longer has SubWorkflow Trigger. Restore that trigger or choose another child.</td></tr>
+    <tr><td><code>SUBWORKFLOW_RECURSION_ERROR</code></td><td>The workflow calls itself directly. Move shared logic into a separate child.</td></tr>
+    <tr><td>Child input is empty</td><td>Review the parent's Step In mapping and the path the child reads. Declaring an input does not supply its runtime value.</td></tr>
+    <tr><td>Parent receives no result</td><td>Check that child logic writes the declared output and that Step Out mapping places it where the next parent step reads it.</td></tr>
+    <tr><td>Child execution fails</td><td>Inspect the parent run's failed call and error details, then handle or propagate the error through the parent's Exception Handler path.</td></tr>
+  </tbody></table></div>
+</section>

@@ -74,8 +74,11 @@
       <tbody>
         <tr><td><strong><a href="#/webhook-trigger">Webhook Trigger</a></strong></td><td>An external client must start the workflow through HTTP.</td><td>Resource name, HTTP method, optional authentication, and an incoming pipeline document that supports JSON, forms, and files.</td></tr>
         <tr><td><strong><a href="#/email-trigger">Email Trigger</a></strong></td><td>A matching message arrives in a mailbox.</td><td>Select an <a href="#/incoming-email-connection">Email (IMAP/POP3) connection</a>, conditions, polling interval, and optional after-success mailbox action.</td></tr>
-        <tr><td><strong>Scheduler Trigger</strong></td><td>The workflow must run on a time-based schedule.</td><td>Cron schedule and scheduler state. The workflow must be enabled before its scheduler can be enabled.</td></tr>
-        <tr><td><strong>SubWorkflow Trigger</strong></td><td>Another workflow must invoke this workflow as a reusable child flow.</td><td>Workflow input and output signature. The editor exposes a Workflow I/O action for defining the contract.</td></tr>
+        <tr><td><strong><a href="#/salesforce-trigger">Salesforce Trigger</a></strong></td><td>Salesforce publishes a subscribed event.</td><td>Select a <a href="#/salesforce-connection">Salesforce Connection</a>, event type, channel, and replay position.</td></tr>
+        <tr><td><strong><a href="#/scheduler-trigger">Scheduler Trigger</a></strong></td><td>The workflow must run on a time-based schedule.</td><td>UTC cron expression and scheduler state. The workflow must be enabled before its scheduler can be enabled.</td></tr>
+        <tr><td><strong><a href="#/amqp-trigger">AMQP Trigger</a></strong></td><td>An AMQP 0-9-1 queue receives a message.</td><td>Select an <a href="#/amqp-connection">AMQP connection</a> and existing queue.</td></tr>
+        <tr><td><strong><a href="#/amqp10-trigger">AMQP 1.0 Trigger</a></strong></td><td>An AMQP 1.0 destination receives a message.</td><td>Select an <a href="#/amqp10-connection">AMQP 1.0 connection</a> and source address.</td></tr>
+        <tr><td><strong><a href="#/subworkflow-trigger">SubWorkflow Trigger</a></strong></td><td>Another workflow must invoke this workflow as a reusable child flow.</td><td>Workflow input and output signature. The editor exposes a Workflow I/O action for defining the contract.</td></tr>
       </tbody>
     </table>
   </div>

@@ -132,6 +132,11 @@
                     <div class="nav-children" id="workflowTriggersSubmenu">
                       <a class="nav-child-link" href="#/webhook-trigger" data-route="webhook-trigger"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Webhook Trigger</strong><small>HTTP and multipart input</small></span></a>
                       <a class="nav-child-link" href="#/email-trigger" data-route="email-trigger"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Email Trigger</strong><small>Incoming mailbox messages</small></span></a>
+                      <a class="nav-child-link" href="#/salesforce-trigger" data-route="salesforce-trigger"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Salesforce Trigger</strong><small>Salesforce event subscriptions</small></span></a>
+                      <a class="nav-child-link" href="#/scheduler-trigger" data-route="scheduler-trigger"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Scheduler Trigger</strong><small>UTC cron schedules</small></span></a>
+                      <a class="nav-child-link" href="#/amqp-trigger" data-route="amqp-trigger"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>AMQP Trigger</strong><small>AMQP 0-9-1 queue</small></span></a>
+                      <a class="nav-child-link" href="#/amqp10-trigger" data-route="amqp10-trigger"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>AMQP 1.0 Trigger</strong><small>AMQP 1.0 source</small></span></a>
+                      <a class="nav-child-link" href="#/subworkflow-trigger" data-route="subworkflow-trigger"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>SubWorkflow Trigger</strong><small>Callable child workflows</small></span></a>
                     </div>
                   </div>
                   <a class="nav-child-link" href="#/http-request" data-route="http-request">
@@ -143,6 +148,8 @@
                     <span><strong>SFTP</strong><small>Secure file transfer operations</small></span>
                   </a>
                   <a class="nav-child-link" href="#/send-email" data-route="send-email"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Send Email</strong><small>SMTP workflow connector</small></span></a>
+                  <a class="nav-child-link" href="#/salesforce-connector" data-route="salesforce-connector"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Salesforce connector</strong><small>REST, events, and Bulk API</small></span></a>
+                  <a class="nav-child-link" href="#/schema-validator" data-route="schema-validator"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Schema Validator</strong><small>XML XSD and OpenAPI JSON</small></span></a>
                 </div>
               </div>
               <div class="nav-branch nested collapsed" id="connectionsNavBranch">
@@ -153,6 +160,9 @@
                 <div class="nav-children" id="connectionsSubmenu">
                   <a class="nav-child-link" href="#/smtp-connection" data-route="smtp-connection"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Email (SMTP)</strong><small>Outbound mail connection</small></span></a>
                   <a class="nav-child-link" href="#/incoming-email-connection" data-route="incoming-email-connection"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Email (IMAP/POP3)</strong><small>Incoming mailbox connection</small></span></a>
+                  <a class="nav-child-link" href="#/amqp-connection" data-route="amqp-connection"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>AMQP Connection</strong><small>AMQP 0-9-1 broker</small></span></a>
+                  <a class="nav-child-link" href="#/amqp10-connection" data-route="amqp10-connection"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>AMQP 1.0 Connection</strong><small>AMQP 1.0 endpoint</small></span></a>
+                  <a class="nav-child-link" href="#/salesforce-connection" data-route="salesforce-connection"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Salesforce Connection</strong><small>OAuth and project connection</small></span></a>
                 </div>
               </div>
               <div class="nav-branch nested collapsed" id="reusableServiceNavBranch">
@@ -228,10 +238,20 @@
               </a>
             </div>
           </div>
-          <a class="nav-link" href="#/webhook-auth" data-route="webhook-auth">
-            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5 20 6v6c0 5-3.4 8.2-8 9.5C7.4 20.2 4 17 4 12V6l8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span><strong>Webhook Auth</strong><small>Security aliases</small></span>
-          </a>
+          <div class="nav-branch collapsed" id="securityNavBranch">
+            <div class="nav-branch-row">
+              <a class="nav-link" href="#/security" data-route="security">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5 20 6v6c0 5-3.4 8.2-8 9.5C7.4 20.2 4 17 4 12V6l8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span><strong>Security</strong><small>Credentials and keys</small></span>
+              </a>
+              <button class="nav-branch-toggle" id="securityMenuToggle" type="button" aria-label="Expand Security menu" aria-controls="securitySubmenu" aria-expanded="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m6.5 8 3.5 3.5L13.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
+            </div>
+            <div class="nav-children" id="securitySubmenu">
+              <a class="nav-child-link" href="#/webhook-auth" data-route="webhook-auth"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Webhook Auth</strong><small>Inbound authentication</small></span></a>
+              <a class="nav-child-link" href="#/security-credentials" data-route="security-credentials"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Security Credentials</strong><small>Reusable credentials</small></span></a>
+              <a class="nav-child-link" href="#/keystore" data-route="keystore"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Keystore</strong><small>Keys and certificates</small></span></a>
+            </div>
+          </div>
           <a class="nav-link" href="#/pipeline-sub" data-route="pipeline-sub">
             <span class="nav-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none">
