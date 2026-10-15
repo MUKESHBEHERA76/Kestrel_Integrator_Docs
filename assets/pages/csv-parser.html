@@ -1,46 +1,10 @@
-<section class="docs-prose-page">
-  <h1 data-page-title>CSV Parser</h1>
-  <p>
-    CSV Parser turns delimited text into structured rows, or builds CSV text from structured data, inside the
-    workflow runtime.
-  </p>
-
-  <h2>What it is</h2>
-  <p>
-    This connector does not require a database or external service. It reads a text payload or a document list
-    and converts it into the format the next step needs.
-  </p>
-
-  <h2>Why it is useful</h2>
-  <ul class="docs-bullet-list">
-    <li>Ingest file content into row-level data.</li>
-    <li>Prepare data for validation or transformation.</li>
-    <li>Build CSV output for file export or downstream systems.</li>
-  </ul>
-
-  <h2>When you double-click it</h2>
-  <p>
-    Choose the mode and provide the matching fields:
-  </p>
-  <ul class="docs-bullet-list">
-    <li><code>mode</code> - parse or build.</li>
-    <li><code>csvContent</code> - string input used in parse mode.</li>
-    <li><code>docList</code> - document list input used in build mode.</li>
-    <li><code>columnDelimiter</code>, <code>rowDelimiter</code>, <code>quoteChar</code>, <code>quoteAll</code> - formatting options.</li>
-    <li><code>fields</code> - array of field definitions used by the parser or builder.</li>
-  </ul>
-
-  <h2>Workflow input and output</h2>
-  <ul class="docs-bullet-list">
-    <li><strong>Parse mode input</strong> - <code>csvContent</code> as a string.</li>
-    <li><strong>Parse mode output</strong> - <code>CsvList</code> as an array of row documents.</li>
-    <li><strong>Build mode input</strong> - <code>docList</code> as a document list or array.</li>
-    <li><strong>Build mode output</strong> - <code>csvString</code> as a string, with <code>outCSV</code> as a fallback path.</li>
-  </ul>
-
-  <h2>Runtime notes</h2>
-  <p>
-    Match the delimiters and quote settings to the source file. If the data has headers, keep the field list
-    aligned with the source column names so the resulting rows stay predictable.
-  </p>
-</section>
+<section class="doc-hero" id="csv-parser"><div class="hero-copy"><p class="eyebrow">Workflow / Connectors / CSV Parser</p><h1 data-page-title>CSV Parser</h1><p class="lead">Parse delimited text into row documents or build CSV text from a DocumentList. No external connection is required.</p></div></section>
+<section class="doc-section" id="setup"><header class="section-heading"><p class="eyebrow">Configuration</p><h2>Choose Parse or Build</h2></header><p>Add CSV Parser in the workflow Connector tab, double-click it, choose <strong>Parse</strong> or <strong>Build</strong>, and set Column delimiter (default comma), Row delimiter (runtime line separator), Quote character (default double quote), and optional field names. Set Quote all when generating CSV if every cell must be quoted. Open Settings to map Step In and Step Out.</p></section>
+<section class="doc-section" id="parse"><header class="section-heading"><p class="eyebrow">Parse mode</p><h2>Convert CSV text to CsvList</h2></header><p>Map a String to <code>${pipeline.input.csvContent}</code>. With no configured fields, the first row supplies column names. With configured fields, a matching first row is treated as a header; otherwise the first row is data. Values remain strings. Missing cells become empty strings; surplus cells become <code>fieldN</code>.</p><pre class="code-contract"><code>csvContent = id,name,status
+1042,Asha,ACTIVE
+1043,Ravi,PENDING</code></pre><p>Output <code>${pipeline.output.CsvList}</code> is a DocumentList:</p><pre class="code-contract"><code>[{"id":"1042","name":"Asha","status":"ACTIVE"},{"id":"1043","name":"Ravi","status":"PENDING"}]</code></pre></section>
+<section class="doc-section" id="build"><header class="section-heading"><p class="eyebrow">Build mode</p><h2>Convert documents to CSV text</h2></header><p>Map a DocumentList to <code>${pipeline.input.docList}</code>. Define fields for a stable column order; otherwise the first document’s keys become the header. Kestrel escapes embedded quote characters and quotes cells containing the delimiter or a line break.</p><pre class="code-contract"><code>docList = [{"id":"1042","name":"Asha"},{"id":"1043","name":"Ravi"}]
+csvString = id,name
+1042,Asha
+1043,Ravi</code></pre><p>The String result is placed in <code>${pipeline.output.csvString}</code> and <code>${pipeline.output.outCSV}</code>. A configured target path also receives the value. Parse mode can likewise use a configured target instead of the default <code>CsvList</code>.</p></section>
+<section class="doc-section" id="limits"><header class="section-heading"><p class="eyebrow">Runtime notes</p><h2>Handle source format explicitly</h2></header><p>Match the delimiter and quote settings to the sender. The parser does not validate field types or a business schema; add a validation step after parsing. For binary file input, decode the file to text first. Large CSV content is materialized in memory, so use bounded payload sizes.</p></section>

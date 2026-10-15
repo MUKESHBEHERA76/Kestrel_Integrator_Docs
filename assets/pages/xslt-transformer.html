@@ -1,41 +1,15 @@
-<section class="docs-prose-page">
-  <h1 data-page-title>XSLT Transformer</h1>
-  <p>
-    XSLT Transformer applies a project XSLT alias to XML data inside the workflow. It is the step you use when
-    XML must be reshaped before the next connector consumes it.
-  </p>
-
-  <h2>What it is</h2>
-  <p>
-    The runtime reads XML input, finds the selected alias in the current project, and runs the transformation
-    against that stylesheet. It does not need a database or HTTP connection.
-  </p>
-
-  <h2>Why it is useful</h2>
-  <ul class="docs-bullet-list">
-    <li>Convert XML into a different XML shape.</li>
-    <li>Reuse the same alias across many workflows.</li>
-    <li>Keep transformation rules stored inside the project instead of hard-coding them.</li>
-  </ul>
-
-  <h2>When you double-click it</h2>
-  <p>
-    Provide the alias and the source XML the runtime should transform:
-  </p>
-  <ul class="docs-bullet-list">
-    <li><code>aliasId</code> / <code>aliasName</code> - the project XSLT alias to use.</li>
-    <li><code>inputXML</code> - the XML string or XML payload to transform.</li>
-  </ul>
-
-  <h2>Workflow input and output</h2>
-  <ul class="docs-bullet-list">
-    <li><strong>Input</strong> - <code>inputXML</code> as a string.</li>
-    <li><strong>Output</strong> - <code>transformedOutput</code> as a string.</li>
-  </ul>
-
-  <h2>Runtime notes</h2>
-  <p>
-    Keep the alias name and XML source clear so the transformation is easy to follow in the workflow editor.
-    The output is usually passed to the next step as XML or text.
-  </p>
-</section>
+<section class="doc-hero" id="xslt-transformer"><div class="hero-copy"><p class="eyebrow">Workflow / Connectors / XSLT transformer</p><h1 data-page-title>Transform XML with a project XSLT Alias</h1><p class="lead">Map an XML String into <code>inputXML</code>, select a saved <a href="#/xslt-alias">XSLT Alias</a>, and map the resulting XML String from <code>transformedOutput</code>.</p><div class="doc-actions"><a class="primary-action" href="#/xslt-alias">Create XSLT Alias</a><a class="secondary-action" href="#/xslt-transformer/example">Follow the example</a></div></div></section>
+<nav class="page-toc" aria-label="XSLT transformer sections"><div><p class="eyebrow">On this page</p><strong>Connector guide</strong></div><div class="toc-links"><a href="#/xslt-transformer/setup">Setup</a><a href="#/xslt-transformer/pipeline">Pipeline</a><a href="#/xslt-transformer/example">Example</a><a href="#/xslt-transformer/errors">Errors</a></div></nav>
+<section class="doc-section" id="setup"><header class="section-heading"><p class="eyebrow">Workflow step</p><h2>Configure the transformer</h2></header><ol class="runtime-timeline"><li><span class="timeline-number">1</span><div><strong>Create the alias</strong><p>Follow <a href="#/xslt-alias">Projects → XSLT Alias</a> and save a stylesheet in the same project.</p></div></li><li><span class="timeline-number">2</span><div><strong>Add the connector</strong><p>Drag <strong>XSLT transformer</strong> from the Connector tab into the workflow and wire it between the source and next step.</p></div></li><li><span class="timeline-number">3</span><div><strong>Select the alias</strong><p>Double-click the connector and choose the saved alias. The editor stores its ID and name; the runtime resolves it within the workflow's project.</p></div></li><li><span class="timeline-number">4</span><div><strong>Map and save</strong><p>Open Settings. Map an XML String from the previous step into <code>inputXML</code>; map <code>transformedOutput</code> to the next step. Save the mapping and workflow.</p></div></li></ol></section>
+<section class="doc-section" id="pipeline"><header class="section-heading"><p class="eyebrow">Pipeline contract</p><h2>One String input and one String output</h2></header><div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Variable</th><th>Type</th><th>Meaning</th></tr></thead><tbody><tr><td><code>${pipeline.input.inputXML}</code></td><td>String</td><td>Required well-formed source XML.</td></tr><tr><td><code>${pipeline.output.transformedOutput}</code></td><td>String</td><td>Serialized XML produced by the stylesheet.</td></tr></tbody></table></div><p>The connector does not automatically turn a Document into XML. If the source is a Document, serialize it with an XML utility first, then map that String to <code>inputXML</code>. If the next step expects a Document, parse the output XML there. A custom target path can also receive the result, while the default <code>transformedOutput</code> remains available.</p></section>
+<section class="doc-section" id="example"><header class="section-heading"><p class="eyebrow">Worked example</p><h2>Transform an incoming order</h2></header><p>Choose alias <code>OrderToPurchaseOrder</code> from the <a href="#/xslt-alias/example">alias example</a>. Map the prior step's XML body to <code>${pipeline.input.inputXML}</code>:</p><pre class="code-contract"><code>&lt;order&gt;&lt;id&gt;ORD-1042&lt;/id&gt;&lt;total&gt;89.50&lt;/total&gt;&lt;/order&gt;</code></pre><p>The XSLT Alias contains:</p><pre class="code-contract"><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;xsl:stylesheet version=&quot;2.0&quot; xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;&gt;
+  &lt;xsl:output method=&quot;xml&quot; indent=&quot;yes&quot;/&gt;
+  &lt;xsl:template match=&quot;/order&quot;&gt;
+    &lt;purchaseOrder&gt;
+      &lt;orderNumber&gt;&lt;xsl:value-of select=&quot;id&quot;/&gt;&lt;/orderNumber&gt;
+      &lt;amount&gt;&lt;xsl:value-of select=&quot;total&quot;/&gt;&lt;/amount&gt;
+    &lt;/purchaseOrder&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre><p>After execution, <code>${pipeline.output.transformedOutput}</code> contains XML equivalent to:</p><pre class="code-contract"><code>&lt;purchaseOrder&gt;&lt;orderNumber&gt;ORD-1042&lt;/orderNumber&gt;&lt;amount&gt;89.50&lt;/amount&gt;&lt;/purchaseOrder&gt;</code></pre><p>Map that output to an HTTP Request body, SFTP upload input, or another XML-aware step.</p></section>
+<section class="doc-section" id="errors"><header class="section-heading"><p class="eyebrow">Runtime</p><h2>Handle missing input and transform failures</h2></header><p>The step fails if no alias is selected or accessible, <code>inputXML</code> is empty, the XML is malformed, or the stylesheet fails to compile or run. Connect an Exception Handler if the workflow should send a controlled response. The runtime disables external stylesheet resources and external protocol access. The stylesheet is limited to 1 MiB and source XML to 5 MiB; large transformations should be designed with those limits in mind.</p><p>Because the alias is resolved at runtime, test dependent workflows after editing it. The step returns XML text; its exact whitespace and declaration are controlled by serialization, so validate the XML structure rather than comparing raw strings.</p></section>

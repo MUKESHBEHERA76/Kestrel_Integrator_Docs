@@ -1,15 +1,14 @@
-<section class="docs-grid">
-  <h1 data-page-title>XSLT Alias</h1>
-  <p>
-    XSLT aliases are shortcut names used to keep transformation logic readable inside the project.
-    Use them when you want a reusable transformation reference without repeating long expressions.
-  </p>
-
-  <article class="docs-card" id="xslt-alias-overview" data-doc-anchor="xslt-alias-overview">
-    <div class="docs-card-head">
-      <h3>Alias usage</h3>
-      <small>01</small>
-    </div>
-    <p>Use aliases to keep XSLT-related transformation steps clean and discoverable.</p>
-  </article>
-</section>
+<section class="doc-hero" id="xslt-alias"><div class="hero-copy"><p class="eyebrow">Projects / XSLT Alias</p><h1 data-page-title>Store a reusable XSLT stylesheet</h1><p class="lead">An XSLT Alias is a named stylesheet saved with a project. A workflow <a href="#/xslt-transformer">XSLT transformer</a> selects the alias and applies its XSLT to an XML String at runtime.</p><div class="doc-actions"><a class="primary-action" href="#/xslt-alias/create">Create an alias</a><a class="secondary-action" href="#/xslt-transformer">Use it in a workflow</a></div></div></section>
+<nav class="page-toc" aria-label="XSLT Alias sections"><div><p class="eyebrow">On this page</p><strong>Project resource</strong></div><div class="toc-links"><a href="#/xslt-alias/create">Create</a><a href="#/xslt-alias/example">Example stylesheet</a><a href="#/xslt-alias/lifecycle">Maintain</a></div></nav>
+<section class="doc-section" id="create"><header class="section-heading"><p class="eyebrow">Setup</p><h2>Create the alias in a project</h2></header><ol class="runtime-timeline"><li><span class="timeline-number">1</span><div><strong>Open XSLT Alias</strong><p>Go to <strong>Projects → your project → XSLT Alias → Create XSLT Alias</strong>.</p></div></li><li><span class="timeline-number">2</span><div><strong>Enter metadata</strong><p>Set Alias name, for example <code>OrderToPurchaseOrder</code>, optional File name <code>order-to-purchase-order.xslt</code>, and optional Comment describing its use. The name must be unique among aliases.</p></div></li><li><span class="timeline-number">3</span><div><strong>Supply the stylesheet</strong><p>Upload an <code>.xsl</code> or <code>.xslt</code> file. Review the XSLT source in the editor. The stylesheet body is required; the file name alone does not contain transformation logic.</p></div></li><li><span class="timeline-number">4</span><div><strong>Save and select it</strong><p>Create the alias. It appears in the current project's XSLT Alias list and in the XSLT transformer dropdown for that project. Save the workflow after selecting it.</p></div></li></ol></section>
+<section class="doc-section" id="example"><header class="section-heading"><p class="eyebrow">Worked example</p><h2>Convert an order to a purchase order</h2></header><p>Save the following stylesheet under alias <code>OrderToPurchaseOrder</code>:</p><pre class="code-contract"><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;xsl:stylesheet version=&quot;2.0&quot; xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;&gt;
+  &lt;xsl:output method=&quot;xml&quot; indent=&quot;yes&quot;/&gt;
+  &lt;xsl:template match=&quot;/order&quot;&gt;
+    &lt;purchaseOrder&gt;
+      &lt;orderNumber&gt;&lt;xsl:value-of select=&quot;id&quot;/&gt;&lt;/orderNumber&gt;
+      &lt;amount&gt;&lt;xsl:value-of select=&quot;total&quot;/&gt;&lt;/amount&gt;
+    &lt;/purchaseOrder&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre><p>Given this XML input:</p><pre class="code-contract"><code>&lt;order&gt;&lt;id&gt;ORD-1042&lt;/id&gt;&lt;total&gt;89.50&lt;/total&gt;&lt;/order&gt;</code></pre><p>The transformer returns XML equivalent to:</p><pre class="code-contract"><code>&lt;purchaseOrder&gt;&lt;orderNumber&gt;ORD-1042&lt;/orderNumber&gt;&lt;amount&gt;89.50&lt;/amount&gt;&lt;/purchaseOrder&gt;</code></pre><p>XML formatting and declaration may differ; downstream steps should consume the XML structure. The <a href="#/xslt-transformer">XSLT transformer guide</a> shows the exact pipeline mapping.</p></section>
+<section class="doc-section" id="lifecycle"><header class="section-heading"><p class="eyebrow">Maintenance</p><h2>Understand reuse and updates</h2></header><p>An alias keeps stylesheet source and metadata in one project resource; multiple workflows can select it. Editing its XSLT changes future transformations that resolve that alias. Test dependent workflows after changing it. Kestrel blocks deletion while a workflow still references the alias. An alias from another ordinary project is not selectable in the current project.</p><p>Runtime rejects an empty stylesheet, malformed XSLT, inaccessible aliases, and source XML that cannot be parsed. External stylesheet includes and external protocol access are disabled. Keep the stylesheet below 1 MiB; the transformer also limits input XML to 5 MiB.</p></section>
