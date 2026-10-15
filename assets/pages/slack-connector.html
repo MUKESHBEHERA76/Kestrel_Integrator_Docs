@@ -1,0 +1,202 @@
+<section class="doc-hero"><div class="hero-copy"><p class="eyebrow">Workflow / Connectors / Slack</p><h1 data-page-title>Slack connector</h1><p class="lead">Use one Slack workflow step to send messages, manage conversations, retrieve users, or reply to a button interaction. The selected action changes the Step In and Step Out pipeline fields.</p><div class="doc-actions"><a class="primary-action" href="#/slack-connector/setup">Configure a step</a><a class="secondary-action" href="#/slack-connection">Create Slack connection</a></div></div></section>
+<nav class="page-toc" aria-label="Slack connector sections"><div><p class="eyebrow">On this page</p><strong>Connector guide</strong></div><div class="toc-links"><a href="#/slack-connector/setup">Setup</a><a href="#/slack-connector/pipeline">Pipeline</a><a href="#/slack-connector/operations">Operations</a><a href="#/slack-connector/examples">Examples</a><a href="#/slack-connector/errors">Errors</a></div></nav>
+<section class="doc-section" id="setup"><header class="section-heading"><p class="eyebrow">Workflow setup</p><h2>Add and configure Slack</h2></header><ol><li>Create and test a <a href="#/slack-connection">Slack Connection</a> in the project; grant the Slack app the scopes for the intended operation.</li><li>In the workflow editor open <strong>Connectors</strong>, drag <strong>Slack</strong> onto the canvas, then connect the preceding and following steps.</li><li>Double-click Slack, select the project <strong>Connection</strong> and an <strong>Operation</strong>, add an optional comment, and choose <strong>Done</strong>.</li><li>Open its pipeline settings. Map the listed <code>Slack_Request</code> fields from prior step output or runtime variables. Map <code>Slack_Response</code> fields onward, then save the mapping and workflow.</li></ol><p>Changing the action changes its input/output contract and clears the previous step mapping. Reopen Pipeline settings and remap fields after any action change. The connection must be enabled when the workflow runs.</p></section>
+<section class="doc-section" id="pipeline"><header class="section-heading"><p class="eyebrow">Pipeline contract</p><h2>Read and map request and response documents</h2></header><p>Every action has a Step In document <code>Slack_Request</code> containing the fields shown below. Every action has a Step Out document <code>Slack_Response</code> with <code>body</code>, the complete JSON response returned by Slack. Actions with convenient named fields expose those under <code>Slack_Response</code> as listed below. If Slack omits a field, it is absent from the runtime response. Map only the fields needed by the next step.</p><div class="code-contract"><pre><code>Slack_Request.channel = "C0123456789"
+Slack_Request.text = "Deployment completed"
+
+Slack_Response.ts = "1712345678.000200"
+Slack_Response.body.ok = true</code></pre></div><p>For <strong>Post message</strong>, supply at least <code>text</code> or <code>blocks</code> in addition to <code>channel</code>. <code>blocks</code> and <code>attachments</code> are document lists. Slack user lists use a single comma-separated string. Slack IDs and message timestamps should be preserved as strings.</p></section>
+<section class="doc-section" id="operations"><header class="section-heading"><p class="eyebrow">22 supported actions</p><h2>Operation reference</h2><p>Required input fields are marked “Required.” Other fields are optional. Examples are illustrative Slack values, not real IDs or credentials.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Operation</th><th>Use</th><th>Slack method</th></tr></thead><tbody>
+<tr><td><a href="#/slack-connector/archive-conversation">Archive conversation</a></td><td>Archive a release channel after the project ends.</td><td><code>conversations.archive</code></td></tr>
+<tr><td><a href="#/slack-connector/create-conversation">Create conversation (channel or group)</a></td><td>Provision a public channel or private group for a new team.</td><td><code>conversations.create</code></td></tr>
+<tr><td><a href="#/slack-connector/open-group-dm">Open group direct message</a></td><td>Open a group direct message with two teammates.</td><td><code>conversations.open</code></td></tr>
+<tr><td><a href="#/slack-connector/get-user">Get user info</a></td><td>Look up a user profile before routing an approval.</td><td><code>users.info</code></td></tr>
+<tr><td><a href="#/slack-connector/invite-users">Invite users to conversation</a></td><td>Add project members to an existing channel.</td><td><code>conversations.invite</code></td></tr>
+<tr><td><a href="#/slack-connector/post-message">Post message</a></td><td>Publish a deployment notification or thread reply.</td><td><code>chat.postMessage</code></td></tr>
+<tr><td><a href="#/slack-connector/respond-to-button-click">Respond to button click</a></td><td>Acknowledge a Slack interactive button and update its message.</td><td><code>POST to response_url</code></td></tr>
+<tr><td><a href="#/slack-connector/set-purpose">Set conversation purpose</a></td><td>Describe why a project channel exists.</td><td><code>conversations.setPurpose</code></td></tr>
+<tr><td><a href="#/slack-connector/set-topic">Set conversation topic</a></td><td>Show the current sprint or incident in the channel header.</td><td><code>conversations.setTopic</code></td></tr>
+<tr><td><a href="#/slack-connector/unarchive-conversation">Unarchive conversation</a></td><td>Reopen a channel for a resumed project.</td><td><code>conversations.unarchive</code></td></tr>
+<tr><td><a href="#/slack-connector/update-message">Update message</a></td><td>Edit a status message previously posted by the app.</td><td><code>chat.update</code></td></tr>
+<tr><td><a href="#/slack-connector/delete-message">Delete message</a></td><td>Remove an obsolete bot message.</td><td><code>chat.delete</code></td></tr>
+<tr><td><a href="#/slack-connector/add-reaction">Add reaction</a></td><td>Mark a message with a checkmark reaction.</td><td><code>reactions.add</code></td></tr>
+<tr><td><a href="#/slack-connector/remove-reaction">Remove reaction</a></td><td>Remove an earlier reaction.</td><td><code>reactions.remove</code></td></tr>
+<tr><td><a href="#/slack-connector/get-conversation">Get conversation</a></td><td>Inspect conversation metadata and status.</td><td><code>conversations.info</code></td></tr>
+<tr><td><a href="#/slack-connector/list-conversations">List conversations</a></td><td>Find channels available to the installed app.</td><td><code>conversations.list</code></td></tr>
+<tr><td><a href="#/slack-connector/history">Conversation history</a></td><td>Read recent messages to drive a workflow.</td><td><code>conversations.history</code></td></tr>
+<tr><td><a href="#/slack-connector/replies">Thread replies</a></td><td>Read all replies to a particular thread.</td><td><code>conversations.replies</code></td></tr>
+<tr><td><a href="#/slack-connector/rename-conversation">Rename conversation</a></td><td>Rename a channel after a project transition.</td><td><code>conversations.rename</code></td></tr>
+<tr><td><a href="#/slack-connector/join-conversation">Join conversation</a></td><td>Join a public channel before posting.</td><td><code>conversations.join</code></td></tr>
+<tr><td><a href="#/slack-connector/leave-conversation">Leave conversation</a></td><td>Leave a channel after automation is finished.</td><td><code>conversations.leave</code></td></tr>
+<tr><td><a href="#/slack-connector/list-members">List members</a></td><td>Page through members for an audit or notification.</td><td><code>conversations.members</code></td></tr>
+</tbody></table></div>
+<section class="doc-section" id="archive-conversation"><header class="section-heading"><p class="eyebrow"><code>ARCHIVE_CONVERSATION</code> · conversations.archive</p><h3>Archive conversation</h3><p>Archive a release channel after the project ends.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); No action-specific named fields. For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="create-conversation"><header class="section-heading"><p class="eyebrow"><code>CREATE_CONVERSATION</code> · conversations.create</p><h3>Create conversation (channel or group)</h3><p>Provision a public channel or private group for a new team.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>name</code></td><td>String; Required</td><td><code>team-updates</code></td><td>Conversation name, or reaction emoji name for reaction actions.</td></tr>
+<tr><td><code>is_private</code></td><td>Boolean; Optional</td><td><code>false</code></td><td>Create a private channel when true; false creates a public channel.</td></tr>
+<tr><td><code>team_id</code></td><td>String; Optional</td><td><code>T0123456789</code></td><td>Workspace ID for an organization-level token, when needed.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="open-group-dm"><header class="section-heading"><p class="eyebrow"><code>OPEN_GROUP_DM</code> · conversations.open</p><h3>Open group direct message</h3><p>Open a group direct message with two teammates.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>users</code></td><td>String; Required</td><td><code>U0123456789,U9876543210</code></td><td>Comma-separated Slack user IDs.</td></tr>
+<tr><td><code>return_im</code></td><td>Boolean; Optional</td><td><code>true</code></td><td>Return the opened conversation details.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="get-user"><header class="section-heading"><p class="eyebrow"><code>GET_USER</code> · users.info</p><h3>Get user info</h3><p>Look up a user profile before routing an approval.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>user</code></td><td>String; Required</td><td><code>U0123456789</code></td><td>Slack user ID.</td></tr>
+<tr><td><code>include_locale</code></td><td>Boolean; Optional</td><td><code>true</code></td><td>Ask Slack to include locale information.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); user (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="invite-users"><header class="section-heading"><p class="eyebrow"><code>INVITE_USERS</code> · conversations.invite</p><h3>Invite users to conversation</h3><p>Add project members to an existing channel.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>users</code></td><td>String; Required</td><td><code>U0123456789,U9876543210</code></td><td>Comma-separated Slack user IDs.</td></tr>
+<tr><td><code>force</code></td><td>Boolean; Optional</td><td><code>false</code></td><td>Pass the Slack invite force flag when needed.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="post-message"><header class="section-heading"><p class="eyebrow"><code>POST_MESSAGE</code> · chat.postMessage</p><h3>Post message</h3><p>Publish a deployment notification or thread reply.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>text</code></td><td>String; Optional</td><td><code>Deployment completed</code></td><td>Plain text or Slack mrkdwn message text.</td></tr>
+<tr><td><code>blocks</code></td><td>DocumentList; Optional</td><td><code>[{&quot;type&quot;:&quot;section&quot;,&quot;text&quot;:{&quot;type&quot;:&quot;mrkdwn&quot;,&quot;text&quot;:&quot;*Ready*&quot;}}]</code></td><td>Structured Block Kit blocks; map a document list, not a JSON-encoded string.</td></tr>
+<tr><td><code>attachments</code></td><td>DocumentList; Optional</td><td><code>[{&quot;color&quot;:&quot;#2eb67d&quot;,&quot;text&quot;:&quot;Build 42&quot;}]</code></td><td>Slack attachment objects; map a document list.</td></tr>
+<tr><td><code>thread_ts</code></td><td>String; Optional</td><td><code>1712345678.000200</code></td><td>Parent message timestamp for a threaded reply.</td></tr>
+<tr><td><code>reply_broadcast</code></td><td>Boolean; Optional</td><td><code>false</code></td><td>Also broadcast a thread reply into the channel.</td></tr>
+<tr><td><code>parse</code></td><td>String; Optional</td><td><code>none</code></td><td>Slack text parsing mode, for example none or full.</td></tr>
+<tr><td><code>unfurl_links</code></td><td>Boolean; Optional</td><td><code>false</code></td><td>Allow Slack to expand links.</td></tr>
+<tr><td><code>unfurl_media</code></td><td>Boolean; Optional</td><td><code>false</code></td><td>Allow Slack to expand media.</td></tr>
+</tbody></table></div>
+<p><strong>Conditional requirement:</strong> <code>text</code> or <code>blocks</code> must be supplied. Use <code>thread_ts</code> to reply in an existing thread.</p>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (String), ts (String), message (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="respond-to-button-click"><header class="section-heading"><p class="eyebrow"><code>RESPOND_TO_BUTTON_CLICK</code> · POST to response_url</p><h3>Respond to button click</h3><p>Acknowledge a Slack interactive button and update its message.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>response_url</code></td><td>String; Required</td><td><code>https://hooks.slack.com/actions/...</code></td><td>Interaction-specific URL delivered by Slack; treat it as sensitive and short lived.</td></tr>
+<tr><td><code>text</code></td><td>String; Optional</td><td><code>Deployment completed</code></td><td>Plain text or Slack mrkdwn message text.</td></tr>
+<tr><td><code>blocks</code></td><td>DocumentList; Optional</td><td><code>[{&quot;type&quot;:&quot;section&quot;,&quot;text&quot;:{&quot;type&quot;:&quot;mrkdwn&quot;,&quot;text&quot;:&quot;*Ready*&quot;}}]</code></td><td>Structured Block Kit blocks; map a document list, not a JSON-encoded string.</td></tr>
+<tr><td><code>attachments</code></td><td>DocumentList; Optional</td><td><code>[{&quot;color&quot;:&quot;#2eb67d&quot;,&quot;text&quot;:&quot;Build 42&quot;}]</code></td><td>Slack attachment objects; map a document list.</td></tr>
+<tr><td><code>response_type</code></td><td>String; Optional</td><td><code>ephemeral</code></td><td>Use ephemeral or in_channel for interaction response visibility.</td></tr>
+<tr><td><code>replace_original</code></td><td>Boolean; Optional</td><td><code>false</code></td><td>Replace the original interactive message.</td></tr>
+<tr><td><code>delete_original</code></td><td>Boolean; Optional</td><td><code>false</code></td><td>Remove the original interactive message.</td></tr>
+</tbody></table></div>
+<p>The <code>response_url</code> comes from a Slack interactivity payload. Kestrel accepts only HTTPS URLs on <code>hooks.slack.com</code> or <code>hooks.slack-gov.com</code> under the supported actions/services paths. It does not follow redirects. A plain Slack <code>ok</code> response is represented as <code>{"ok":true}</code> in <code>Slack_Response.body</code>.</p>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); No action-specific named fields. For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="set-purpose"><header class="section-heading"><p class="eyebrow"><code>SET_PURPOSE</code> · conversations.setPurpose</p><h3>Set conversation purpose</h3><p>Describe why a project channel exists.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>purpose</code></td><td>String; Required</td><td><code>Release coordination</code></td><td>New conversation purpose.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="set-topic"><header class="section-heading"><p class="eyebrow"><code>SET_TOPIC</code> · conversations.setTopic</p><h3>Set conversation topic</h3><p>Show the current sprint or incident in the channel header.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>topic</code></td><td>String; Required</td><td><code>Sprint 42</code></td><td>New conversation topic.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="unarchive-conversation"><header class="section-heading"><p class="eyebrow"><code>UNARCHIVE_CONVERSATION</code> · conversations.unarchive</p><h3>Unarchive conversation</h3><p>Reopen a channel for a resumed project.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); No action-specific named fields. For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="update-message"><header class="section-heading"><p class="eyebrow"><code>UPDATE_MESSAGE</code> · chat.update</p><h3>Update message</h3><p>Edit a status message previously posted by the app.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>ts</code></td><td>String; Required</td><td><code>1712345678.000200</code></td><td>Slack message timestamp; identifies a message or parent thread.</td></tr>
+<tr><td><code>text</code></td><td>String; Optional</td><td><code>Deployment completed</code></td><td>Plain text or Slack mrkdwn message text.</td></tr>
+<tr><td><code>blocks</code></td><td>DocumentList; Optional</td><td><code>[{&quot;type&quot;:&quot;section&quot;,&quot;text&quot;:{&quot;type&quot;:&quot;mrkdwn&quot;,&quot;text&quot;:&quot;*Ready*&quot;}}]</code></td><td>Structured Block Kit blocks; map a document list, not a JSON-encoded string.</td></tr>
+<tr><td><code>attachments</code></td><td>DocumentList; Optional</td><td><code>[{&quot;color&quot;:&quot;#2eb67d&quot;,&quot;text&quot;:&quot;Build 42&quot;}]</code></td><td>Slack attachment objects; map a document list.</td></tr>
+<tr><td><code>parse</code></td><td>String; Optional</td><td><code>none</code></td><td>Slack text parsing mode, for example none or full.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (String), ts (String), message (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="delete-message"><header class="section-heading"><p class="eyebrow"><code>DELETE_MESSAGE</code> · chat.delete</p><h3>Delete message</h3><p>Remove an obsolete bot message.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>ts</code></td><td>String; Required</td><td><code>1712345678.000200</code></td><td>Slack message timestamp; identifies a message or parent thread.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (String), ts (String). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="add-reaction"><header class="section-heading"><p class="eyebrow"><code>ADD_REACTION</code> · reactions.add</p><h3>Add reaction</h3><p>Mark a message with a checkmark reaction.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>timestamp</code></td><td>String; Required</td><td><code>1712345678.000200</code></td><td>Message timestamp for reaction actions.</td></tr>
+<tr><td><code>name</code></td><td>String; Required</td><td><code>team-updates</code></td><td>Conversation name, or reaction emoji name for reaction actions.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); No action-specific named fields. For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="remove-reaction"><header class="section-heading"><p class="eyebrow"><code>REMOVE_REACTION</code> · reactions.remove</p><h3>Remove reaction</h3><p>Remove an earlier reaction.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>timestamp</code></td><td>String; Required</td><td><code>1712345678.000200</code></td><td>Message timestamp for reaction actions.</td></tr>
+<tr><td><code>name</code></td><td>String; Required</td><td><code>team-updates</code></td><td>Conversation name, or reaction emoji name for reaction actions.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); No action-specific named fields. For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="get-conversation"><header class="section-heading"><p class="eyebrow"><code>GET_CONVERSATION</code> · conversations.info</p><h3>Get conversation</h3><p>Inspect conversation metadata and status.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>include_locale</code></td><td>Boolean; Optional</td><td><code>true</code></td><td>Ask Slack to include locale information.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); conversation (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="list-conversations"><header class="section-heading"><p class="eyebrow"><code>LIST_CONVERSATIONS</code> · conversations.list</p><h3>List conversations</h3><p>Find channels available to the installed app.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>types</code></td><td>String; Optional</td><td><code>public_channel,private_channel</code></td><td>Comma-separated conversation types to list.</td></tr>
+<tr><td><code>cursor</code></td><td>String; Optional</td><td><code>dXNlcjpVMDYxTkZUVDI=</code></td><td>Cursor from the previous Slack_Response.body.response_metadata.next_cursor.</td></tr>
+<tr><td><code>limit</code></td><td>Number; Optional</td><td><code>100</code></td><td>Maximum items requested per page; Slack may return fewer.</td></tr>
+<tr><td><code>exclude_archived</code></td><td>Boolean; Optional</td><td><code>true</code></td><td>Exclude archived conversations from list results.</td></tr>
+</tbody></table></div>
+<p>For another page, map <code>Slack_Response.body.response_metadata.next_cursor</code> to the next call’s <code>Slack_Request.cursor</code>. Stop when the cursor is empty. For history/replies, inspect <code>body.has_more</code> as a Boolean.</p>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channels (DocumentList), response_metadata (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="history"><header class="section-heading"><p class="eyebrow"><code>HISTORY</code> · conversations.history</p><h3>Conversation history</h3><p>Read recent messages to drive a workflow.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>cursor</code></td><td>String; Optional</td><td><code>dXNlcjpVMDYxTkZUVDI=</code></td><td>Cursor from the previous Slack_Response.body.response_metadata.next_cursor.</td></tr>
+<tr><td><code>limit</code></td><td>Number; Optional</td><td><code>100</code></td><td>Maximum items requested per page; Slack may return fewer.</td></tr>
+<tr><td><code>oldest</code></td><td>String; Optional</td><td><code>1712000000.000000</code></td><td>Only messages newer than this Slack timestamp.</td></tr>
+<tr><td><code>latest</code></td><td>String; Optional</td><td><code>1713000000.000000</code></td><td>Only messages older than this Slack timestamp.</td></tr>
+<tr><td><code>inclusive</code></td><td>Boolean; Optional</td><td><code>true</code></td><td>Include boundary timestamps in the time window.</td></tr>
+</tbody></table></div>
+<p>For another page, map <code>Slack_Response.body.response_metadata.next_cursor</code> to the next call’s <code>Slack_Request.cursor</code>. Stop when the cursor is empty. For history/replies, inspect <code>body.has_more</code> as a Boolean.</p>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); messages (DocumentList), has_more (String in pipeline; Boolean in raw body), response_metadata (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="replies"><header class="section-heading"><p class="eyebrow"><code>REPLIES</code> · conversations.replies</p><h3>Thread replies</h3><p>Read all replies to a particular thread.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>ts</code></td><td>String; Required</td><td><code>1712345678.000200</code></td><td>Slack message timestamp; identifies a message or parent thread.</td></tr>
+<tr><td><code>cursor</code></td><td>String; Optional</td><td><code>dXNlcjpVMDYxTkZUVDI=</code></td><td>Cursor from the previous Slack_Response.body.response_metadata.next_cursor.</td></tr>
+<tr><td><code>limit</code></td><td>Number; Optional</td><td><code>100</code></td><td>Maximum items requested per page; Slack may return fewer.</td></tr>
+<tr><td><code>oldest</code></td><td>String; Optional</td><td><code>1712000000.000000</code></td><td>Only messages newer than this Slack timestamp.</td></tr>
+<tr><td><code>latest</code></td><td>String; Optional</td><td><code>1713000000.000000</code></td><td>Only messages older than this Slack timestamp.</td></tr>
+<tr><td><code>inclusive</code></td><td>Boolean; Optional</td><td><code>true</code></td><td>Include boundary timestamps in the time window.</td></tr>
+</tbody></table></div>
+<p>For another page, map <code>Slack_Response.body.response_metadata.next_cursor</code> to the next call’s <code>Slack_Request.cursor</code>. Stop when the cursor is empty. For history/replies, inspect <code>body.has_more</code> as a Boolean.</p>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); messages (DocumentList), has_more (String in pipeline; Boolean in raw body), response_metadata (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="rename-conversation"><header class="section-heading"><p class="eyebrow"><code>RENAME_CONVERSATION</code> · conversations.rename</p><h3>Rename conversation</h3><p>Rename a channel after a project transition.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>name</code></td><td>String; Required</td><td><code>team-updates</code></td><td>Conversation name, or reaction emoji name for reaction actions.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="join-conversation"><header class="section-heading"><p class="eyebrow"><code>JOIN_CONVERSATION</code> · conversations.join</p><h3>Join conversation</h3><p>Join a public channel before posting.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); channel (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="leave-conversation"><header class="section-heading"><p class="eyebrow"><code>LEAVE_CONVERSATION</code> · conversations.leave</p><h3>Leave conversation</h3><p>Leave a channel after automation is finished.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+</tbody></table></div>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); No action-specific named fields. For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+<section class="doc-section" id="list-members"><header class="section-heading"><p class="eyebrow"><code>LIST_MEMBERS</code> · conversations.members</p><h3>List members</h3><p>Page through members for an audit or notification.</p></header>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Slack_Request field</th><th>Type / requirement</th><th>Sample value</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>channel</code></td><td>String; Required</td><td><code>C0123456789</code></td><td>Conversation ID; use a Slack channel, private channel, or DM ID as permitted.</td></tr>
+<tr><td><code>cursor</code></td><td>String; Optional</td><td><code>dXNlcjpVMDYxTkZUVDI=</code></td><td>Cursor from the previous Slack_Response.body.response_metadata.next_cursor.</td></tr>
+<tr><td><code>limit</code></td><td>Number; Optional</td><td><code>100</code></td><td>Maximum items requested per page; Slack may return fewer.</td></tr>
+</tbody></table></div>
+<p>For another page, map <code>Slack_Response.body.response_metadata.next_cursor</code> to the next call’s <code>Slack_Request.cursor</code>. Stop when the cursor is empty. For history/replies, inspect <code>body.has_more</code> as a Boolean.</p>
+<p><strong>Step Out:</strong> <code>Slack_Response.body</code> (Document, complete response); members (DocumentList), response_metadata (Document). For exact nested response fields, inspect the returned <code>body</code> for the selected method.</p></section>
+</section>
+<section class="doc-section" id="examples"><header class="section-heading"><p class="eyebrow">Developer examples</p><h2>End-to-end mappings</h2></header><h3>Notify a deployment channel</h3><p>Choose <strong>Post message</strong> and map <code>Slack_Request.channel</code> to <code>C0123456789</code>, <code>Slack_Request.text</code> to a prior step’s deployment summary, then save <code>Slack_Response.ts</code> to update or thread the message later. Use <code>Slack_Response.body.ok</code> to inspect the Slack response.</p><h3>Create and populate a private project channel</h3><p>Use <strong>Create conversation</strong> with <code>name=launch-2026</code> and <code>is_private=true</code>. The returned <code>Slack_Response.channel.id</code> becomes <code>Slack_Request.channel</code> for <strong>Invite users</strong>, with <code>users=U0123456789,U9876543210</code>. Post a welcome message in a later Slack step.</p><h3>Respond to a button click</h3><p>Configure a <a href="#/webhook-trigger">Webhook Trigger</a> to receive Slack’s interactivity form post. Slack places the interaction JSON in the form field <code>payload</code>. Parse that string into a document with the JSON-to-document utility, then map its <code>response_url</code> to <code>Slack_Request.response_url</code>; set <code>text=Approved</code> and <code>response_type=ephemeral</code>. Respond to Slack’s inbound request promptly using <a href="#/send-http-response">Send HttpResponse</a>. Authenticate Slack’s signed inbound request at a trusted ingress; this outgoing connector’s response URL check does not verify the incoming signature.</p></section>
+<section class="doc-section" id="errors"><header class="section-heading"><p class="eyebrow">Runtime behavior</p><h2>Handle failures in the workflow</h2></header><p>Missing required fields, disabled or missing connections, HTTP failures, Slack <code>ok:false</code> responses, and invalid interaction URLs raise connector errors. Connect the workflow’s <a href="#/error-handling">error handling</a> path to inspect the exact Slack error, log useful context without tokens or response URLs, and decide whether to retry. Slack rate limits may include a <code>Retry-After</code> delay. Avoid blind retries for actions such as creating a channel or posting a message because a retry can duplicate side effects.</p><p>The <a href="#/slack-connection">connection test</a> calls <code>auth.test</code>; it does not verify every operation’s scopes, conversation membership, or message permissions. Run representative workflow operations with the intended Slack app installation before production use.</p></section>

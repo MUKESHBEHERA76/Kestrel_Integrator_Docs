@@ -30,6 +30,8 @@ This folder contains a static documentation app that can be hosted independently
 - `assets/pages/amqp-connection.html` and `amqp10-connection.html` - Project AMQP connection setup and examples by protocol
 - `assets/pages/subworkflow-trigger.html` - Callable child workflow setup, Workflow I/O contract, parent mappings, examples, and errors
 - `assets/pages/salesforce-connector.html` - Salesforce API actions, request and response mapping, examples, and errors
+- `assets/pages/slack-connection.html` - Slack app token, credential alias, connection fields, test, scopes, and troubleshooting
+- `assets/pages/slack-connector.html` - All Slack workflow operations with pipeline inputs, outputs, use cases, and examples
 - `assets/pages/schema-validator.html` - XML XSD and OpenAPI JSON validation setup, pipeline contract, and examples
 - `assets/pages/security.html` - Security landing page for Webhook Auth, Security Credentials, and Keystore
 - `assets/pages/security-credentials.html` - All credential types, required fields, lifecycle, and Salesforce JWT example
