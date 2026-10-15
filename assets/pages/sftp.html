@@ -26,7 +26,7 @@
     <a href="#/sftp/connection">Connection</a>
     <a href="#/sftp/workflow">Workflow</a>
     <a href="#/sftp/contracts">Documents</a>
-    <a href="#/sftp/operations">Operations</a>
+    <a href="#/sftp/operations">Operations</a><a href="#/sftp/operation-examples">Examples by operation</a>
     <a href="#/sftp/examples">Examples</a>
     <a href="#/sftp/troubleshooting">Troubleshooting</a>
   </div>
@@ -265,6 +265,29 @@ Maximum inline file size: 1048576</code></pre>
   </div>
 </section>
 
+<section class="doc-section" id="operation-examples"><header class="section-heading"><p class="eyebrow">Complete operation examples</p><h2>Map each operation in the workflow</h2></header><p>Select the active <a href="#/sftp-connection">SFTP connection</a>, double-click the connector to choose an operation, and open Settings. The following request fields are children of <code>${pipeline.input.SFTP_Request}</code>; the shown outputs are under <code>${pipeline.output.SFTP_Response}</code>. All paths are relative to the connection's <code>/data/inbound</code> default directory.</p>
+<div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Operation</th><th>Example Step In</th><th>Additional Step Out</th></tr></thead><tbody>
+<tr><td>LIST</td><td><code>path = .</code></td><td><code>files[]</code> metadata and <code>count</code>; for two entries, <code>count = 2</code>.</td></tr>
+<tr><td>STAT</td><td><code>path = orders.json</code></td><td><code>metadata</code> with name, size, permissions, and modifiedAt when available.</td></tr>
+<tr><td>EXISTS</td><td><code>path = orders.json</code></td><td><code>exists = true</code> and metadata; for a missing path, <code>exists = false</code> without an error.</td></tr>
+<tr><td>DOWNLOAD</td><td><code>path = orders.json</code></td><td><code>content</code> UTF-8 text, <code>contentBase64</code> binary-safe content, <code>size</code>, and metadata.</td></tr>
+<tr><td>UPLOAD</td><td><code>path = orders.json</code>, <code>content = ${pipeline.input.orderJson}</code>, <code>contentEncoding = UTF8</code>, <code>overwrite = false</code></td><td><code>size</code> and metadata of the written file.</td></tr>
+<tr><td>MOVE</td><td><code>sourcePath = orders.json</code>, <code>targetPath = archive/orders.json</code>, <code>createParentDirectories = true</code></td><td><code>sourcePath</code> and <code>targetPath</code> resolved remote paths.</td></tr>
+<tr><td>DELETE</td><td><code>path = archive/orders.json</code></td><td><code>deleted = true</code>.</td></tr>
+<tr><td>CREATE_DIRECTORY</td><td><code>path = archive/2026</code></td><td><code>created = "true"</code>; missing parents are created.</td></tr>
+<tr><td>DELETE_DIRECTORY</td><td><code>path = archive/2026</code></td><td><code>deleted = true</code>; directory must be empty.</td></tr>
+</tbody></table></div><p>Example workflow: Webhook Trigger → map request body to SFTP Upload <code>content</code> → map <code>SFTP_Response.path</code> and <code>size</code> to Logger → Send HttpResponse. For files such as PDFs, map Base64 content and set <code>contentEncoding = BASE64</code>. The maximum inline size in the connection applies to both uploads and downloads.</p><pre class="code-contract"><code>SFTP_Request:
+  path: documents/report.pdf
+  content: ${pipeline.input.reportBase64}
+  contentEncoding: BASE64
+  overwrite: false
+  createParentDirectories: true
+
+SFTP_Response (example):
+  success: true
+  operation: UPLOAD
+  path: /data/inbound/documents/report.pdf
+  size: 24576</code></pre><p>After changing the operation, review mappings because the Step In and Step Out fields differ. SFTP changes are remote side effects; a later workflow failure does not undo a completed upload, move, or delete.</p></section>
 <section class="doc-section" id="troubleshooting">
   <header class="section-heading">
     <p class="eyebrow">Troubleshooting</p>
