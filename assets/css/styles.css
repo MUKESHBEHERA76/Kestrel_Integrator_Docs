@@ -2097,3 +2097,55 @@ code {
     transition-duration: 0.01ms !important;
   }
 }
+/* Platform execution guide: readable without an image or external diagram library. */
+.platform-execution-diagram {
+  margin: 1.5rem 0 0;
+  padding: 1.5rem;
+  border: 1px solid #d7e5ef;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbfd, #fff);
+}
+.platform-message-flow-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+}
+.platform-execution-lane {
+  display: flex;
+  align-items: stretch;
+  gap: .55rem;
+}
+.platform-execution-node {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: .45rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #c9dce9;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgb(34 68 91 / 5%);
+}
+.platform-execution-node small { color: #47769a; font-weight: 700; }
+.platform-execution-node strong { color: #1f3a4d; font-size: 1rem; }
+.platform-execution-node span { color: #536b7b; font-size: .85rem; line-height: 1.45; }
+.platform-execution-arrow { align-self: center; color: #4785ad; font-size: 1.5rem; font-weight: 700; }
+.platform-execution-nested {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid #cfe4d7;
+  border-radius: 10px;
+  background: #f4faf6;
+}
+.platform-execution-nested-line { color: #2a8054; font-size: 1.5rem; font-weight: 700; }
+.platform-execution-nested strong { color: #225d40; }
+.platform-execution-nested p { margin: .35rem 0 0; color: #405c4d; line-height: 1.55; }
+.platform-execution-diagram figcaption { margin-top: 1rem; color: #526b7c; font-size: .9rem; line-height: 1.5; }
+@media (max-width: 1050px) {
+  .platform-execution-lane { flex-direction: column; }
+  .platform-execution-arrow { transform: rotate(90deg); line-height: 1; }
+}

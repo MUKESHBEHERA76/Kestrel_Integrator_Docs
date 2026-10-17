@@ -6,6 +6,11 @@ import {
 } from './utility-docs.js';
 
 const pages = Object.freeze({
+  'platform-execution': {
+    title: 'Platform execution',
+    description: 'How RabbitMQ controls workflow and reusable service execution',
+    source: './assets/pages/platform-execution.html'
+  },
   introduction: {
     title: 'Introduction',
     description: 'Kestrel Integrator platform overview',
@@ -198,6 +203,11 @@ const pages = Object.freeze({
     title: 'Execution',
     description: 'Durable workflow execution architecture',
     source: './assets/pages/execution.html'
+  },
+  'runtime-operations': {
+    title: 'Runtime Operations',
+    description: 'Monitor workers, queues, outboxes, dependencies, and worker controls',
+    source: './assets/pages/runtime-operations.html'
   },
   connector: {
     title: 'Connector',

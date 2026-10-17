@@ -21,6 +21,8 @@ This folder contains a static documentation app that can be hosted independently
 - `assets/js/utility-docs.js` - Executable utility reference data, nested menu, and detail-page rendering
 - `assets/pages/kvs.html` - KVS configuration, password handling, and workflow usage
 - `assets/pages/execution.html` - Execution architecture content
+- `assets/pages/platform-execution.html` - First-menu guided diagram and explanation of RabbitMQ, workflow, reusable-service, and subworkflow execution
+- `assets/pages/runtime-operations.html` - Runtime Operations metrics, worker controls, procedures, and troubleshooting
 - `assets/pages/connectors.html` - Connector concepts and catalog
 - `assets/pages/http-request.html` - Workflow HTTP Request guide covering REST, GraphQL, SOAP, authentication, retries, and pipeline variables
 - `assets/pages/salesforce-connection.html` - Salesforce Security Credential, project connection, and test setup
