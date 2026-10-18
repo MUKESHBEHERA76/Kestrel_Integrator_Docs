@@ -6,11 +6,6 @@ import {
 } from './utility-docs.js';
 
 const pages = Object.freeze({
-  'platform-execution': {
-    title: 'Platform execution',
-    description: 'How RabbitMQ controls workflow and reusable service execution',
-    source: './assets/pages/platform-execution.html'
-  },
   introduction: {
     title: 'Introduction',
     description: 'Kestrel Integrator platform overview',
@@ -209,6 +204,16 @@ const pages = Object.freeze({
     description: 'Monitor workers, queues, outboxes, dependencies, and worker controls',
     source: './assets/pages/runtime-operations.html'
   },
+  'monitor-guide': {
+    title: 'Monitor',
+    description: 'Local Analytics, Active threads, and PostgreSQL retention',
+    source: './assets/pages/monitor-guide.html'
+  },
+  'opensearch-guide': {
+    title: 'OpenSearch',
+    description: 'OpenSearch server configuration, index retention, log search, and execution analytics',
+    source: './assets/pages/opensearch-guide.html'
+  },
   connector: {
     title: 'Connector',
     description: 'Workflow connector concepts and catalog',
@@ -257,10 +262,12 @@ let initialRender = true;
 
 function locationState() {
   const [routePart, ...pathParts] = window.location.hash.replace(/^#\/?/, '').split('/');
-  const route = routePart?.trim().toLowerCase();
+  const requestedRoute = routePart?.trim().toLowerCase();
+  const legacyExecutionLink = requestedRoute === 'platform-execution';
+  const route = legacyExecutionLink ? 'execution' : requestedRoute;
   return {
     route: Object.hasOwn(pages, route) ? route : defaultRoute,
-    anchor: pathParts.join('/')
+    anchor: legacyExecutionLink && pathParts.length === 0 ? 'diagram' : pathParts.join('/')
   };
 }
 
