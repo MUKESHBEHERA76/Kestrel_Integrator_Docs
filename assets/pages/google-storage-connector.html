@@ -1,0 +1,114 @@
+<section class="doc-hero"><div class="hero-copy"><p class="eyebrow">Workflow / Connectors / Google Cloud Storage</p><h1 data-page-title>Google Cloud Storage connector</h1><p class="lead">Choose one of 11 operations, map Gcs_Request inputs, and use Gcs_Response outputs downstream.</p></div></section>
+<section class="doc-section"><header class="section-heading"><h2>Configure and map the step</h2></header><p>Go to Projects → your project → Workflows → open a workflow. Drag <strong>Google Cloud Storage</strong> from Connectors onto the canvas. Open the step and choose a tested, enabled <a href="#/google-storage-connection">Google Cloud Storage Connection</a> and an Operation. The Operation changes the Step In fields under <code>Gcs_Request</code>. Open Pipeline settings and map those fields from the preceding step or hardcode a fixed example value. Map <code>Gcs_Response</code> fields to Pipeline Out for the next step, then save and run the workflow.</p><p>The project identifier and service key are stored in the connection. They are not pipeline fields. Every request input shown here is a String, including numeric text and JSON text. JSON string fields can contain pipeline variable substitutions before runtime parsing. The root <code>Gcs_Request</code> and <code>Gcs_Response</code> are Document containers grouping those String fields.</p><p>For object names containing slashes, map the full name such as <code>orders/1234.json</code>; Kestrel URL-encodes it. Upload and download accept/return Base64 content, each limited to 10 MiB inline. For larger files, use a transfer design outside these inline operations.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Step Out fields</h2></header><div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Step Out field</th><th>Meaning</th></tr></thead><tbody><tr><td><code>Gcs_Response.body</code></td><td>Complete Google response serialized to a JSON String; parse it when a nested field is needed.</td></tr><tr><td><code>Gcs_Response.id</code>, <code>Gcs_Response.name</code></td><td>Top-level identifiers when Google returns them.</td></tr><tr><td><code>Gcs_Response.jobId</code>, <code>Gcs_Response.location</code></td><td>BigQuery job reference, including nested jobReference values, when returned.</td></tr><tr><td><code>Gcs_Response.pageToken</code>, <code>Gcs_Response.nextPageToken</code>, <code>Gcs_Response.totalRows</code>, <code>Gcs_Response.jobComplete</code></td><td>Paging and query status when returned; boolean status is presented as String text.</td></tr><tr><td><code>Gcs_Response.contentBase64</code>, <code>Gcs_Response.sizeBytes</code></td><td>Cloud Storage Download object output; no JSON body is returned for this operation.</td></tr><tr><td><code>Gcs_Response.ackIdsJson</code></td><td>Pub/Sub Pull messages output: JSON String array of acknowledgment tokens.</td></tr></tbody></table></div></section>
+<section class="doc-section"><header class="section-heading"><h2>Operation examples</h2></header><p>The following examples use illustrative values. Actual Google responses include additional fields. Operation details and IAM requirements: <a href="https://docs.cloud.google.com/storage/docs/json_api/v1" target="_blank" rel="noopener noreferrer">Google REST API reference</a>.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Create bucket · CREATE_BUCKET</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket, location; storageClass optional. Creates a project bucket; bucket names are globally unique.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;,
+    &quot;location&quot;: &quot;US&quot;,
+    &quot;storageClass&quot;: &quot;STANDARD&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;acme-orders-archive&quot;,
+  &quot;location&quot;: &quot;US&quot;
+}</code></pre><p><strong>Named Step Out:</strong> name; location. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Get bucket · GET_BUCKET</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket. Reads bucket metadata.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;acme-orders-archive&quot;,
+  &quot;location&quot;: &quot;US&quot;
+}</code></pre><p><strong>Named Step Out:</strong> name; location. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>List buckets · LIST_BUCKETS</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: pageToken, maxResults optional. Returns one page of buckets for the connection project.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;maxResults&quot;: &quot;100&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;items&quot;: [
+    {
+      &quot;name&quot;: &quot;acme-orders-archive&quot;
+    }
+  ],
+  &quot;nextPageToken&quot;: &quot;NEXT&quot;
+}</code></pre><p><strong>Named Step Out:</strong> nextPageToken. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Update bucket · UPDATE_BUCKET</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket, body. PATCH body is a JSON object as text.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;,
+    &quot;body&quot;: &quot;{\&quot;labels\&quot;:{\&quot;team\&quot;:\&quot;orders\&quot;}}&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;acme-orders-archive&quot;,
+  &quot;labels&quot;: {
+    &quot;team&quot;: &quot;orders&quot;
+  }
+}</code></pre><p><strong>Named Step Out:</strong> name. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Delete bucket · DELETE_BUCKET</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket. The bucket must be empty; delete objects first.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Get object metadata · GET_OBJECT_METADATA</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket, objectName. Gets metadata without downloading content.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;,
+    &quot;objectName&quot;: &quot;orders/1234.json&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;orders/1234.json&quot;,
+  &quot;size&quot;: &quot;28&quot;
+}</code></pre><p><strong>Named Step Out:</strong> name. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>List objects · LIST_OBJECTS</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket; prefix, delimiter, pageToken, maxResults optional. Use nextPageToken on the next invocation.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;,
+    &quot;prefix&quot;: &quot;orders/&quot;,
+    &quot;maxResults&quot;: &quot;100&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;items&quot;: [
+    {
+      &quot;name&quot;: &quot;orders/1234.json&quot;
+    }
+  ],
+  &quot;nextPageToken&quot;: &quot;NEXT&quot;
+}</code></pre><p><strong>Named Step Out:</strong> nextPageToken. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Upload object · UPLOAD_OBJECT</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket, objectName, contentBase64; contentType optional. Base64 encodes the raw content; media upload is limited to 10 MiB inline.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;,
+    &quot;objectName&quot;: &quot;orders/1234.json&quot;,
+    &quot;contentBase64&quot;: &quot;eyJwb2lkIjoiMTIzNCJ9&quot;,
+    &quot;contentType&quot;: &quot;application/json&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;orders/1234.json&quot;,
+  &quot;size&quot;: &quot;15&quot;
+}</code></pre><p><strong>Named Step Out:</strong> name. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Download object · DOWNLOAD_OBJECT</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket, objectName. Returns Base64, not a file; limited to 10 MiB inline.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;,
+    &quot;objectName&quot;: &quot;orders/1234.json&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;contentBase64&quot;: &quot;eyJwb2lkIjoiMTIzNCJ9&quot;,
+  &quot;sizeBytes&quot;: &quot;15&quot;
+}</code></pre><p><strong>Named Step Out:</strong> contentBase64; sizeBytes. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Update object metadata · UPDATE_OBJECT_METADATA</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket, objectName, body. PATCH body is JSON object text; object content remains unchanged.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;,
+    &quot;objectName&quot;: &quot;orders/1234.json&quot;,
+    &quot;body&quot;: &quot;{\&quot;metadata\&quot;:{\&quot;poid\&quot;:\&quot;1234\&quot;}}&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;orders/1234.json&quot;,
+  &quot;metadata&quot;: {
+    &quot;poid&quot;: &quot;1234&quot;
+  }
+}</code></pre><p><strong>Named Step Out:</strong> name. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Delete object · DELETE_OBJECT</h2></header><p><strong>Step In:</strong> <code>Gcs_Request</code> fields: bucket, objectName. Deletes one named object.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;Gcs_Request&quot;: {
+    &quot;bucket&quot;: &quot;acme-orders-archive&quot;,
+    &quot;objectName&quot;: &quot;orders/1234.json&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>Gcs_Response.body</code>:</strong></p><pre class="code-contract"><code>{}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. Most actions expose <code>Gcs_Response.body</code> as JSON text; Download object returns <code>contentBase64</code> and <code>sizeBytes</code> instead. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Troubleshooting and limits</h2></header><ul class="docs-bullet-list"><li>HTTP 401: check service account key validity in the <a href="#/google-storage-connection">connection</a>.</li><li>HTTP 403: enable the API and grant the selected action’s IAM role on the target resource.</li><li>HTTP 404: verify project, bucket/dataset/topic, and item IDs. The connection target project determines the request project.</li><li>When using optional page tokens, pass Google’s returned <code>nextPageToken</code> into the next invocation. Stop when it is absent.</li><li>All Google API errors fail the step and can be inspected in workflow execution logs.</li></ul></section>
+
+<section class="doc-section"><header class="section-heading"><h2>End-to-end object example</h2></header><ol><li>Create the <a href="#/google-storage-connection">Cloud Storage connection</a> and grant the service account permissions on the bucket.</li><li>Map a webhook request's <code>webHookRequest.body</code> through a Base64 encoding utility into <code>Gcs_Request.contentBase64</code>. Set <code>bucket = acme-orders-archive</code>, <code>objectName = orders/${pipeline.input.orderId}.json</code> after extracting <code>orderId</code> from the webhook JSON into a runtime variable, and <code>contentType = application/json</code>.</li><li>Choose Upload object. Map <code>Gcs_Response.name</code> to the next step or read the full metadata from <code>Gcs_Response.body</code>.</li><li>For a download, use the same bucket and object name. Decode <code>Gcs_Response.contentBase64</code> before treating the result as UTF-8 JSON or binary data.</li></ol><p>Google references: <a href="https://docs.cloud.google.com/storage/docs/json_api/v1/objects/insert" target="_blank" rel="noopener noreferrer">objects.insert</a>, <a href="https://docs.cloud.google.com/storage/docs/json_api/v1/objects/get" target="_blank" rel="noopener noreferrer">objects.get</a>, and <a href="https://docs.cloud.google.com/storage/docs/access-control/iam-roles" target="_blank" rel="noopener noreferrer">Storage IAM roles</a>.</p></section>

@@ -1,0 +1,121 @@
+<section class="doc-hero"><div class="hero-copy"><p class="eyebrow">Workflow / Connectors / Google Pub/Sub</p><h1 data-page-title>Google Pub/Sub connector</h1><p class="lead">Choose one of 13 operations, map PubSub_Request inputs, and use PubSub_Response outputs downstream.</p></div></section>
+<section class="doc-section"><header class="section-heading"><h2>Configure and map the step</h2></header><p>Go to Projects → your project → Workflows → open a workflow. Drag <strong>Google Pub/Sub</strong> from Connectors onto the canvas. Open the step and choose a tested, enabled <a href="#/google-pubsub-connection">Google Pub/Sub Connection</a> and an Operation. The Operation changes the Step In fields under <code>PubSub_Request</code>. Open Pipeline settings and map those fields from the preceding step or hardcode a fixed example value. Map <code>PubSub_Response</code> fields to Pipeline Out for the next step, then save and run the workflow.</p><p>The project identifier and service key are stored in the connection. They are not pipeline fields. Every request input shown here is a String, including numeric text and JSON text. JSON string fields can contain pipeline variable substitutions before runtime parsing. The root <code>PubSub_Request</code> and <code>PubSub_Response</code> are Document containers grouping those String fields.</p><p>Pull is synchronous for one request. A missing <code>receivedMessages</code> array means no messages were returned. Use <code>ackIdsJson</code> after successful processing; use NACK for redelivery when appropriate. This connector does not run a continuous Pub/Sub trigger, and pull does not ACK automatically. Design processing to tolerate duplicate deliveries.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Step Out fields</h2></header><div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Step Out field</th><th>Meaning</th></tr></thead><tbody><tr><td><code>PubSub_Response.body</code></td><td>Complete Google response serialized to a JSON String; parse it when a nested field is needed.</td></tr><tr><td><code>PubSub_Response.id</code>, <code>PubSub_Response.name</code></td><td>Top-level identifiers when Google returns them.</td></tr><tr><td><code>PubSub_Response.jobId</code>, <code>PubSub_Response.location</code></td><td>BigQuery job reference, including nested jobReference values, when returned.</td></tr><tr><td><code>PubSub_Response.pageToken</code>, <code>PubSub_Response.nextPageToken</code>, <code>PubSub_Response.totalRows</code>, <code>PubSub_Response.jobComplete</code></td><td>Paging and query status when returned; boolean status is presented as String text.</td></tr><tr><td><code>PubSub_Response.contentBase64</code>, <code>PubSub_Response.sizeBytes</code></td><td>Cloud Storage Download object output; no JSON body is returned for this operation.</td></tr><tr><td><code>PubSub_Response.ackIdsJson</code></td><td>Pub/Sub Pull messages output: JSON String array of acknowledgment tokens.</td></tr></tbody></table></div></section>
+<section class="doc-section"><header class="section-heading"><h2>Operation examples</h2></header><p>The following examples use illustrative values. Actual Google responses include additional fields. Operation details and IAM requirements: <a href="https://docs.cloud.google.com/pubsub/docs/reference/rest/v1" target="_blank" rel="noopener noreferrer">Google REST API reference</a>.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Create topic · CREATE_TOPIC</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: topicId. Creates the named topic.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;topicId&quot;: &quot;orders-created&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;projects/acme-integrations-prod/topics/orders-created&quot;
+}</code></pre><p><strong>Named Step Out:</strong> name. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Get topic · GET_TOPIC</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: topicId. Reads topic metadata.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;topicId&quot;: &quot;orders-created&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;projects/acme-integrations-prod/topics/orders-created&quot;
+}</code></pre><p><strong>Named Step Out:</strong> name. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>List topics · LIST_TOPICS</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: pageToken, pageSize optional. Lists topics in the connection project.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;pageSize&quot;: &quot;100&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;topics&quot;: [
+    {
+      &quot;name&quot;: &quot;projects/acme-integrations-prod/topics/orders-created&quot;
+    }
+  ]
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Delete topic · DELETE_TOPIC</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: topicId. Deletes topic; existing subscriptions may remain and require cleanup.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;topicId&quot;: &quot;orders-created&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Publish message · PUBLISH</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: topicId, message; attributesJson, orderingKey optional. Kestrel UTF-8 encodes message text as Base64 for Pub/Sub. attributesJson is a JSON object of string pairs.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;topicId&quot;: &quot;orders-created&quot;,
+    &quot;message&quot;: &quot;{\&quot;poid\&quot;:\&quot;1234\&quot;}&quot;,
+    &quot;attributesJson&quot;: &quot;{\&quot;source\&quot;:\&quot;kestrel\&quot;,\&quot;type\&quot;:\&quot;order\&quot;}&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;messageIds&quot;: [
+    &quot;987654321&quot;
+  ]
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Batch publish · BATCH_PUBLISH</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: topicId, messagesJson. Each JSON array item may contain message text, pre-encoded Base64 data, attributes, and orderingKey.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;topicId&quot;: &quot;orders-created&quot;,
+    &quot;messagesJson&quot;: &quot;[{\&quot;message\&quot;:\&quot;first\&quot;,\&quot;attributes\&quot;:{\&quot;poid\&quot;:\&quot;1234\&quot;}},{\&quot;message\&quot;:\&quot;second\&quot;}]&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;messageIds&quot;: [
+    &quot;987654321&quot;,
+    &quot;987654322&quot;
+  ]
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Create pull subscription · CREATE_SUBSCRIPTION</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: subscriptionId, topicId; ackDeadlineSeconds optional. Creates a pull subscription on the selected topic.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;subscriptionId&quot;: &quot;orders-worker&quot;,
+    &quot;topicId&quot;: &quot;orders-created&quot;,
+    &quot;ackDeadlineSeconds&quot;: &quot;30&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;projects/acme-integrations-prod/subscriptions/orders-worker&quot;,
+  &quot;topic&quot;: &quot;projects/acme-integrations-prod/topics/orders-created&quot;
+}</code></pre><p><strong>Named Step Out:</strong> name. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>List subscriptions · LIST_SUBSCRIPTIONS</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: pageToken, pageSize optional. Lists subscriptions in the connection project.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;pageSize&quot;: &quot;100&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;subscriptions&quot;: [
+    {
+      &quot;name&quot;: &quot;projects/acme-integrations-prod/subscriptions/orders-worker&quot;
+    }
+  ]
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Get subscription · GET_SUBSCRIPTION</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: subscriptionId. Reads subscription settings.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;subscriptionId&quot;: &quot;orders-worker&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;name&quot;: &quot;projects/acme-integrations-prod/subscriptions/orders-worker&quot;,
+  &quot;ackDeadlineSeconds&quot;: 30
+}</code></pre><p><strong>Named Step Out:</strong> name. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Delete subscription · DELETE_SUBSCRIPTION</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: subscriptionId. Deletes a subscription; unacknowledged messages on it are no longer available there.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;subscriptionId&quot;: &quot;orders-worker&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Pull messages · PULL_MESSAGES</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: subscriptionId; maxMessages optional. No automatic ACK. Decode each message.data from Base64 and use ackId in ACK or NACK.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;subscriptionId&quot;: &quot;orders-worker&quot;,
+    &quot;maxMessages&quot;: &quot;10&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;receivedMessages&quot;: [
+    {
+      &quot;ackId&quot;: &quot;ACK_TOKEN&quot;,
+      &quot;message&quot;: {
+        &quot;data&quot;: &quot;eyJwb2lkIjoiMTIzNCJ9&quot;,
+        &quot;messageId&quot;: &quot;987654321&quot;
+      }
+    }
+  ]
+}</code></pre><p><strong>Named Step Out:</strong> ackIdsJson (JSON text array of ACK IDs). All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Acknowledge messages · ACK</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: subscriptionId, ackIdsJson. ACK IDs are delivery tokens, not message IDs. Acknowledge only after successful processing.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;subscriptionId&quot;: &quot;orders-worker&quot;,
+    &quot;ackIdsJson&quot;: &quot;[\&quot;ACK_TOKEN\&quot;]&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Release messages for redelivery · NACK</h2></header><p><strong>Step In:</strong> <code>PubSub_Request</code> fields: subscriptionId, ackIdsJson. Sets ACK deadline to zero so Pub/Sub can redeliver. A duplicate delivery is possible.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;PubSub_Request&quot;: {
+    &quot;subscriptionId&quot;: &quot;orders-worker&quot;,
+    &quot;ackIdsJson&quot;: &quot;[\&quot;ACK_TOKEN\&quot;]&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>PubSub_Response.body</code>:</strong></p><pre class="code-contract"><code>{}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>PubSub_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Troubleshooting and limits</h2></header><ul class="docs-bullet-list"><li>HTTP 401: check service account key validity in the <a href="#/google-pubsub-connection">connection</a>.</li><li>HTTP 403: enable the API and grant the selected action’s IAM role on the target resource.</li><li>HTTP 404: verify project, bucket/dataset/topic, and item IDs. The connection target project determines the request project.</li><li>When using optional page tokens, pass Google’s returned <code>nextPageToken</code> into the next invocation. Stop when it is absent.</li><li>All Google API errors fail the step and can be inspected in workflow execution logs.</li></ul></section>
+
+<section class="doc-section"><header class="section-heading"><h2>Publish, pull, and acknowledge example</h2></header><ol><li>Choose Publish message. Set <code>topicId = orders-created</code>, <code>message = {"poid":"1234"}</code>, and <code>attributesJson = {"source":"kestrel"}</code>. Pub/Sub stores message data as Base64; Kestrel encodes the String.</li><li>In another workflow step choose Pull messages with <code>subscriptionId = orders-worker</code> and <code>maxMessages = 10</code>. Parse <code>PubSub_Response.body</code> to inspect each <code>receivedMessages[].message</code>; decode <code>message.data</code> from Base64.</li><li>After processing succeeds, map <code>PubSub_Response.ackIdsJson</code> into an ACK step's <code>PubSub_Request.ackIdsJson</code>. If processing fails and you want immediate redelivery, map the same JSON array into a NACK step. Do not use <code>message.messageId</code> as an ACK ID.</li></ol><p>Google references: <a href="https://docs.cloud.google.com/pubsub/docs/reference/rest/v1/projects.topics/publish" target="_blank" rel="noopener noreferrer">topics.publish</a>, <a href="https://docs.cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions/pull" target="_blank" rel="noopener noreferrer">subscriptions.pull</a>, <a href="https://docs.cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions/acknowledge" target="_blank" rel="noopener noreferrer">subscriptions.acknowledge</a>, and <a href="https://docs.cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions/modifyAckDeadline" target="_blank" rel="noopener noreferrer">modifyAckDeadline for NACK</a>.</p></section>

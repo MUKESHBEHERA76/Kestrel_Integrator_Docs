@@ -1,0 +1,170 @@
+<section class="doc-hero"><div class="hero-copy"><p class="eyebrow">Workflow / Connectors / Google BigQuery</p><h1 data-page-title>Google BigQuery connector</h1><p class="lead">Choose one of 11 operations, map BigQuery_Request inputs, and use BigQuery_Response outputs downstream.</p></div></section>
+<section class="doc-section"><header class="section-heading"><h2>Configure and map the step</h2></header><p>Go to Projects → your project → Workflows → open a workflow. Drag <strong>Google BigQuery</strong> from Connectors onto the canvas. Open the step and choose a tested, enabled <a href="#/google-bigquery-connection">Google BigQuery Connection</a> and an Operation. The Operation changes the Step In fields under <code>BigQuery_Request</code>. Open Pipeline settings and map those fields from the preceding step or hardcode a fixed example value. Map <code>BigQuery_Response</code> fields to Pipeline Out for the next step, then save and run the workflow.</p><p>The project identifier and service key are stored in the connection. They are not pipeline fields. Every request input shown here is a String, including numeric text and JSON text. JSON string fields can contain pipeline variable substitutions before runtime parsing. The root <code>BigQuery_Request</code> and <code>BigQuery_Response</code> are Document containers grouping those String fields.</p><p>Execute SQL uses Standard SQL. An unfinished query returns a job reference; map <code>jobId</code> and <code>location</code> to Get query results. Load from Cloud Storage starts a job and does not wait for completion. Map the returned job reference to Get job and check <code>status.state</code> and <code>status.errorResult</code> in <code>body</code>. Insert rows checks <code>insertErrors</code> even when Google returns HTTP 200.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Step Out fields</h2></header><div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Step Out field</th><th>Meaning</th></tr></thead><tbody><tr><td><code>BigQuery_Response.body</code></td><td>Complete Google response serialized to a JSON String; parse it when a nested field is needed.</td></tr><tr><td><code>BigQuery_Response.id</code>, <code>BigQuery_Response.name</code></td><td>Top-level identifiers when Google returns them.</td></tr><tr><td><code>BigQuery_Response.jobId</code>, <code>BigQuery_Response.location</code></td><td>BigQuery job reference, including nested jobReference values, when returned.</td></tr><tr><td><code>BigQuery_Response.pageToken</code>, <code>BigQuery_Response.nextPageToken</code>, <code>BigQuery_Response.totalRows</code>, <code>BigQuery_Response.jobComplete</code></td><td>Paging and query status when returned; boolean status is presented as String text.</td></tr><tr><td><code>BigQuery_Response.contentBase64</code>, <code>BigQuery_Response.sizeBytes</code></td><td>Cloud Storage Download object output; no JSON body is returned for this operation.</td></tr><tr><td><code>BigQuery_Response.ackIdsJson</code></td><td>Pub/Sub Pull messages output: JSON String array of acknowledgment tokens.</td></tr></tbody></table></div></section>
+<section class="doc-section"><header class="section-heading"><h2>Operation examples</h2></header><p>The following examples use illustrative values. Actual Google responses include additional fields. Operation details and IAM requirements: <a href="https://docs.cloud.google.com/bigquery/docs/reference/rest/v2" target="_blank" rel="noopener noreferrer">Google REST API reference</a>.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Execute SQL · EXECUTE_SQL</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: sql; location, parametersJson, maximumBytesBilled optional. Standard SQL. For parametersJson supply a JSON array of BigQuery query parameter objects.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;sql&quot;: &quot;SELECT order_id, total FROM `acme-integrations-prod.sales.orders` LIMIT 10&quot;,
+    &quot;location&quot;: &quot;US&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;jobReference&quot;: {
+    &quot;jobId&quot;: &quot;job_123&quot;,
+    &quot;location&quot;: &quot;US&quot;
+  },
+  &quot;jobComplete&quot;: true,
+  &quot;rows&quot;: [
+    {
+      &quot;f&quot;: [
+        {
+          &quot;v&quot;: &quot;1234&quot;
+        },
+        {
+          &quot;v&quot;: &quot;49.95&quot;
+        }
+      ]
+    }
+  ]
+}</code></pre><p><strong>Named Step Out:</strong> jobId; location; jobComplete. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Get query results · GET_JOB_ROWS</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: jobId; location, pageToken, maxResults, startIndex optional. Use the job ID and location from Execute SQL, then page with pageToken.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;jobId&quot;: &quot;job_123&quot;,
+    &quot;location&quot;: &quot;US&quot;,
+    &quot;maxResults&quot;: &quot;100&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;jobComplete&quot;: true,
+  &quot;totalRows&quot;: &quot;1&quot;,
+  &quot;rows&quot;: [
+    {
+      &quot;f&quot;: [
+        {
+          &quot;v&quot;: &quot;1234&quot;
+        }
+      ]
+    }
+  ]
+}</code></pre><p><strong>Named Step Out:</strong> totalRows; jobComplete. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Cancel job · CANCEL_JOB</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: jobId; location optional. Requests cancellation; inspect returned job status separately.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;jobId&quot;: &quot;job_123&quot;,
+    &quot;location&quot;: &quot;US&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;job&quot;: {
+    &quot;jobReference&quot;: {
+      &quot;jobId&quot;: &quot;job_123&quot;
+    }
+  }
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Get job · GET_JOB</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: jobId; location optional. Check status.errorResult for job failure.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;jobId&quot;: &quot;job_123&quot;,
+    &quot;location&quot;: &quot;US&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;jobReference&quot;: {
+    &quot;jobId&quot;: &quot;job_123&quot;,
+    &quot;location&quot;: &quot;US&quot;
+  },
+  &quot;status&quot;: {
+    &quot;state&quot;: &quot;DONE&quot;
+  }
+}</code></pre><p><strong>Named Step Out:</strong> jobId; location. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Get dataset · GET_DATASET</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: datasetId. Reads one dataset metadata record.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;datasetId&quot;: &quot;sales&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;datasetReference&quot;: {
+    &quot;datasetId&quot;: &quot;sales&quot;
+  }
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>List datasets · LIST_DATASETS</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: pageToken, maxResults optional. Lists datasets visible to the service account.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;maxResults&quot;: &quot;100&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;datasets&quot;: [
+    {
+      &quot;datasetReference&quot;: {
+        &quot;datasetId&quot;: &quot;sales&quot;
+      }
+    }
+  ]
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Get table · GET_TABLE</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: datasetId, tableId. Reads table schema and metadata.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;datasetId&quot;: &quot;sales&quot;,
+    &quot;tableId&quot;: &quot;orders&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;tableReference&quot;: {
+    &quot;datasetId&quot;: &quot;sales&quot;,
+    &quot;tableId&quot;: &quot;orders&quot;
+  }
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>List tables · LIST_TABLES</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: datasetId; pageToken, maxResults optional. Lists tables in one dataset.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;datasetId&quot;: &quot;sales&quot;,
+    &quot;maxResults&quot;: &quot;100&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;tables&quot;: [
+    {
+      &quot;tableReference&quot;: {
+        &quot;tableId&quot;: &quot;orders&quot;
+      }
+    }
+  ]
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Preview table rows · PREVIEW_ROWS</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: datasetId, tableId; pageToken, maxResults, startIndex optional. Uses tabledata.list; reads rows without running a SQL query.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;datasetId&quot;: &quot;sales&quot;,
+    &quot;tableId&quot;: &quot;orders&quot;,
+    &quot;maxResults&quot;: &quot;10&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;rows&quot;: [
+    {
+      &quot;f&quot;: [
+        {
+          &quot;v&quot;: &quot;1234&quot;
+        }
+      ]
+    }
+  ],
+  &quot;totalRows&quot;: &quot;1&quot;
+}</code></pre><p><strong>Named Step Out:</strong> totalRows. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Insert rows · INSERT_ROWS</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: datasetId, tableId, rowsJson. rowsJson must be a nonempty JSON array of {json:{...},insertId?}. Row-level insertErrors fail the Kestrel step.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;datasetId&quot;: &quot;sales&quot;,
+    &quot;tableId&quot;: &quot;orders&quot;,
+    &quot;rowsJson&quot;: &quot;[{\&quot;insertId\&quot;:\&quot;order-1234\&quot;,\&quot;json\&quot;:{\&quot;order_id\&quot;:\&quot;1234\&quot;,\&quot;total\&quot;:49.95}}]&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;kind&quot;: &quot;bigquery#tableDataInsertAllResponse&quot;
+}</code></pre><p><strong>Named Step Out:</strong> No action-specific named value. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Load from Cloud Storage · LOAD_FROM_GCS</h2></header><p><strong>Step In:</strong> <code>BigQuery_Request</code> fields: datasetId, tableId, sourceUri; sourceFormat, autodetect, writeDisposition optional. Starts an asynchronous load job. Poll Get job until DONE and inspect status.errorResult. Supported source format is passed to Google; CSV is the default.</p><p><strong>Example mapped request:</strong></p><pre class="code-contract"><code>{
+  &quot;BigQuery_Request&quot;: {
+    &quot;datasetId&quot;: &quot;sales&quot;,
+    &quot;tableId&quot;: &quot;orders&quot;,
+    &quot;sourceUri&quot;: &quot;gs://acme-orders-archive/orders.csv&quot;,
+    &quot;sourceFormat&quot;: &quot;CSV&quot;,
+    &quot;autodetect&quot;: &quot;true&quot;,
+    &quot;writeDisposition&quot;: &quot;WRITE_APPEND&quot;
+  }
+}</code></pre><p><strong>Illustrative Google response in <code>BigQuery_Response.body</code>:</strong></p><pre class="code-contract"><code>{
+  &quot;jobReference&quot;: {
+    &quot;jobId&quot;: &quot;load_123&quot;,
+    &quot;location&quot;: &quot;US&quot;
+  },
+  &quot;status&quot;: {
+    &quot;state&quot;: &quot;PENDING&quot;
+  }
+}</code></pre><p><strong>Named Step Out:</strong> jobId; location. All actions expose <code>BigQuery_Response.body</code> as JSON text. Fields appear only when present in the Google response.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Troubleshooting and limits</h2></header><ul class="docs-bullet-list"><li>HTTP 401: check service account key validity in the <a href="#/google-bigquery-connection">connection</a>.</li><li>HTTP 403: enable the API and grant the selected action’s IAM role on the target resource.</li><li>HTTP 404: verify project, bucket/dataset/topic, and item IDs. The connection target project determines the request project.</li><li>When using optional page tokens, pass Google’s returned <code>nextPageToken</code> into the next invocation. Stop when it is absent.</li><li>All Google API errors fail the step and can be inspected in workflow execution logs.</li></ul></section>
+
+<section class="doc-section"><header class="section-heading"><h2>Parameterized query and load example</h2></header><p>For a dynamic SQL value, use a BigQuery query parameter rather than concatenating untrusted input into SQL. Map <code>BigQuery_Request.sql</code> to <code>SELECT order_id FROM `acme-integrations-prod.sales.orders` WHERE order_id = @orderId</code> and <code>BigQuery_Request.parametersJson</code> to this JSON String:</p><pre class="code-contract"><code>[
+  {"name":"orderId","parameterType":{"type":"STRING"},"parameterValue":{"value":"1234"}}
+]</code></pre><p>The <code>value</code> can be replaced with a pipeline variable expression before runtime JSON parsing. For a file load, first upload a file to <code>gs://acme-orders-archive/orders.csv</code>, then choose Load from Cloud Storage with <code>sourceUri</code> set to that URI, <code>sourceFormat = CSV</code>, <code>autodetect = true</code>, and <code>writeDisposition = WRITE_APPEND</code>. Map the returned <code>jobId</code> and <code>location</code> into Get job until <code>status.state</code> is <code>DONE</code>. A DONE job can still contain <code>status.errorResult</code>.</p><p>Google references: <a href="https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/jobs/query" target="_blank" rel="noopener noreferrer">jobs.query</a>, <a href="https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/jobs/insert" target="_blank" rel="noopener noreferrer">jobs.insert</a>, <a href="https://docs.cloud.google.com/bigquery/docs/reference/rest/v2/tabledata/insertAll" target="_blank" rel="noopener noreferrer">tabledata.insertAll</a>, and <a href="https://docs.cloud.google.com/bigquery/docs/access-control" target="_blank" rel="noopener noreferrer">BigQuery IAM</a>.</p></section>
