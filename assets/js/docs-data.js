@@ -321,6 +321,13 @@ const dateUtilities = [
 
 const jsonUtilities = [
   util({
+    name: 'json:documentListToJSON',
+    summary: 'Serialize a Document List into a compact JSON array String.',
+    params: [p('documentList', 'Required Document List; every item must be a Document. An empty list is allowed.')],
+    example: 'documentList=[{employeeId:"EMP-1001",active:true},{employeeId:"EMP-1002",active:false}] → jsonString=[{"employeeId":"EMP-1001","active":true},{"employeeId":"EMP-1002","active":false}]',
+    output: 'jsonString: String containing JSON array text; [] for an empty list.'
+  }),
+  util({
     name: 'json:jsonToDocument',
     summary: 'Parse JSON text into a structured document.',
     params: [p('value', 'JSON string.')],

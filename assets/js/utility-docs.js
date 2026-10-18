@@ -88,6 +88,25 @@ export const utilityDocs = [
   utility('XML', 'xml:xmlToJsonConverter', 'Parses XML text and serializes the resulting structure as JSON.', 'Convert an XML API response into JSON text.', [field('xmlString', 'String', 'Well-formed XML text.'), field('formatJson', 'Boolean', 'Pretty-print JSON when true.', true)], valueOutput('JSON text.'), { input: 'xmlString=<employee><name>Asha</name></employee>, formatJson=true', output: 'value={"employee":{"name":"Asha"}}' }, ['Attributes use @name keys, mixed text uses #text, and repeated elements become lists.', 'DOCTYPE and external entities are disabled.'], REUSABLE_ONLY),
   utility('XML', 'xml:xmlToDoc', 'Parses XML text into a pipeline Document.', 'Map XML response data as nested fields without manually parsing text.', [field('xmlString', 'String', 'Well-formed XML text.')], [field('value', 'Document', 'Parsed document including its root element.')], { input: 'xmlString=<employee><name>Asha</name></employee>', output: 'value={employee:{name:"Asha"}}' }, ['Attributes use @name keys, mixed text uses #text, and repeated elements become lists.', 'Malformed or unsafe XML raises UTILITY_ERROR.'], REUSABLE_ONLY),
 
+  utility(
+    'JSON',
+    'json:documentListToJSON',
+    'Serializes a Document List into one compact JSON array String.',
+    'Use when a workflow or reusable service has a list of structured documents and a downstream HTTP response, API, file, or message needs JSON array text.',
+    [field('documentList', 'Document List', 'Required list of documents. Every item must be a Document; an empty list is allowed.')],
+    [field('jsonString', 'String', 'Compact JSON array text. Map this String to the next step or response body.')],
+    {
+      input: `Map Pipeline In employeeList → Service In documentList (\${service.input.documentList})\n\ndocumentList = [\n  {"employeeId":"EMP-1001","name":"John Doe","department":"Engineering","active":true},\n  {"employeeId":"EMP-1002","name":"Sarah Connor","department":"DevOps","active":false}\n]`,
+      output: `Service Out jsonString (\${service.output.jsonString}) is a String:\n[{"employeeId":"EMP-1001","name":"John Doe","department":"Engineering","active":true},{"employeeId":"EMP-1002","name":"Sarah Connor","department":"DevOps","active":false}]`
+    },
+    [
+      'In Workflow or Reusable Service, add Utils → JSON → json:documentListToJSON. Map an actual Document List to documentList, then map jsonString to Pipeline Out or the next step.',
+      'The output is one String containing JSON array text, not a Document List. Keep the entire String when passing it to an HTTP response or JSON-consuming connector.',
+      'List item order is preserved. Native booleans and numbers remain JSON booleans and numbers; String values remain quoted JSON strings. Do not rely on JSON object key order.',
+      'An empty Document List returns jsonString = []. A missing input, non-list input, or list item that is not a Document raises UTILITY_ERROR.',
+      'No pretty-print option exists for this utility; it emits compact JSON.'
+    ]
+  ),
   utility('JSON', 'json:documentToJSON', 'Serializes a Document as compact JSON text.', 'Create a JSON request body, message, or file from mapped pipeline data.', [field('value', 'Document', 'Document to serialize.')], valueOutput('Compact JSON text.'), { input: 'value={name:"Asha"}', output: 'value={"name":"Asha"}' }, ['A synthetic single root wrapper is removed; ordinary user keys are retained.']),
   utility('JSON', 'json:jsonToDocument', 'Parses JSON text into a Document.', 'Convert a JSON string response into fields for downstream mapping.', [field('value', 'String', 'JSON text.')], [field('value', 'Document', 'Parsed JSON object, list, or scalar structure.')], { input: 'value={"name":"Asha"}', output: 'value={name:"Asha"}' }, ['Invalid or empty JSON raises UTILITY_ERROR.']),
   utility('JSON', 'json:jsonToDoc', 'Parses jsonString into a Document.', 'Use the explicit jsonString contract when converting JSON in a reusable service.', [field('jsonString', 'String', 'JSON text.')], [field('value', 'Document', 'Parsed JSON structure.')], { input: 'jsonString={"name":"Asha"}', output: 'value={name:"Asha"}' }, ['Functionally similar to json:jsonToDocument but uses the jsonString input name.'], REUSABLE_ONLY),
