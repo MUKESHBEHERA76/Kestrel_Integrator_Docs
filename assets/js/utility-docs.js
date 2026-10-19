@@ -107,6 +107,26 @@ export const utilityDocs = [
       'No pretty-print option exists for this utility; it emits compact JSON.'
     ]
   ),
+  utility(
+    'JSON',
+    'json:jsonArrayToDocumentList',
+    'Parses a JSON array String into a Document List.',
+    'Use when an HTTP response, message, or stored value contains JSON array text and each object must become a mappable document. Available under Utils → JSON in workflows and reusable services.',
+    [field('jsonString', 'String', 'Required JSON array text whose root is [] and whose items are JSON objects. A mapped native Document List is also accepted.')],
+    [field('documentList', 'Document List', 'Native list of parsed documents in source order; map it to a Document List Pipeline Out variable.')],
+    {
+      input: `Map Pipeline In responseBody → Step In / Service In jsonString (\${service.input.jsonString})\n\njsonString is one String containing:\n[\n  {"employeeId":"EMP-1001","name":"John Doe","department":"Engineering","active":true,"skills":["Java","SQL"]},\n  {"employeeId":"EMP-1002","name":"Sarah Connor","department":"DevOps","active":false,"skills":["Linux"]}\n]`,
+      output: `Map Step Out / Service Out documentList (\${service.output.documentList}) → Pipeline Out employees (Document List)\n\ndocumentList is a native list of two documents:\n[\n  {employeeId: "EMP-1001", name: "John Doe", department: "Engineering", active: true, skills: ["Java", "SQL"]},\n  {employeeId: "EMP-1002", name: "Sarah Connor", department: "DevOps", active: false, skills: ["Linux"]}\n]\n\nThe braces above show document fields for illustration; the output is not a JSON-encoded String.`
+    },
+    [
+      'In either editor, add Utils → JSON → json:jsonArrayToDocumentList. Map the source String to jsonString. Create or select a Document List destination, then map documentList from Step Out / Service Out to it.',
+      'The input must start with a JSON array, such as [{"id":1}]. A JSON object root such as {"id":1} is rejected. Every array item must be an object; [1], ["x"], and [null] are rejected.',
+      'The output is a native Document List, not JSON text. Item order is preserved. JSON numbers become numbers, booleans become booleans, nested objects become documents, and arrays become lists.',
+      'Webhook multipart body and webHookRequest.attachments already arrive as native Document Lists. Map either directly to a Document List destination when no conversion is needed. Mapping one into jsonString also works and returns the same list after validation.',
+      'An empty array returns an empty Document List. Invalid or empty JSON, a non-array root, or an array item that is not an object raises UTILITY_ERROR. The error stops the normal path unless handled by TRY/CATCH.',
+      'Use json:documentListToJSON for the reverse conversion.'
+    ]
+  ),
   utility('JSON', 'json:documentToJSON', 'Serializes a Document as compact JSON text.', 'Create a JSON request body, message, or file from mapped pipeline data.', [field('value', 'Document', 'Document to serialize.')], valueOutput('Compact JSON text.'), { input: 'value={name:"Asha"}', output: 'value={"name":"Asha"}' }, ['A synthetic single root wrapper is removed; ordinary user keys are retained.']),
   utility('JSON', 'json:jsonToDocument', 'Parses JSON text into a Document.', 'Convert a JSON string response into fields for downstream mapping.', [field('value', 'String', 'JSON text.')], [field('value', 'Document', 'Parsed JSON object, list, or scalar structure.')], { input: 'value={"name":"Asha"}', output: 'value={name:"Asha"}' }, ['Invalid or empty JSON raises UTILITY_ERROR.']),
   utility('JSON', 'json:jsonToDoc', 'Parses jsonString into a Document.', 'Use the explicit jsonString contract when converting JSON in a reusable service.', [field('jsonString', 'String', 'JSON text.')], [field('value', 'Document', 'Parsed JSON structure.')], { input: 'jsonString={"name":"Asha"}', output: 'value={name:"Asha"}' }, ['Functionally similar to json:jsonToDocument but uses the jsonString input name.'], REUSABLE_ONLY),

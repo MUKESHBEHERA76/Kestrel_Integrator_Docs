@@ -61,8 +61,30 @@
 </section>
 
 <section class="doc-section" id="json-document-list">
-  <header class="section-heading"><p class="eyebrow">JSON utilities</p><h2>Convert a Document List to JSON text</h2></header>
-  <p>Use <a href="#/utils/json-document-list-to-json"><code>json:documentListToJSON</code></a> when a mapped Document List must become a JSON array String. Its input is <code>${service.input.documentList}</code>; its output is <code>${service.output.jsonString}</code>. The detail guide includes the employee list input, exact JSON output, empty-list behavior, and runtime errors.</p>
+  <header class="section-heading"><p class="eyebrow">JSON utilities</p><h2>Convert between JSON array text and Document Lists</h2></header>
+  <p><a href="#/utils/json-document-list-to-json"><code>json:documentListToJSON</code></a> serializes a Document List into one JSON array String. <a href="#/utils/json-json-array-to-document-list"><code>json:jsonArrayToDocumentList</code></a> parses JSON array text into a native Document List. Both utilities are available under <strong>Utils → JSON</strong> in workflows and reusable services.</p>
+  <h3>JSON array String to Document List</h3>
+  <p>Suppose an HTTP step returns the following body as a <strong>String</strong>. Map that String to <code>jsonString</code> in the utility's Step In or Service In:</p>
+  <pre class="code-contract"><code>[
+  {
+    "employeeId": "EMP-1001",
+    "name": "John Doe",
+    "department": "Engineering",
+    "active": true,
+    "skills": ["Java", "SQL"]
+  },
+  {
+    "employeeId": "EMP-1002",
+    "name": "Sarah Connor",
+    "department": "DevOps",
+    "active": false,
+    "skills": ["Linux"]
+  }
+]</code></pre>
+  <p>After execution, <code>documentList</code> in Step Out or Service Out contains two native documents. Map it to a <strong>Document List</strong> Pipeline Out variable, for example <code>employees</code>, or to the next step. The first item has <code>employeeId = EMP-1001</code>, <code>active = true</code>, and a <code>skills</code> list containing <code>Java</code> and <code>SQL</code>. The second item has <code>active = false</code>. Booleans and arrays remain typed values; the result is not a JSON String.</p>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Step</th><th>Path</th><th>Type</th></tr></thead><tbody><tr><td>Input</td><td><code>${service.input.jsonString}</code></td><td>String containing a JSON array; a native Document List is also accepted</td></tr><tr><td>Output</td><td><code>${service.output.documentList}</code></td><td>Document List</td></tr></tbody></table></div>
+  <p>For multipart webhook uploads, <code>webHookRequest.body</code> and <code>webHookRequest.attachments</code> already contain a native list of file documents. Map <code>attachments</code> directly to a Document List destination. If it is mapped into <code>jsonString</code>, the utility validates the items and passes the list through.</p>
+  <p><code>[]</code> produces an empty Document List. Empty or malformed JSON, an object instead of an array, or an array containing a scalar or <code>null</code> raises <code>UTILITY_ERROR</code>. See the <a href="#/utils/json-json-array-to-document-list">complete utility reference</a> for the mapping contract and runtime notes.</p>
 </section>
 
 <section class="doc-section" id="errors">
