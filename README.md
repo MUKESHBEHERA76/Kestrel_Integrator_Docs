@@ -11,6 +11,7 @@ This folder contains a static documentation app that can be hosted independently
 - `assets/pages/project.html` - Project concepts and resource boundaries
 - `assets/pages/workflow.html` - Workflow editor, triggers, utilities, mapping, and execution
 - `assets/pages/services.html` - Reusable service editor, contracts, flow steps, and invocation
+- `assets/pages/service-debug.html` - Reusable service debugger controls, runtime variables, step snapshots, examples, and troubleshooting
 - `assets/pages/map-pipeline.html` - MAP Pipeline operations, list mapping, and real examples
 - `assets/pages/if-else.html` - Reusable service IF, ELSE IF, ELSE, and condition expressions
 - `assets/pages/switch-case.html` - Reusable service SWITCH, CASE, regex, and DEFAULT behavior

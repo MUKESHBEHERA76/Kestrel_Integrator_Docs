@@ -1,0 +1,110 @@
+<section class="doc-hero" id="service-debug">
+  <div class="hero-copy">
+    <p class="eyebrow">Project / Reusable Service / Debug</p>
+    <h1>Inspect a reusable service one executed step at a time.</h1>
+    <p class="lead">The full-page debugger shows the ordered flow, actual runtime variables, and the selected step's read-only pipeline. Use it to find where a value was created, changed, dropped, or sent to a utility.</p>
+  </div>
+</section>
+
+<nav class="page-toc" aria-label="Debug page sections">
+  <div><p class="eyebrow">On this page</p><strong>Reusable service debugging</strong></div>
+  <div class="toc-links">
+    <a href="#/service-debug/start">Start</a>
+    <a href="#/service-debug/screen">Screen</a>
+    <a href="#/service-debug/controls">Controls</a>
+    <a href="#/service-debug/values">Values</a>
+    <a href="#/service-debug/example">Example</a>
+    <a href="#/service-debug/failures">Failures</a>
+    <a href="#/service-debug/limits">Notes</a>
+  </div>
+</nav>
+
+<section class="doc-section" id="start">
+  <header class="section-heading"><p class="eyebrow">Start a debug session</p><h2>Open Debug from the reusable service editor</h2><p>Debug runs the service with test input and opens a separate, full-page inspection view.</p></header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open a service</strong><p>Go to Projects → your project → Reusable services, and open the service you want to inspect.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Click Debug</strong><p>The editor saves current changes first when it is editable. If saving fails, fix that error before starting a session.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Provide test input</strong><p>Enter a JSON object matching Service I/O input, then start the session. For example, <code>{"case":"priority"}</code> supplies <code>${pipeline.input.case}</code>.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Inspect the first pause</strong><p>The service starts executing and pauses after it records a step. The selected flow-tree item, runtime variables, and pipeline view show that completed step.</p></div></li>
+  </ol>
+  <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><div><strong>Run and Debug have different purposes</strong><p><strong>Run</strong> executes the service and shows its final result. <strong>Debug</strong> creates a controllable run with per-step pipeline snapshots. A debug run executes real service logic, so use suitable test inputs when a utility or called service can change external data.</p></div></div>
+</section>
+
+<section class="doc-section" id="screen">
+  <header class="section-heading"><p class="eyebrow">Debugger layout</p><h2>Read the flow, live values, and selected-step pipeline together</h2></header>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Area</th><th>What it shows</th><th>How to use it</th></tr></thead><tbody>
+    <tr><td><strong>Header and status bar</strong></td><td>Service name, run ID, controls, session status, number of executed steps, and the selected trace number.</td><td>Check whether the run is <strong>PAUSED</strong>, <strong>RUNNING</strong>, <strong>SUCCESS</strong>, <strong>FAILURE</strong>, or <strong>TERMINATED</strong>.</td></tr>
+    <tr><td><strong>Flow steps</strong></td><td>The ordered service tree, including nested groups and branches. Executed steps show their recorded outcome; unexecuted steps remain waiting.</td><td>Select any executed step to inspect its recorded state. The active highlight follows the latest step during execution.</td></tr>
+    <tr><td><strong>Runtime variables</strong></td><td>Actual values after the selected step, including <code>system</code> and variables created in input, output, temporary, or error scopes.</td><td>Expand a document or list to inspect its children. Double-click a variable name to open its full value.</td></tr>
+    <tr><td><strong>Pipeline</strong></td><td>A read-only view for the selected step. Mapping and utility steps use the familiar reusable-service pipeline layout; other steps show before/after snapshots.</td><td>Compare Pipeline In and Pipeline Out while changing the selected executed step. The view updates to that step's data and mapping.</td></tr>
+  </tbody></table></div>
+  <p>The debugger records snapshots <strong>before</strong> and <strong>after</strong> each traced step. A highlighted step has already run: its Runtime variables pane shows the <em>after</em> state. Selecting an earlier executed step lets you review history without changing execution or rolling values back.</p>
+</section>
+
+<section class="doc-section" id="controls">
+  <header class="section-heading"><p class="eyebrow">Execution controls</p><h2>Choose how far the service continues</h2><p>Step in and Step out are available while the session is paused. Controls are disabled while a command is in progress or once the run has finished.</p></header>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Control</th><th>Behavior</th><th>Example</th></tr></thead><tbody>
+    <tr><td><strong>Step in</strong></td><td>Resume execution until the next step is recorded, then pause again.</td><td>After a MAP step, Step in executes the following JSON utility and shows its output. It advances between service steps; it does not open the utility's internal code.</td></tr>
+    <tr><td><strong>Step out</strong></td><td>Resume through steps at the current nesting depth and deeper, then pause on the next step at a shallower depth.</td><td>From a step inside a SWITCH case, continue through that case and pause after a step outside the case. From a top-level step, there may be no shallower step, so execution can finish.</td></tr>
+    <tr><td><strong>Run</strong></td><td>Resume without further per-step pauses until the service finishes or fails.</td><td>Use after checking the suspicious mapping when you want the final service result.</td></tr>
+    <tr><td><strong>Terminate</strong></td><td>Request termination of the active debug run.</td><td>Stop a test that should not continue. A step or external call already completed is not undone.</td></tr>
+    <tr><td><strong>Close</strong></td><td>Close the debugger. If the run is still active, the debugger first requests termination.</td><td>Return to the service editor after inspecting a completed run.</td></tr>
+  </tbody></table></div>
+  <div class="callout callout-warning"><span class="callout-mark" aria-hidden="true">!</span><div><strong>The pause happens after a step</strong><p>When you see <strong>PAUSED</strong>, the highlighted step has completed and its output is available. Step in allows the next step to run and then pauses after that step is recorded. A branch that is not taken has no executed trace to select.</p></div></div>
+</section>
+
+<section class="doc-section" id="values">
+  <header class="section-heading"><p class="eyebrow">Inspect data</p><h2>See complete values without editing the pipeline</h2></header>
+  <ul class="docs-bullet-list">
+    <li><strong>Variable icons</strong> use the same visual language as the reusable service pipeline. A text field, document, and list can be recognized by their icons; nested documents and lists can be expanded on demand.</li>
+    <li><strong>Long values</strong> are shortened in the row so the panel stays readable. Double-click the <em>variable name</em> to open the read-only value viewer. It displays the full text; JSON text can be switched between formatted and raw views. Press Escape or Close to return.</li>
+    <li><strong>Before/after</strong> values belong to the selected step. The Pipeline In side represents data before execution; Pipeline Out and Runtime variables represent data after execution.</li>
+    <li><strong>Mapping lines</strong> show configured data movement for mapper and service-like steps. This is an inspection view: edit a mapping in the reusable service editor, save it, and start a new debug run to test the change.</li>
+    <li><strong>System</strong> contains run metadata such as run ID, trigger, and current step. Other variables appear as they acquire values during execution.</li>
+  </ul>
+  <p>If a field appears in the editor's schema but has no runtime value, inspect the source mapping and the preceding step. The runtime panel reflects actual captured values, while a mapping target can exist in the design before receiving data.</p>
+</section>
+
+<section class="doc-section" id="example">
+  <header class="section-heading"><p class="eyebrow">Worked example</p><h2>Find where a JSON output was produced</h2><p>Suppose a service builds a document list and calls <code>json:documentListToJSON</code>.</p></header>
+  <h3>Test input and intended flow</h3>
+  <pre class="code-contract"><code>{
+  "employees": [
+    { "employeeId": "EMP-1001", "name": "John Doe", "active": true },
+    { "employeeId": "EMP-1002", "name": "Sarah Connor", "active": false }
+  ]
+}</code></pre>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Map pipeline</strong><p>Map <code>${pipeline.input.employees}</code> to the document list used by the JSON utility. At this pause, expand the list under Runtime variables and confirm both employees exist.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Step in</strong><p>The utility executes. Select its trace and confirm that <code>documentList</code> is mapped on Service In and <code>jsonString</code> is mapped to <code>${pipeline.output.outputJson}</code> on Service Out.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Inspect outputJson</strong><p>The row may shorten the generated string. Double-click <code>outputJson</code> in Runtime variables to read the complete JSON array in the value viewer.</p></div></li>
+  </ol>
+  <pre class="code-contract"><code>[
+  { "employeeId": "EMP-1001", "name": "John Doe", "active": true },
+  { "employeeId": "EMP-1002", "name": "Sarah Connor", "active": false }
+]</code></pre>
+  <p>If <code>outputJson</code> is absent, compare the utility's Service Out mapping with the preceding MAP step. If the list exists but contains the wrong fields, inspect the MAP step's after snapshot to find the first incorrect value.</p>
+</section>
+
+<section class="doc-section" id="failures">
+  <header class="section-heading"><p class="eyebrow">Troubleshooting</p><h2>Use the last recorded step and error details</h2></header>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>What you see</th><th>What to check</th></tr></thead><tbody>
+    <tr><td><strong>FAILURE</strong> with an execution error</td><td>Read the error in the runtime pane, select the last executed step, and compare its Pipeline In with the values expected by that step. A failure can occur before a new successful trace is recorded.</td></tr>
+    <tr><td>Expected branch stays <strong>WAITING</strong></td><td>Inspect the executed IF/SWITCH condition and the input value. Unchosen branches are not executed and have no runtime snapshot.</td></tr>
+    <tr><td>A variable is missing after a step</td><td>Inspect the prior executed step, its target path, any Drop operation, and the selected step's before/after snapshots.</td></tr>
+    <tr><td>Step out does not pause inside the current group</td><td>That is expected: Step out skips pauses at the current nesting depth and deeper. Use Step in when every next step must be inspected.</td></tr>
+    <tr><td>No detailed value is visible in the row</td><td>Expand its parent document or list, then double-click the variable name to see its full value.</td></tr>
+  </tbody></table></div>
+</section>
+
+<section class="doc-section" id="limits">
+  <header class="section-heading"><p class="eyebrow">Session behavior</p><h2>Plan debug sessions as temporary test runs</h2></header>
+  <ul class="docs-bullet-list">
+    <li>Debugging is available for reusable services to users with Developer or Administrator access.</li>
+    <li>The debugger keeps a bounded in-memory session and step history. An idle paused session is terminated after approximately 30 minutes; the platform also limits concurrent sessions and captured traces.</li>
+    <li>Trace selection is read-only. Clicking an earlier step changes what you inspect, not where the running service will resume.</li>
+    <li>Snapshots are captured for debug execution. They can contain test payloads and values returned by called services, so use suitable data when sharing screens or reports.</li>
+    <li>Workflow debugging follows its own execution path; this guide describes the full-page reusable service debugger.</li>
+  </ul>
+  <p>For the service design itself, return to <a href="#/reusable-service">Reusable Service</a>. For expression syntax and variable mapping, see <a href="#/pipeline-sub">Pipeline Sub</a> and <a href="#/map-pipeline">Map Pipeline</a>.</p>
+</section>
