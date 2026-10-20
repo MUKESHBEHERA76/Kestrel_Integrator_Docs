@@ -262,6 +262,20 @@ const mathUtilities = [
 
 const dateUtilities = [
   util({
+    name: 'date:getCurrentEpochTime',
+    summary: 'Return the current Unix epoch time as a String.',
+    params: [],
+    example: 'No input. Map epochTime from Step Out or Service Out to a String variable. The number is read when the step executes.',
+    output: 'epochTime: whole Unix seconds since 1970-01-01T00:00:00Z.'
+  }),
+  util({
+    name: 'date:epochTimeToDateTime',
+    summary: 'Format Unix epoch time as a UTC date/time String.',
+    params: [p('epochTime', 'Required integer String in Unix seconds; a 13-digit value is treated as milliseconds.'), p('targetDateTimeFormat', 'Required Java DateTimeFormatter pattern, for example yyyy-MM-dd HH:mm:ss.')],
+    example: 'epochTime=0 and targetDateTimeFormat=yyyy-MM-dd HH:mm:ss → outputDate=1970-01-01 00:00:00 (UTC).',
+    output: 'outputDate: formatted String. Invalid input or pattern raises UTILITY_ERROR.'
+  }),
+  util({
     name: 'date:getCurrentDate',
     aliases: ['pub.date:getCurrentDate'],
     summary: 'Get the current date as a date value.',

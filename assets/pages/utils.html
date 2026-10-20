@@ -87,6 +87,22 @@
   <p><code>[]</code> produces an empty Document List. Empty or malformed JSON, an object instead of an array, or an array containing a scalar or <code>null</code> raises <code>UTILITY_ERROR</code>. See the <a href="#/utils/json-json-array-to-document-list">complete utility reference</a> for the mapping contract and runtime notes.</p>
 </section>
 
+<section class="doc-section" id="epoch-time">
+  <header class="section-heading"><p class="eyebrow">Date utilities</p><h2>Generate and format Unix epoch time</h2></header>
+  <p>Both operations are available under <strong>Utils → Date</strong> in workflows and reusable services. <a href="#/utils/date-get-current-epoch-time"><code>date:getCurrentEpochTime</code></a> reads the server clock without input. <a href="#/utils/date-epoch-time-to-date-time"><code>date:epochTimeToDateTime</code></a> formats an epoch value using a Java <code>DateTimeFormatter</code> pattern. Both inputs and outputs appear as Strings in the pipeline editor.</p>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Utility</th><th>Step In / Service In</th><th>Step Out / Service Out</th></tr></thead><tbody>
+    <tr><td><code>date:getCurrentEpochTime</code></td><td>No inputs</td><td><code>epochTime</code> (String): current Unix seconds</td></tr>
+    <tr><td><code>date:epochTimeToDateTime</code></td><td><code>epochTime</code> (String), <code>targetDateTimeFormat</code> (String)</td><td><code>outputDate</code> (String): formatted UTC time</td></tr>
+  </tbody></table></div>
+  <h3>Example: chain both utilities</h3>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Read the current time</strong><p>Add <code>date:getCurrentEpochTime</code>. It has no Step In fields. Map <code>${service.output.epochTime}</code> to a String variable such as <code>currentEpoch</code> in Pipeline Out.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Format the timestamp</strong><p>Add <code>date:epochTimeToDateTime</code>. Map <code>currentEpoch</code> to <code>${service.input.epochTime}</code> and hardcode <code>targetDateTimeFormat</code> as <code>yyyy-MM-dd HH:mm:ss</code>. Map <code>${service.output.outputDate}</code> to the next step or a String Pipeline Out variable.</p></div></li>
+  </ol>
+  <p>For a repeatable example, <code>epochTime = 0</code> and <code>targetDateTimeFormat = yyyy-MM-dd HH:mm:ss</code> produce <code>outputDate = 1970-01-01 00:00:00</code>. The 13-digit millisecond input <code>1704067200000</code> produces <code>2024-01-01 00:00:00</code> with the same pattern. The formatter always uses UTC; include <code>XXX</code> in the pattern when the output should show the <code>Z</code> offset. Epoch values of other lengths are interpreted as seconds.</p>
+  <p>These operations do not change the workflow or service pipeline automatically. Map their outputs to Pipeline Out or another step. A missing or non-integer <code>epochTime</code>, a missing or invalid pattern, or an out-of-range value fails the conversion step with <code>UTILITY_ERROR</code>.</p>
+</section>
+
 <section class="doc-section" id="errors">
   <header class="section-heading">
     <p class="eyebrow">Failure behavior</p>
