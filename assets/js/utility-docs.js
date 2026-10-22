@@ -134,6 +134,40 @@ export const utilityDocs = [
 
   utility('List', 'list:appendToDocumentList', 'Returns a new Document List with one value appended.', 'Accumulate mapped documents during processing without changing the original list.', [field('list', 'Document List', 'Existing list; a missing/non-list value starts an empty list.'), field('value', 'Document', 'Document to append.')], [field('value', 'Document List', 'New list containing existing items and the appended value.')], { input: 'list=[{id:1}], value={id:2}', output: 'value=[{id:1}, {id:2}]' }, ['Map the returned list back to the desired pipeline variable for continued accumulation.']),
   utility('List', 'list:appendToStringList', 'Returns a new String List with one value appended.', 'Accumulate names, identifiers, messages, or other scalar text values.', [field('list', 'String List', 'Existing list; a missing/non-list value starts an empty list.'), field('value', 'String', 'Value to append.')], [field('value', 'String List', 'New list containing existing items and the appended value.')], { input: 'list=[A, B], value=C', output: 'value=[A, B, C]' }, ['The original list is copied rather than mutated.']),
+  utility('List', 'list:groupDocuments', 'Groups documents by one or more criteria.', 'Partition a Document List for downstream processing in workflows and reusable services.', [field('documents', 'Document List', 'Required source documents.'), field('groupCriteria', 'Document List', 'One or more {key, compareStringsAs?, pattern?} criteria. key may be a dotted or slash-delimited nested path.')], [field('documentGroups', 'Document List', 'Each group has groupValues (Document), documents (Document List), and count (String).')], { input: 'documents=[{id:"1",team:"A"},{id:"2",team:"B"},{id:"3",team:"A"}]\ngroupCriteria=[{key:"team"}]', output: 'documentGroups=[{groupValues:{team:"A"},documents:[{id:"1",team:"A"},{id:"3",team:"A"}],count:"2"},{groupValues:{team:"B"},documents:[{id:"2",team:"B"}],count:"1"}]' }, ['Map documents and groupCriteria into Service In / Step In; map documentGroups from Service Out / Step Out.', 'Groups follow first appearance and documents retain source order. Missing keys share one group with empty groupValues.', 'compareStringsAs is string by default; numeric compares numeric equivalents, and datetime requires a Java date/time pattern.', 'Invalid input raises UTILITY_ERROR. The source documents are not changed.', 'Inspired by IBM webMethods pub.document:groupDocuments; Kestrel defines the explicit result fields shown above.']),
+  utility(
+    'List',
+    'list:searchDocumentList',
+    'Finds every document that matches all configured field name/value pairs.',
+    'Filter a Document List from a webhook, connector, or earlier service step without writing code. Available under Utils → List in workflows and reusable services.',
+    [
+      field('documentList', 'Document List', 'Required source documents. Each item must be a Document.'),
+      field('fieldList', 'Document List', 'Required non-empty list of criteria documents. Each item has String fieldName and String fieldValue. Use address.city to search a nested field.')
+    ],
+    [field('documentList', 'Document List', 'All matching documents in source order. Can contain zero, one, or many items.')],
+    {
+      input: `documentList = [
+  {"employeeId":"EMP-1001","department":"Engineering","active":true},
+  {"employeeId":"EMP-1002","department":"DevOps","active":false},
+  {"employeeId":"EMP-1003","department":"Engineering","active":true}
+]
+fieldList = [
+  {"fieldName":"department","fieldValue":"Engineering"},
+  {"fieldName":"active","fieldValue":"true"}
+]`,
+      output: `documentList = [
+  {"employeeId":"EMP-1001","department":"Engineering","active":true},
+  {"employeeId":"EMP-1003","department":"Engineering","active":true}
+]`
+    },
+    [
+      'Add Utils → List → list:searchDocumentList. Map the source Document List to documentList. Build fieldList as a Document List of {fieldName, fieldValue} pairs, like the headerList in Send HttpResponse. Map the Step Out / Service Out documentList to a Document List Pipeline Out variable.',
+      'All pairs must match the same source document (AND). A single pair can return multiple documents. No match returns an empty Document List.',
+      'Field names and values are compared exactly, including letter case. A non-String source value is compared using its text form, so a boolean true matches fieldValue "true".',
+      'A dotted fieldName such as address.city walks nested Documents. Lists are not traversed by dotted paths.',
+      'A missing/non-list documentList, an empty or invalid fieldList, a blank fieldName, or a non-document source item raises UTILITY_ERROR. The source list and documents are not modified.'
+    ]
+  ),
   utility('List', 'list:sizeOfList', 'Returns the number of items in any supported list.', 'Check for an empty list, drive validation, or record a count.', [field('fromList', 'Object List', 'String List, Document List, Document Reference List, or Object List.', true)], [field('size', 'String', 'Number of list items.')], { input: 'fromList=[one, two, three]', output: 'size=3' }, ['Missing input or a non-list value returns 0.']),
 
   utility('Date', 'date:getCurrentDate', 'Returns the current time in a selected time zone.', 'Timestamp a business event or generate a formatted current date.', [field('timeZone', 'String', 'IANA time-zone ID such as UTC, Asia/Kolkata, or Europe/London.', true), field('format', 'String', 'Java DateTimeFormatter pattern.', true)], valueOutput('Formatted current date/time.'), { input: 'timeZone=UTC, format=yyyy-MM-dd HH:mm:ss', output: 'value=2026-07-16 10:15:30' }, ['The default zone is UTC.', 'Without format, output uses ISO offset date-time.', 'Invalid zones or patterns raise UTILITY_ERROR.'], REUSABLE_ONLY),

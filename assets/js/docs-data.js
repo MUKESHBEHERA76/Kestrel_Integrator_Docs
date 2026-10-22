@@ -484,6 +484,20 @@ const hashtableUtilities = [
 
 const listUtilities = [
   util({
+    name: 'list:groupDocuments',
+    summary: 'Group a Document List using one or more keys.',
+    params: [p('documents', 'Required source Document List.'), p('groupCriteria', 'Required list of {key, compareStringsAs?, pattern?} criteria. compareStringsAs: string, numeric, or datetime.')],
+    example: 'documents=[{id:"1",team:"A"},{id:"2",team:"A"}], groupCriteria=[{key:"team"}] → documentGroups=[{groupValues:{team:"A"},documents:[...],count:"2"}]',
+    output: 'documentGroups: ordered groups; each contains groupValues, documents, and count. Missing keys form one group.'
+  }),
+  util({
+    name: 'list:searchDocumentList',
+    summary: 'Return all documents matching every fieldName/fieldValue criterion.',
+    params: [p('documentList', 'Required Document List of source documents.'), p('fieldList', 'Required non-empty Document List of {fieldName, fieldValue} String pairs. Dotted fieldName searches nested documents.')],
+    example: 'documentList=[{id:"1",status:"OPEN"},{id:"2",status:"DONE"}], fieldList=[{fieldName:"status",fieldValue:"OPEN"}] → documentList=[{id:"1",status:"OPEN"}]',
+    output: 'documentList: matching documents in source order; empty list if none match. Invalid input raises UTILITY_ERROR.'
+  }),
+  util({
     name: 'list:appendToStringList',
     summary: 'Append a string value to a list of strings.',
     params: [p('list', 'Input list.'), p('value', 'Text to append.')],

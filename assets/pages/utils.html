@@ -103,6 +103,57 @@
   <p>These operations do not change the workflow or service pipeline automatically. Map their outputs to Pipeline Out or another step. A missing or non-integer <code>epochTime</code>, a missing or invalid pattern, or an out-of-range value fails the conversion step with <code>UTILITY_ERROR</code>.</p>
 </section>
 
+<section class="doc-section" id="group-documents">
+  <header class="section-heading"><p class="eyebrow">List utilities</p><h2>Group documents by criteria</h2></header>
+  <p><a href="#/utils/list-group-documents"><code>list:groupDocuments</code></a> is available under <strong>Utils → List</strong> in workflows and reusable services. It follows the input names of <a href="https://www.ibm.com/docs/en/webmethods-integration/wm-integration-server/12.1.0?topic=guide-document-folder" target="_blank" rel="noopener noreferrer">webMethods <code>pub.document:groupDocuments</code></a>. Kestrel gives each result group explicit fields for easy pipeline mapping.</p>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Side</th><th>Field</th><th>Type</th><th>Purpose</th></tr></thead><tbody>
+    <tr><td>Input</td><td><code>documents</code></td><td>Document List</td><td>Records to group</td></tr>
+    <tr><td>Input</td><td><code>groupCriteria[]</code></td><td>Document List</td><td>One or more criteria with required <code>key</code> and optional <code>compareStringsAs</code>, <code>pattern</code></td></tr>
+    <tr><td>Output</td><td><code>documentGroups[]</code></td><td>Document List</td><td>Each item has <code>groupValues</code> (Document), <code>documents</code> (Document List), and <code>count</code> (String)</td></tr>
+  </tbody></table></div>
+  <pre class="code-contract"><code>documents = [
+  {"id":"1","team":"A"},
+  {"id":"2","team":"B"},
+  {"id":"3","team":"A"}
+]
+groupCriteria = [{"key":"team"}]
+
+documentGroups = [
+  {"groupValues":{"team":"A"},"documents":[{"id":"1","team":"A"},{"id":"3","team":"A"}],"count":"2"},
+  {"groupValues":{"team":"B"},"documents":[{"id":"2","team":"B"}],"count":"1"}
+]</code></pre>
+  <p>Map source records to <code>${service.input.documents}</code>, criteria to <code>${service.input.groupCriteria}</code>, and <code>${service.output.documentGroups}</code> to a Document List pipeline variable. Add multiple criteria to group by their combined values. A key can address a nested Document using <code>address.city</code> or <code>address/city</code>. Groups follow the first matching document; members keep source order. Documents missing any grouping key share a single group with empty <code>groupValues</code>.</p>
+  <p><code>compareStringsAs</code> defaults to <code>string</code>; use <code>numeric</code> to group <code>1.0</code> with <code>1.00</code>, or <code>datetime</code> with a required Java date/time <code>pattern</code>. Empty <code>documents</code> returns an empty group list. Invalid inputs raise <code>UTILITY_ERROR</code>. The input list and documents are not modified.</p>
+</section>
+
+<section class="doc-section" id="search-document-list">
+  <header class="section-heading"><p class="eyebrow">List utilities</p><h2>Search a Document List using field pairs</h2></header>
+  <p><a href="#/utils/list-search-document-list"><code>list:searchDocumentList</code></a> is available under <strong>Utils → List</strong> in workflows and reusable services. Its <code>fieldList</code> input is a Document List containing <code>fieldName</code> and <code>fieldValue</code> String fields, similar to the header pair list in Send HttpResponse.</p>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Side</th><th>Field</th><th>Type</th><th>Purpose</th></tr></thead><tbody>
+    <tr><td>Step In / Service In</td><td><code>documentList</code></td><td>Document List</td><td>Source records to search</td></tr>
+    <tr><td>Step In / Service In</td><td><code>fieldList[]</code></td><td>Document List</td><td>One or more <code>{fieldName, fieldValue}</code> pairs</td></tr>
+    <tr><td>Step Out / Service Out</td><td><code>documentList</code></td><td>Document List</td><td>Matching records, including an empty list when none match</td></tr>
+  </tbody></table></div>
+  <h3>Example: match two fields</h3>
+  <pre class="code-contract"><code>documentList = [
+  {"employeeId":"EMP-1001","department":"Engineering","active":true},
+  {"employeeId":"EMP-1002","department":"DevOps","active":false},
+  {"employeeId":"EMP-1003","department":"Engineering","active":true}
+]
+fieldList = [
+  {"fieldName":"department","fieldValue":"Engineering"},
+  {"fieldName":"active","fieldValue":"true"}
+]
+
+// Step Out / Service Out
+documentList = [
+  {"employeeId":"EMP-1001","department":"Engineering","active":true},
+  {"employeeId":"EMP-1003","department":"Engineering","active":true}
+]</code></pre>
+  <p>Map the input list to <code>${service.input.documentList}</code> and the criteria list to <code>${service.input.fieldList}</code>. Map <code>${service.output.documentList}</code> to a Document List Pipeline Out variable. All criteria must match the same document. Results retain source order; there is no limit of one result. A missing field never matches. For nested fields, use a dotted name such as <code>address.city</code>. Names and values match case-sensitively; booleans and numbers in source documents are compared to the String form supplied in <code>fieldValue</code>.</p>
+  <p>The utility does not change the input documents. An empty source list returns an empty result. An empty <code>fieldList</code>, missing input, invalid pair, or non-document source item raises <code>UTILITY_ERROR</code>.</p>
+</section>
+
 <section class="doc-section" id="errors">
   <header class="section-heading">
     <p class="eyebrow">Failure behavior</p>
