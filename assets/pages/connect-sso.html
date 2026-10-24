@@ -1,0 +1,12 @@
+<section class="doc-hero"><div class="hero-copy"><p class="eyebrow">Administration / Connect SSO</p><h1>Connect an OpenID Connect provider.</h1><p class="lead">Register identity providers for the Kestrel login flow. Multiple providers can be saved, with only one active at a time.</p></div></section>
+<section class="doc-section"><header class="section-heading"><h2>Register a provider</h2></header><ol><li>In your identity provider, register an OpenID Connect client and allow the callback URL <code>https://YOUR-KESTREL-HOST/api/auth/sso/callback</code>.</li><li>Open <strong>Administration → Connect SSO → Register SSO</strong>.</li><li>Enter provider name, issuer URL, client ID, client secret, scopes, authentication method, and claim names. When issuer discovery is available, leave the optional endpoint URLs blank.</li><li>Save and enable the provider when ready. Verify login with a test account; review the resulting account in <a href="#/users">Users</a>.</li></ol><pre class="code-contract"><code>Provider name: Corporate Keycloak
+Issuer URL: https://sso.example.com/realms/kestrel
+Client ID: kestrel-integrator
+Client secret: [secret from identity provider]
+Scope: openid profile email
+Client authentication method: client_secret_basic
+Email claim: email
+Username claim: preferred_username
+Display name claim: name
+Redirect URI: https://YOUR-KESTREL-HOST/api/auth/sso/callback</code></pre><p>Use the exact public origin and callback path in the identity provider. A mismatched redirect URI, issuer, client secret, or claim mapping can prevent login. A blank secret while editing retains the saved secret. Provider cards offer View, Edit, Enable, and Disable actions.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Reference</h2></header><p>See <a href="https://openid.net/specs/openid-connect-core-1_0.html" target="_blank" rel="noopener noreferrer">OpenID Connect Core</a> and <a href="https://openid.net/specs/openid-connect-discovery-1_0.html" target="_blank" rel="noopener noreferrer">OpenID Connect Discovery</a>. For approval and roles, see <a href="#/users">Users</a>.</p></section>

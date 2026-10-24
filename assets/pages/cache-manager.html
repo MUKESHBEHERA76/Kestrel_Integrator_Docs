@@ -1,0 +1,99 @@
+<section class="doc-hero" id="cache-manager">
+  <div class="hero-copy">
+    <p class="eyebrow">Administration / Cache Manager</p>
+    <h1>Share temporary data across integrations.</h1>
+    <p class="lead">Create platform-wide named caches, optionally backed by Redis, then read and write them from Cache utilities in workflows and reusable services. These caches are separate from project KVS and from Kestrel's internal execution caches.</p>
+    <div class="doc-actions"><a class="primary-action" href="#/cache-manager/setup">Set up a cache</a><a class="secondary-action" href="#/cache-manager/utilities">Utility examples</a></div>
+  </div>
+  <aside class="hero-aside"><span class="aside-icon" aria-hidden="true">R</span><p><strong>Choose the right scope.</strong> Local memory is per Kestrel server. Shared Redis makes entries visible to multiple Kestrel servers using the same connection and database.</p></aside>
+</section>
+<nav class="page-toc" aria-label="Cache Manager sections"><div><p class="eyebrow">On this page</p><strong>Cache Manager guide</strong></div><div class="toc-links"><a href="#/cache-manager/setup">Setup</a><a href="#/cache-manager/redis">Redis</a><a href="#/cache-manager/utilities">Utilities</a><a href="#/cache-manager/example">Example</a><a href="#/cache-manager/operations">Operations</a><a href="#/cache-manager/errors">Errors</a></div></nav>
+
+<section class="doc-section" id="setup"><header class="section-heading"><p class="eyebrow">Create a named cache</p><h2>Configure the storage and limits</h2></header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Open Administration → Cache Manager → Cache</strong><p>An Administrator creates a cache once. Any project can then use its name in a Cache utility.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Choose New cache</strong><p>Enter a unique name, such as <code>customerProfiles</code>, and a description. Names start with a letter and contain up to 80 letters, digits, underscores, or hyphens. The name cannot be changed after creation.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Choose the backend</strong><p>Use <strong>Local memory</strong> for one server or data that can differ between servers. Choose <strong>Shared Redis</strong> for cross-server reads and writes, then select a Redis connection profile from the Redis Connection tab.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Set lifetime and capacity</strong><p>Set default TTL, maximum entries, maximum value bytes, and local memory bytes. Defaults are 600 seconds, 10,000 entries, 262,144 bytes per value, and 67,108,864 local-memory bytes. Maximum entries and local-memory bytes bound the local-memory backend; Redis capacity and eviction are controlled by the Redis server.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Enable and save</strong><p>The cache is immediately available by its name to <a href="#/utils">Cache utilities</a> in both editors. Disabled caches reject runtime access.</p></div></li>
+  </ol>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Setting</th><th>Allowed value</th><th>Example</th></tr></thead><tbody>
+    <tr><td>Default TTL</td><td>1–31,536,000 seconds</td><td><code>900</code> (15 minutes)</td></tr>
+    <tr><td>Maximum entries</td><td>1–1,000,000; enforced for local memory</td><td><code>10000</code></td></tr>
+    <tr><td>Maximum value size</td><td>1,024–10,485,760 bytes</td><td><code>262144</code> (256 KiB)</td></tr>
+    <tr><td>Local memory limit</td><td>1,048,576–2,147,483,648 bytes; enforced for local memory</td><td><code>67108864</code> (64 MiB)</td></tr>
+  </tbody></table></div>
+  <p>Every entry has a TTL. Local memory evicts least recently used entries when its entry or byte limit is exceeded, and is lost when the server restarts. Redis entries also expire, but Redis server memory and eviction policy apply. See Redis's <a href="https://redis.io/docs/latest/develop/using-commands/keyspace/" target="_blank" rel="noopener noreferrer">key expiration guide</a> and <a href="https://redis.io/docs/latest/develop/reference/eviction/" target="_blank" rel="noopener noreferrer">eviction guide</a>.</p>
+</section>
+
+<section class="doc-section" id="redis"><header class="section-heading"><p class="eyebrow">Shared Redis</p><h2>Create and verify a Redis connection</h2><p>Redis connection profiles in Cache Manager are platform-wide and distinct from the Redis configuration used for internal Kestrel coordination.</p></header>
+  <ol class="runtime-timeline">
+    <li><span class="timeline-number">1</span><div><strong>Prepare Redis</strong><p>Use a Redis endpoint reachable from every Kestrel server. Grant the application account access to the selected database and the commands needed for reads, writes, TTL, PING, and inspection. Use a stable service endpoint or proxy if the Redis deployment has failover. Review Redis's <a href="https://redis.io/docs/latest/operate/oss_and_stack/management/security/" target="_blank" rel="noopener noreferrer">security guidance</a>.</p></div></li>
+    <li><span class="timeline-number">2</span><div><strong>Open Redis Connection → New connection</strong><p>Enter a name, host, port (1–65535), and database number (0–15). For example: <code>SharedRedisProd</code>, <code>redis.internal.example</code>, <code>6380</code>, database <code>2</code>. Enter an ACL username and password if the server requires them. Passwords are encrypted at rest and are not returned by the management API.</p></div></li>
+    <li><span class="timeline-number">3</span><div><strong>Configure TLS if required</strong><p>Turn on <strong>Use TLS</strong> and use the server's TLS port. For a public CA, leave the certificate alias empty to use system trusted CAs. For a private CA, upload its trusted X.509 certificate in <a href="#/keystore">Security → Keystore</a>, then select its alias. The alias validates the Redis server certificate; it does not provide a client certificate for mutual TLS. See Redis's <a href="https://redis.io/docs/latest/operate/oss_and_stack/management/security/encryption/" target="_blank" rel="noopener noreferrer">TLS configuration guide</a>.</p></div></li>
+    <li><span class="timeline-number">4</span><div><strong>Test before saving</strong><p>Click <strong>Test connection</strong> in the form. A successful test completes a Redis <code>PING</code> and shows a success dialog. A failure shows a connection error without saving the profile. You can test an existing profile from its card menu. For an edited profile, a blank password field reuses the saved password. Redis documents <a href="https://redis.io/docs/latest/commands/ping/" target="_blank" rel="noopener noreferrer">PING</a>.</p></div></li>
+    <li><span class="timeline-number">5</span><div><strong>Save and select</strong><p>Save the Redis connection, then create a cache with backend <strong>Shared Redis</strong> and select this profile. A Redis connection cannot be deleted while a cache references it.</p></div></li>
+  </ol>
+  <div class="callout"><span class="callout-mark" aria-hidden="true">i</span><div><strong>Real deployment example</strong><p>For two Kestrel workers behind a load balancer, configure both to reach <code>redis.internal.example:6380</code> over TLS. Create one Redis connection profile and one <code>customerProfiles</code> cache. A value written by a workflow on worker A can be read by a reusable service on worker B.</p></div></div>
+</section>
+
+<section class="doc-section" id="utilities"><header class="section-heading"><p class="eyebrow">Workflow and reusable-service Utils</p><h2>Map cache inputs and outputs in the pipeline</h2><p>Add a Cache operation from <strong>Utils → Cache</strong> in either editor. Map pipeline values into Step In / Service In, then map Step Out / Service Out to the desired Pipeline Out fields.</p></header>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Utility</th><th>Inputs</th><th>Normal output</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><a href="#/utils/cache-put"><code>cache:put</code></a></td><td><code>cacheName</code> String, <code>key</code> String, <code>value</code> Object, optional <code>ttlSeconds</code> String</td><td><code>stored=true</code> Boolean</td><td>Write or replace an entry and its TTL.</td></tr>
+    <tr><td><a href="#/utils/cache-put-if-absent"><code>cache:putIfAbsent</code></a></td><td>Same as put</td><td><code>stored=true</code> if written; <code>false</code> if a live key exists</td><td>Do not overwrite a live entry. The conditional write is atomic within the chosen backend.</td></tr>
+    <tr><td><a href="#/utils/cache-get"><code>cache:get</code></a></td><td><code>cacheName</code> String, <code>key</code> String</td><td><code>found</code> Boolean and <code>value</code> Object</td><td>A miss returns <code>found=false</code>, <code>value=null</code>.</td></tr>
+    <tr><td><a href="#/utils/cache-contains-key"><code>cache:containsKey</code></a></td><td><code>cacheName</code>, <code>key</code></td><td><code>found</code> Boolean</td><td>Check presence without returning the value.</td></tr>
+    <tr><td><a href="#/utils/cache-remove"><code>cache:remove</code></a></td><td><code>cacheName</code>, <code>key</code></td><td><code>removed</code> Boolean</td><td>Delete one entry; missing key returns <code>false</code>.</td></tr>
+  </tbody></table></div>
+  <p><code>cacheName</code> identifies a platform cache, not a project KVS. <code>key</code> must contain 1–512 characters. <code>value</code> may be a JSON-compatible String, number, Boolean, Document, or Document List, but cannot be null. An omitted or blank <code>ttlSeconds</code> uses the cache default; otherwise it must be an integer from 1 to 31,536,000. Check <code>found</code> before using the value returned by <code>cache:get</code>.</p>
+</section>
+
+<section class="doc-section" id="example"><header class="section-heading"><p class="eyebrow">Worked integration</p><h2>Cache a customer profile for 15 minutes</h2></header>
+  <p>A customer API workflow fetches account <code>C-1042</code> from the system of record. It maps the response Document to <code>cache:put.value</code>, and the key to <code>customer:C-1042</code>. A separate order workflow can retrieve that value through the same cache name.</p>
+  <pre class="code-contract"><code>cache:put input
+cacheName = customerProfiles
+key = customer:C-1042
+value = {"customerId":"C-1042","tier":"Gold","region":"APAC"}
+ttlSeconds = 900
+
+cache:put output
+stored = true
+
+cache:get input
+cacheName = customerProfiles
+key = customer:C-1042
+
+cache:get output before expiry
+found = true
+value = {"customerId":"C-1042","tier":"Gold","region":"APAC"}
+
+cache:get output after expiry or eviction
+found = false
+value = null</code></pre>
+  <p>Map <code>cache:get.found</code> to an IF condition. On a miss, fetch the current profile from the source API and repopulate the cache. This is a cache-aside pattern; the cache is not the source of truth.</p>
+  <p>After a customer update, call <code>cache:remove</code> with the same name and key. Its output is <code>removed=true</code> when the entry existed, or <code>false</code> when it was already absent. For an idempotent initialization, use <code>cache:putIfAbsent</code>; its <code>stored=false</code> result means another live value was retained.</p>
+</section>
+
+<section class="doc-section" id="operations"><header class="section-heading"><p class="eyebrow">Administration</p><h2>Inspect and maintain entries</h2></header>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Action</th><th>Effect</th></tr></thead><tbody>
+    <tr><td>Search and filters</td><td>Find caches by name, description, or Redis connection; filter by backend and enabled state.</td></tr>
+    <tr><td>Info</td><td>View configuration, entry count, stored value bytes, available local memory, and per-server hit/miss/write counters. Redis server-wide free space is not shown as cache-specific capacity.</td></tr>
+    <tr><td>Browse entries</td><td>Read-only key and value preview, with key search. At most 100 entries are returned; values above 4 KB are shortened. Redis inspection stops after 10,000 scanned keys and marks partial results.</td></tr>
+    <tr><td>Clear</td><td>Remove entries after confirmation. Local memory clear affects the server handling the request. Redis clear rotates the cache namespace; other Kestrel servers refresh the definition within about one second.</td></tr>
+    <tr><td>Disable / Enable</td><td>Disabled caches reject runtime utility access. Existing data may remain until it expires or is cleared.</td></tr>
+    <tr><td>Edit / Delete</td><td>Both require confirmation. Deleting a cache removes its definition and clears its entries. A Redis connection cannot be deleted while referenced by a cache.</td></tr>
+  </tbody></table></div>
+  <p>Cache keys and values can contain sensitive business data. Administrators with Browse entries access can inspect them. Avoid storing secrets, and use the shortest practical TTL.</p>
+</section>
+
+<section class="doc-section" id="errors"><header class="section-heading"><p class="eyebrow">Failure behavior</p><h2>Handle cache failures explicitly</h2></header>
+  <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Condition</th><th>Expected result</th><th>What to check</th></tr></thead><tbody>
+    <tr><td>Key missing or expired</td><td><code>cache:get</code> → <code>found=false</code>, <code>value=null</code>; <code>cache:containsKey</code> → <code>found=false</code>; <code>cache:remove</code> → <code>removed=false</code></td><td>Normal cache miss; fetch from the source if needed.</td></tr>
+    <tr><td>Unknown or disabled cache</td><td>Utility fails with <code>CACHE_ERROR</code>.</td><td>Check the exact cache name and Enabled state.</td></tr>
+    <tr><td>Blank or overlong key</td><td><code>CACHE_ERROR</code>; key must contain 1–512 characters.</td><td>Inspect pipeline mapping and substitution.</td></tr>
+    <tr><td>Null, oversized, or non-serializable value</td><td><code>CACHE_ERROR</code> for null, limit, or JSON serialization failures.</td><td>Map a real value and compare its JSON byte size with the cache limit.</td></tr>
+    <tr><td>Invalid <code>ttlSeconds</code></td><td><code>CACHE_ERROR</code> for non-integer or out-of-range values.</td><td>Use an integer String from 1 to 31,536,000, or omit it.</td></tr>
+    <tr><td>Redis unavailable, authentication failure, or TLS mismatch</td><td>Connection test reports failure; runtime operations fail rather than switching to local memory. Redis connection failures are marked retryable <code>CACHE_ERROR</code>.</td><td>Check hostname, port, network access, username/password, TLS port, and trusted certificate alias.</td></tr>
+  </tbody></table></div>
+  <p>For Redis deployment setup, consult the official <a href="https://redis.io/docs/latest/install/install-redis/" target="_blank" rel="noopener noreferrer">installation and PING guide</a>, <a href="https://redis.io/docs/latest/operate/oss_and_stack/management/security/encryption/" target="_blank" rel="noopener noreferrer">TLS guide</a>, and <a href="https://redis.io/docs/latest/develop/using-commands/keyspace/" target="_blank" rel="noopener noreferrer">key and TTL guide</a>.</p>
+</section>

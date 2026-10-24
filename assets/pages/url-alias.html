@@ -1,0 +1,11 @@
+<section class="doc-hero"><div class="hero-copy"><p class="eyebrow">Administration / URL Alias</p><h1>Give a webhook a short URL.</h1><p class="lead">An alias is an optional, platform-wide short path for one webhook workflow. The original workflow endpoint remains available.</p></div></section>
+<section class="doc-section"><header class="section-heading"><h2>Create and invoke an alias</h2></header><ol><li>Open <strong>Administration → URL Alias</strong> as an Administrator and select <strong>Create New Alias</strong>.</li><li>Search the <strong>Webhook workflow</strong> picker by project or workflow name and select the target.</li><li>Enter an alias such as <code>orders</code>; review the URL preview and create it.</li><li>Call the short URL with the workflow's configured HTTP method, authentication, headers, query parameters, and body.</li></ol><pre class="code-contract"><code>Alias: orders
+Workflow: Sales / SubmitOrder
+Method: POST
+Short URL: http://127.0.0.1:8080/api/triggers/a/orders
+
+curl -X POST 'http://127.0.0.1:8080/api/triggers/a/orders?source=partner' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Correlation-ID: demo-1042' \
+  -d '{"orderId":"1042"}'</code></pre><p>Replace the host, method, headers, and body with your deployment and workflow settings. The alias invokes the same webhook workflow; see <a href="#/webhook-trigger">Webhook Trigger</a> and <a href="#/webhook-auth">Webhook Auth</a> for request configuration.</p></section>
+<section class="doc-section"><header class="section-heading"><h2>Rules and maintenance</h2></header><p>Aliases are lowercase and unique across the platform. Use 1–100 letters, digits, underscores, or hyphens; the first character must be a letter or digit. Search or filter existing aliases by project and enabled status. Use <strong>Copy URL</strong>, <strong>Enable/Disable</strong>, or <strong>Delete</strong> on each alias. Deletion asks for confirmation.</p><p>A duplicate alias returns a conflict. An invalid alias or workflow selection is rejected. A missing, disabled, or orphaned alias returns HTTP 404. Disabling an alias does not disable its original webhook URL.</p></section>

@@ -316,10 +316,23 @@
               <small>Substitution syntax</small>
             </span>
           </a>
-          <a class="nav-link" href="#/runtime-operations" data-route="runtime-operations">
-            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 17V7m5 10V4m5 13v-6m5 6V9M2 20h20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
-            <span><strong>Runtime Operations</strong><small>Workers, queues, controls</small></span>
-          </a>
+          <div class="nav-branch collapsed" id="administrationNavBranch">
+            <div class="nav-branch-row">
+              <a class="nav-link" href="#/administration" data-route="administration">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="6" r="2" fill="currentColor"/><circle cx="16" cy="12" r="2" fill="currentColor"/><circle cx="10" cy="18" r="2" fill="currentColor"/></svg></span>
+                <span><strong>Administration</strong><small>Shared platform resources</small></span>
+              </a>
+              <button class="nav-branch-toggle" id="administrationMenuToggle" type="button" aria-label="Expand Administration menu" aria-controls="administrationSubmenu" aria-expanded="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m6.5 8 3.5 3.5L13.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
+            </div>
+            <div class="nav-children" id="administrationSubmenu">
+              <a class="nav-child-link" href="#/platform-settings" data-route="platform-settings"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Platform Settings</strong><small>Server-wide settings</small></span></a>
+              <a class="nav-child-link" href="#/cache-manager" data-route="cache-manager"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Cache Manager</strong><small>Shared caches and Redis</small></span></a>
+              <a class="nav-child-link" href="#/url-alias" data-route="url-alias"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>URL Alias</strong><small>Short webhook URLs</small></span></a>
+              <a class="nav-child-link" href="#/runtime-operations" data-route="runtime-operations"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Runtime Operations</strong><small>Workers, queues, controls</small></span></a>
+              <a class="nav-child-link" href="#/connect-sso" data-route="connect-sso"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Connect SSO</strong><small>OpenID Connect providers</small></span></a>
+              <a class="nav-child-link" href="#/users" data-route="users"><span class="nav-child-marker" aria-hidden="true"></span><span><strong>Users</strong><small>Accounts and roles</small></span></a>
+            </div>
+          </div>
           <a class="nav-link" href="#/monitor-guide" data-route="monitor-guide">
             <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 17h3l3-8 4 5 3-4 5 1M3 21h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             <span><strong>Monitor</strong><small>Analytics, threads, retention</small></span>

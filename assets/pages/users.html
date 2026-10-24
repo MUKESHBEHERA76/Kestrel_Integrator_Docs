@@ -1,0 +1,11 @@
+<section class="doc-hero"><div class="hero-copy"><p class="eyebrow">Administration / Users</p><h1>Manage accounts and access.</h1><p class="lead">The Users page separates application accounts from accounts created through OpenID Connect login.</p></div></section>
+<section class="doc-section"><header class="section-heading"><h2>Find and manage accounts</h2></header><p>Open <strong>Administration → Users</strong>. Search by account details, then combine <strong>Account status</strong> and provider filters. The page shows application authorized users, SSO authorized users, pending approvals, and administrator counts. <strong>Export</strong> downloads the filtered list as CSV.</p><p>A local account can be created with a username, password, and one of three roles: <strong>Administrator</strong>, <strong>Developer</strong>, or <strong>Viewer</strong>. For an SSO account, the user signs in through the configured provider; an administrator reviews any pending approval and assigns the appropriate role. User rows support role and enabled-state changes, approval or rejection where applicable, and deletion with confirmation.</p><pre class="code-contract"><code>Example local user
+Username: integration.dev
+Role: Developer
+Enabled: Yes
+
+Example SSO onboarding
+Provider: Corporate Keycloak
+First sign-in: account appears in SSO Authorized Users
+Administrator review: approve and assign Viewer
+After approval: user signs in with provider credentials</code></pre><p>Choose the least privileged role needed. The current user's own status cannot be disabled from their row. An SSO-authenticated administrator has view-only access to user management in the current UI; creation and deletion are unavailable. SSO account controls may be unavailable when SSO is disabled. See <a href="#/connect-sso">Connect SSO</a> for provider setup.</p></section>

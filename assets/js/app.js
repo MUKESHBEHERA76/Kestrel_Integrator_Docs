@@ -216,6 +216,20 @@ const pages = Object.freeze({
     description: 'Monitor workers, queues, outboxes, dependencies, and worker controls',
     source: './assets/pages/runtime-operations.html'
   },
+  administration: {
+    title: 'Administration',
+    description: 'Shared platform resources and administration guides',
+    source: './assets/pages/administration.html'
+  },
+  'cache-manager': {
+    title: 'Cache Manager',
+    description: 'Platform caches, Redis connections, Cache utilities, and troubleshooting',
+    source: './assets/pages/cache-manager.html'
+  },
+  'platform-settings': { title: 'Platform Settings', description: 'Server-wide configuration and diagnosis', source: './assets/pages/platform-settings.html' },
+  'url-alias': { title: 'URL Alias', description: 'Short webhook workflow endpoints', source: './assets/pages/url-alias.html' },
+  'connect-sso': { title: 'Connect SSO', description: 'OpenID Connect provider setup', source: './assets/pages/connect-sso.html' },
+  users: { title: 'Users', description: 'Application and SSO accounts', source: './assets/pages/users.html' },
   'monitor-guide': {
     title: 'Monitor',
     description: 'Local Analytics, Active threads, and PostgreSQL retention',
@@ -260,6 +274,8 @@ const connectionsNavBranch = document.querySelector('#connectionsNavBranch');
 const connectionsMenuToggle = document.querySelector('#connectionsMenuToggle');
 const securityNavBranch = document.querySelector('#securityNavBranch');
 const securityMenuToggle = document.querySelector('#securityMenuToggle');
+const administrationNavBranch = document.querySelector('#administrationNavBranch');
+const administrationMenuToggle = document.querySelector('#administrationMenuToggle');
 const reusableServiceNavBranch = document.querySelector('#reusableServiceNavBranch');
 const reusableServiceMenuToggle = document.querySelector('#reusableServiceMenuToggle');
 const utilsNavBranch = document.querySelector('#utilsNavBranch');
@@ -319,6 +335,7 @@ function updateNavigation(route, anchor = '') {
   if (['workflow-triggers', 'webhook-trigger', 'email-trigger', 'salesforce-trigger', 'scheduler-trigger', 'subworkflow-trigger', 'amqp-trigger', 'amqp10-trigger'].includes(route)) setNestedMenuOpen(workflowTriggersNavBranch, workflowTriggersMenuToggle, 'Workflow triggers', true);
   if (['google-cloud-setup', 'google-storage-connection', 'google-bigquery-connection', 'google-pubsub-connection', 'slack-connection', 'connections', 'smtp-connection', 'incoming-email-connection', 'salesforce-connection', 'amqp-connection', 'amqp10-connection', 'snowflake-connection', 'sftp-connection', 'mongodb-connection', 'ibm-db2-connection', 'mariadb-connection', 'mssql-connection', 'mysql-connection', 'oracle-db-connection', 'postgres-connection'].includes(route)) setNestedMenuOpen(connectionsNavBranch, connectionsMenuToggle, 'Connections', true);
   if (['security', 'webhook-auth', 'security-credentials', 'keystore'].includes(route)) setNestedMenuOpen(securityNavBranch, securityMenuToggle, 'Security', true);
+  if (['administration', 'platform-settings', 'cache-manager', 'url-alias', 'runtime-operations', 'connect-sso', 'users'].includes(route)) setNestedMenuOpen(administrationNavBranch, administrationMenuToggle, 'Administration', true);
   if (route === 'reusable-service' || route === 'service-debug' || route === 'map-pipeline' || route === 'if-else' || route === 'switch-case' || route === 'loop' || route === 'exit' || route === 'error-handling') {
     setReusableServiceMenuOpen(true);
   }
@@ -494,6 +511,9 @@ connectionsMenuToggle?.addEventListener('click', () => {
 });
 securityMenuToggle?.addEventListener('click', () => {
   setNestedMenuOpen(securityNavBranch, securityMenuToggle, 'Security', securityNavBranch?.classList.contains('collapsed'));
+});
+administrationMenuToggle?.addEventListener('click', () => {
+  setNestedMenuOpen(administrationNavBranch, administrationMenuToggle, 'Administration', administrationNavBranch?.classList.contains('collapsed'));
 });
 reusableServiceMenuToggle?.addEventListener('click', () => {
   setReusableServiceMenuOpen(reusableServiceNavBranch?.classList.contains('collapsed'));
