@@ -208,8 +208,8 @@ const pages = Object.freeze({
   },
   execution: {
     title: 'Execution',
-    description: 'Durable workflow execution architecture',
-    source: './assets/pages/execution.html'
+    description: 'Execution documentation is being updated',
+    source: './assets/pages/execution-unavailable.html'
   },
   'runtime-operations': {
     title: 'Runtime Operations',
